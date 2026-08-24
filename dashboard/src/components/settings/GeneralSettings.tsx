@@ -1,0 +1,327 @@
+import { useState, useEffect } from 'react';
+import {
+  ListTodo,
+  FileEdit,
+  Database,
+  FolderOpen,
+  Copy,
+  Check,
+  RotateCcw,
+  Trash2,
+  Eye,
+  Split,
+  Code,
+} from 'lucide-react';
+import { useSettingsStore, type EditorView } from '../../store/settings';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Toggle } from '../ui/toggle';
+import { CollapsibleSection, SettingRow } from './CollapsibleSection';
+
+export default function GeneralSettings() {
+  const {
+    showCompletedTasks,
+    setShowCompletedTasks,
+    defaultEditorView,
+    setDefaultEditorView,
+    enableAutoSave,
+    setEnableAutoSave,
+    resetAllSettings,
+  } = useSettingsStore();
+
+  const [copiedPath, setCopiedPath] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [showClearStorageConfirm, setShowClearStorageConfirm] = useState(false);
+  const [vaultPath, setVaultPath] = useState<string>('');
+  const [vaultPathInput, setVaultPathInput] = useState<string>('');
+  const [isEditingVaultPath, setIsEditingVaultPath] = useState(false);
+  const [vaultPathError, setVaultPathError] = useState<string | null>(null);
+
+  // Get vault path from electron on mount
+  useEffect(() => {
+    window.electronAPI.getVaultPath().then((path) => {
+      setVaultPath(path);
+      setVaultPathInput(path);
+    }).catch((err) => {
+      console.error('Failed to get vault path:', err);
+    });
+  }, []);
+
+  const handleSaveVaultPath = async () => {
+    const success = await window.electronAPI.setVaultPath(vaultPathInput);
+    if (success) {
+      setVaultPath(vaultPathInput);
+      setIsEditingVaultPath(false);
+      setVaultPathError(null);
+      window.location.reload();
+    } else {
+      setVaultPathError('Invalid path or directory does not exist');
+    }
+  };
+
+  const handleChooseVaultPath = async () => {
+    const selectedPath = await window.electronAPI.chooseVaultFolder();
+    if (!selectedPath) return;
+    setVaultPath(selectedPath);
+    setVaultPathInput(selectedPath);
+    setVaultPathError(null);
+    window.location.reload();
+  };
+
+  const handleCopyPath = async () => {
+    await navigator.clipboard.writeText(vaultPath);
+    setCopiedPath(true);
+    setTimeout(() => setCopiedPath(false), 2000);
+  };
+
+  const handleResetSettings = () => {
+    resetAllSettings();
+    setShowResetConfirm(false);
+  };
+
+  const handleClearLocalStorage = () => {
+    localStorage.clear();
+    window.location.reload();
+  };
+
+  // Perspective labels
+
+  // Sort labels
+
+  // Domain labels
+
+  return (
+    <div className="space-y-10">
+      {/* Tasks Section */}
+      <CollapsibleSection
+        title="Tasks"
+        icon={ListTodo}
+        description="Behavior for task lists across Today, Unfiled, and Projects"
+      >
+        <div className="space-y-1">
+          <SettingRow
+            label="Show Completed Tasks"
+            description="Display completed tasks in task lists"
+          >
+            <Toggle enabled={showCompletedTasks} onChange={setShowCompletedTasks} />
+          </SettingRow>
+        </div>
+      </CollapsibleSection>
+
+      {/* Editor Section */}
+      <CollapsibleSection
+        title="Editor"
+        icon={FileEdit}
+        description="Configure the artifact editor behavior"
+      >
+        <div className="space-y-1">
+          <SettingRow
+            label="Default Editor View"
+            description="How the editor displays when opening artifacts"
+          >
+            <Select
+              value={defaultEditorView}
+              onValueChange={(value) => setDefaultEditorView(value as EditorView)}
+            >
+              <SelectTrigger className="w-[160px] h-9 text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="split">
+                  <div className="flex items-center gap-2">
+                    <Split className="w-4 h-4" />
+                    <span>Split View</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="preview">
+                  <div className="flex items-center gap-2">
+                    <Eye className="w-4 h-4" />
+                    <span>Preview Only</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="source">
+                  <div className="flex items-center gap-2">
+                    <Code className="w-4 h-4" />
+                    <span>Source Only</span>
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </SettingRow>
+
+          <SettingRow
+            label="Auto-save"
+            description="Automatically save changes as you edit"
+          >
+            <Toggle enabled={enableAutoSave} onChange={setEnableAutoSave} />
+          </SettingRow>
+        </div>
+      </CollapsibleSection>
+
+      {/* Data & Storage Section */}
+      <CollapsibleSection
+        title="Data & Storage"
+        icon={Database}
+        description="Manage your vault location and app data"
+        defaultOpen={false}
+      >
+        <div className="space-y-4">
+          {/* Vault Path */}
+          <div>
+            <div className="text-sm text-foreground mb-1">Vault Location</div>
+            <div className="text-xs text-muted-foreground mb-2">
+              Your knowledge artifacts are stored here
+            </div>
+            {isEditingVaultPath ? (
+              <div className="space-y-2">
+                <Input
+                  type="text"
+                  value={vaultPathInput}
+                  onChange={(e) => setVaultPathInput(e.target.value)}
+                  className="font-mono text-xs"
+                  placeholder="/path/to/vault"
+                />
+                {vaultPathError && (
+                  <div className="text-xs ed-text-error">{vaultPathError}</div>
+                )}
+                <div className="flex items-center gap-2">
+                  <Button size="sm" onClick={handleSaveVaultPath}>
+                    <Check className="w-4 h-4 mr-1" />
+                    Save
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setIsEditingVaultPath(false);
+                      setVaultPathInput(vaultPath);
+                      setVaultPathError(null);
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <code className="block w-full truncate rounded-md bg-secondary px-3 py-2 font-mono text-xs text-foreground">
+                  {vaultPath || 'Loading…'}
+                </code>
+                <div className="flex items-center gap-2">
+                  <Button onClick={() => void handleChooseVaultPath()} variant="outline" size="sm">
+                    <FolderOpen className="mr-1 h-4 w-4" />
+                    Choose folder…
+                  </Button>
+                <Button
+                  onClick={() => setIsEditingVaultPath(true)}
+                  variant="outline"
+                  size="sm"
+                >
+                  <FileEdit className="mr-1 h-4 w-4" />
+                  Enter path
+                </Button>
+                <Button
+                  onClick={handleCopyPath}
+                  variant="icon"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  title="Copy path"
+                >
+                  {copiedPath ? (
+                    <Check className="w-4 h-4 ed-text-success" />
+                  ) : (
+                    <Copy className="w-4 h-4 text-muted-foreground" />
+                  )}
+                </Button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Danger Zone */}
+          <div className="border-t border-[var(--rule-standard)] pt-4 mt-6">
+            <div className="ed-label ed-text-error">Danger zone</div>
+            <div className="mt-4 space-y-3">
+              {/* Reset Settings */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-sm text-foreground">Reset All Settings</div>
+                  <div className="text-xs text-muted-foreground">
+                    Restore all settings to their default values
+                  </div>
+                </div>
+                {showResetConfirm ? (
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowResetConfirm(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={handleResetSettings}
+                    >
+                      <RotateCcw className="w-4 h-4 mr-1" />
+                      Confirm Reset
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowResetConfirm(true)}
+                  >
+                    <RotateCcw className="w-4 h-4 mr-1" />
+                    Reset
+                  </Button>
+                )}
+              </div>
+
+              {/* Clear Local Storage */}
+              <div className="flex items-center justify-between pt-3 border-t border-[var(--rule-faint)]">
+                <div>
+                  <div className="text-sm text-foreground">Clear Local Storage</div>
+                  <div className="text-xs text-muted-foreground">
+                    Clear all cached data and reload the app
+                  </div>
+                </div>
+                {showClearStorageConfirm ? (
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowClearStorageConfirm(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={handleClearLocalStorage}
+                    >
+                      <Trash2 className="w-4 h-4 mr-1" />
+                      Confirm Clear
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowClearStorageConfirm(true)}
+                  >
+                    <Trash2 className="w-4 h-4 mr-1" />
+                    Clear
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </CollapsibleSection>
+    </div>
+  );
+}

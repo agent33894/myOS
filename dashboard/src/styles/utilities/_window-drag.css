@@ -1,0 +1,13 @@
+/* =========================
+   Electron Window Drag Regions
+   ========================= */
+
+/* macOS window drag region - allows dragging the window */
+.window-drag-region {
+  -webkit-app-region: drag;
+}
+
+/* Prevent dragging on interactive elements */
+.no-drag {
+  -webkit-app-region: no-drag;
+}

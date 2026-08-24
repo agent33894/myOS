@@ -1,0 +1,116 @@
+/* =========================
+   Dynamic Accent Color Utilities
+   =========================
+
+   These utilities use !important for accessibility reasons:
+   - Accent backgrounds must guarantee readable contrast text
+   - User-selected accent colors override component defaults
+   - Active states must ensure all nested content remains visible
+
+   This follows Tailwind's utility pattern where override classes
+   use !important to ensure they always apply as intended.
+
+   IMPORTANT: tailwind-merge compatibility
+   ----------------------------------------
+   When using accent-bg with text-on-accent, use separate class names:
+
+   CORRECT:   className="accent-bg text-on-accent"
+   WRONG:     className="accent-bg accent-bg-text"  // twMerge strips accent-bg!
+
+   The 'accent-bg-text' class was renamed to 'text-on-accent' because
+   tailwind-merge incorrectly treats 'accent-bg-text' as a variant of
+   'accent-bg' and removes the base class. Always use 'text-on-accent'
+   when combining with 'accent-bg'.
+*/
+
+/* Base accent utilities */
+.accent-bg {
+  background-color: rgb(var(--accent-color)) !important;
+}
+
+.accent-text {
+  color: rgb(var(--accent-color));
+  filter: brightness(1.2);
+}
+
+.accent-border {
+  border-color: rgb(var(--accent-color));
+}
+
+.accent-ring {
+  --tw-ring-color: rgb(var(--accent-color) / 0.2);
+}
+
+/* Text color for content on accent backgrounds
+   Uses WCAG-compliant contrast
+
+   NOTE: Class renamed from 'accent-bg-text' to 'text-on-accent' to avoid
+   tailwind-merge incorrectly treating it as a variant of 'accent-bg'.
+   twMerge was stripping 'accent-bg' when both classes were present.
+*/
+.text-on-accent,
+.accent-bg .text-on-accent {
+  color: rgb(var(--accent-contrast-text, 255, 255, 255)) !important;
+}
+
+/* Legacy alias for backward compatibility during migration */
+.accent-bg-text,
+.accent-bg .accent-bg-text {
+  color: rgb(var(--accent-contrast-text, 255, 255, 255)) !important;
+}
+
+/* Muted text on accent backgrounds (80% opacity) */
+.text-on-accent-muted,
+.accent-bg-text-muted {
+  color: rgb(var(--accent-contrast-text, 255, 255, 255) / 0.8) !important;
+}
+
+/* Semi-transparent overlay for content on accent backgrounds */
+.accent-bg-overlay {
+  background-color: rgb(var(--accent-contrast-text, 255, 255, 255) / 0.2);
+}
+
+/* Hover overlay for buttons on accent backgrounds */
+.accent-bg-overlay-hover:hover {
+  background-color: rgb(var(--accent-contrast-text, 255, 255, 255) / 0.2);
+}
+
+/* Divider line on accent backgrounds */
+.accent-bg-divider {
+  background-color: rgb(var(--accent-contrast-text, 255, 255, 255) / 0.3);
+}
+
+/* Accent-tinted hover backgrounds */
+.hover-accent:hover {
+  background-color: rgba(var(--accent-color), 0.12);
+}
+
+/* Active/pressed state for hover-accent elements */
+.hover-accent:active {
+  background-color: rgb(var(--accent-color));
+  color: rgb(var(--accent-contrast-text, 255, 255, 255)) !important;
+}
+
+.hover-accent:active * {
+  color: rgb(var(--accent-contrast-text, 255, 255, 255)) !important;
+}
+
+/* Active/pressed state for elements with accent background */
+.accent-bg:active {
+  filter: brightness(0.92);
+}
+
+/* Subtle accent tint for chat messages and cards */
+.accent-bg-tint {
+  background-color: rgba(var(--accent-color), 0.2);
+}
+
+/* Accent left border for visual emphasis */
+.accent-border-left {
+  border-left: 3px solid rgb(var(--accent-color));
+}
+
+/* Subtle glow effect for accent-bordered cards */
+.bg-card:has(.before\:bg-\[rgb\(var\(--accent-color\)\)\]):hover {
+  box-shadow: 0 0 20px -5px rgba(var(--accent-color), 0.08);
+}

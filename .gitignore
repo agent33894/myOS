@@ -1,0 +1,50 @@
+# Dependencies and generated output
+node_modules/
+.pnp
+.pnp.js
+.vite/
+.turbo/
+dist/
+dist-electron/
+release/
+coverage/
+*.log
+
+# Electron build resources: retain only the release icon
+dashboard/build/*
+!dashboard/build/icon.png
+
+# Environment and machine-local configuration
+.env
+.env.local
+.env.*.local
+*.local
+.cache/
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+# Editors and local agent state
+.vscode/
+!.vscode/extensions.json
+.idea/
+.claude/
+.cursor/
+*.swp
+*.swo
+*~
+
+# Personal workspace content
+vault/**
+!vault/**/
+!vault/**/.gitkeep
+
+# Machine-specific workspace state
+vault/.config/
+vault/.knowledge-graph-state.json
+
+# Generated captures accidentally dropped at the repository root
+app-session-*.js
+main-*.js
+workspace-root-drop-handler-*.js

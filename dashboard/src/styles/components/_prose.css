@@ -1,0 +1,604 @@
+/* =========================
+   Markdown Prose Styles
+   ========================= */
+
+/* Chronicle reading law: serif carries authored work; mono carries system
+   material; rules replace card chrome. */
+.prose {
+  color: var(--ds2-ink);
+  font-family: var(--font-reading);
+  font-size: var(--type-reading);
+  line-height: 1.65;
+}
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
+  color: var(--ds2-ink);
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+}
+.prose h1 {
+  margin: 0 0 0.8em;
+  font-size: 1.45em;
+}
+.prose h2 {
+  margin: 1.65em 0 0.6em;
+  font-size: 1.25em;
+}
+.prose h3 {
+  margin: 1.4em 0 0.5em;
+  font-size: 1.1em;
+}
+.prose h4,
+.prose h5,
+.prose h6 {
+  margin: 1.25em 0 0.45em;
+  font-size: 1em;
+}
+
+.prose p {
+  margin: 0 0 0.9em;
+}
+.prose ul,
+.prose ol {
+  margin: 0.7em 0 1em;
+  padding-left: 1.35em;
+}
+.prose li {
+  margin: 0.2em 0;
+}
+
+.prose code,
+.prose pre {
+  color: var(--ds2-ink);
+  background: var(--ds2-paper-inset);
+  border-radius: var(--radius-control);
+  font-family: var(--font-mono);
+  font-size: 0.78em;
+}
+.prose code {
+  padding: 0.18em 0.38em;
+}
+.prose pre {
+  margin: 1.2em 0;
+  overflow-x: auto;
+  padding: 1em 1.1em;
+  line-height: 1.6;
+}
+.prose pre code {
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+  color: inherit;
+  font: inherit;
+}
+
+.prose blockquote {
+  margin: 1.2em 0;
+  padding-left: 1em;
+  color: var(--ds2-ink-secondary);
+  border-left: 2px solid color-mix(in srgb, var(--ds2-stamp) 55%, transparent);
+  font-style: italic;
+}
+.prose a {
+  color: var(--ds2-stamp);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.prose strong {
+  color: var(--ds2-ink);
+  font-weight: 600;
+}
+.prose em {
+  font-style: italic;
+}
+.prose hr {
+  height: 0.5px;
+  margin: 1.5em 0;
+  border: 0;
+  background: var(--rule-standard);
+}
+
+.prose table {
+  width: 100%;
+  margin: 1.3em 0;
+  border-collapse: collapse;
+  font-size: 0.9em;
+  text-align: left;
+}
+.prose thead {
+  border-bottom: 0.5px solid var(--rule-standard);
+}
+.prose th {
+  color: var(--ds2-ink);
+  font-family: var(--font-display);
+  font-weight: 400;
+}
+.prose th,
+.prose td {
+  padding: 0.55em 0.7em;
+  border-bottom: 0.5px solid var(--rule-faint);
+}
+.prose tbody tr:nth-child(even) {
+  background: var(--ds2-paper-elevated);
+}
+
+/* =========================
+   Immersive Writing Mode
+   ========================= */
+
+/* Focused writing keeps the reading law — Literata body, serif regular
+   headings — just with a narrower measure and more air. */
+.prose-immersive {
+  font-family: var(--font-reading);
+  font-size: 1.125rem;
+  line-height: 1.8;
+  color: var(--ds2-ink);
+  max-width: 70ch;
+  margin: 0 auto;
+  padding: 3rem;
+}
+
+.prose-immersive h1,
+.prose-immersive h2,
+.prose-immersive h3 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+}
+
+.prose-immersive h1 {
+  font-size: 1.45em;
+  margin-top: 2em;
+  margin-bottom: 0.5em;
+}
+
+.prose-immersive h1:first-child {
+  margin-top: 0;
+}
+
+.prose-immersive h2 {
+  font-size: 1.25em;
+  margin-top: 1.75em;
+  margin-bottom: 0.5em;
+}
+
+.prose-immersive h3 {
+  font-size: 1.1em;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+}
+
+.prose-immersive p {
+  margin-bottom: 1.5em;
+}
+
+.prose-immersive blockquote {
+  border-left: 2px solid color-mix(in srgb, var(--ds2-stamp) 55%, transparent);
+  padding-left: 1.5em;
+  margin: 2em 0;
+  font-style: italic;
+  color: var(--ds2-ink-secondary);
+}
+
+.prose-immersive code {
+  background: var(--ds2-paper-inset);
+  padding: 0.2em 0.4em;
+  border-radius: var(--radius-chip);
+  font-family: var(--font-mono);
+  font-size: 0.78em;
+}
+
+.prose-immersive pre {
+  background: var(--ds2-paper-inset);
+  padding: 1.5em;
+  border-radius: var(--radius-control);
+  margin: 2em 0;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 0.78em;
+  line-height: 1.6;
+}
+
+.prose-immersive pre code {
+  background: transparent;
+  padding: 0;
+}
+
+.prose-immersive ul,
+.prose-immersive ol {
+  padding-left: 1.5em;
+  margin: 1.5em 0;
+}
+
+.prose-immersive li {
+  margin: 0.5em 0;
+}
+
+.prose-immersive a {
+  color: rgb(var(--accent-color));
+  text-decoration: underline;
+}
+
+/* Immersive editor placeholder */
+.prose-immersive .is-editor-empty:first-child::before {
+  color: hsl(var(--muted-foreground));
+  opacity: 0.6;
+}
+
+/* =========================
+   Editorial Writing Mode
+   ========================= */
+
+/*
+ * Typography: Literata for body text (readable), Instrument Serif for headings (distinctive)
+ * Literata is designed for extended reading (originally for Google Books)
+ */
+.prose-editorial {
+  font-family: 'Literata', Georgia, serif;
+  font-size: 1.01rem;
+  line-height: 1.62;
+  color: hsl(var(--foreground) / 0.86);
+  max-width: none;
+  font-optical-sizing: auto;
+}
+
+.prose-editorial h1 {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 2rem;
+  font-weight: 400;
+  margin-top: 1.5em;
+  margin-bottom: 0.75em;
+  letter-spacing: -0.01em;
+  color: hsl(var(--foreground));
+}
+
+.prose-editorial h1:first-child {
+  margin-top: 0;
+}
+
+.prose-editorial h2 {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.5rem;
+  font-weight: 400;
+  margin-top: 1.65em;
+  margin-bottom: 0.58em;
+  color: hsl(var(--foreground));
+}
+
+.prose-editorial h3 {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.25rem;
+  font-weight: 400;
+  margin-top: 1.3em;
+  margin-bottom: 0.4em;
+  color: hsl(var(--foreground));
+}
+
+.prose-editorial h4,
+.prose-editorial h5,
+.prose-editorial h6 {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-weight: 400;
+  margin-top: 1.35em;
+  margin-bottom: 0.45em;
+  color: hsl(var(--foreground));
+}
+
+.prose-editorial h4 {
+  font-size: 1.08rem;
+}
+
+.prose-editorial h5 {
+  font-size: 1rem;
+}
+
+.prose-editorial h6 {
+  font-size: 0.94rem;
+}
+
+.prose-editorial p {
+  margin-top: 0;
+  margin-bottom: 0.88em;
+  overflow-wrap: anywhere;
+}
+
+.prose-editorial strong {
+  color: hsl(var(--foreground));
+  font-weight: 600;
+}
+
+.prose-editorial blockquote {
+  border-left: 2px solid rgb(var(--accent-color));
+  padding-left: 1.25em;
+  margin: 1.15em 0;
+  font-style: italic;
+  color: hsl(var(--muted-foreground));
+}
+
+.prose-editorial code {
+  font-family: 'GeistMono-Variable', ui-monospace, monospace;
+  font-size: 0.85em;
+  background: hsl(var(--secondary));
+  padding: 0.2em 0.5em;
+  color: rgb(var(--accent-color));
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.prose-editorial pre {
+  font-family: 'GeistMono-Variable', ui-monospace, monospace;
+  font-size: 0.875rem;
+  background: hsl(var(--secondary));
+  border: 1px solid hsl(var(--border));
+  padding: 1.25em;
+  margin: 1.2em 0;
+  overflow-x: auto;
+  line-height: 1.6;
+}
+
+.prose-editorial pre code {
+  background: transparent;
+  padding: 0;
+  color: hsl(var(--foreground));
+}
+
+.prose-editorial ul,
+.prose-editorial ol {
+  padding-left: 1.18em;
+  margin: 0.56em 0 0.86em;
+}
+
+.prose-editorial ul {
+  list-style-type: disc;
+  list-style-position: outside;
+}
+
+.prose-editorial ol {
+  list-style-type: decimal;
+  list-style-position: outside;
+}
+
+.prose-editorial ul ul {
+  list-style-type: circle;
+}
+
+.prose-editorial ul ul ul {
+  list-style-type: square;
+}
+
+.prose-editorial ol ol {
+  list-style-type: lower-alpha;
+}
+
+.prose-editorial li {
+  margin: 0.12em 0;
+  padding-left: 0.15em;
+  overflow-wrap: anywhere;
+}
+
+.prose-editorial li > p {
+  margin-top: 0.08em;
+  margin-bottom: 0.08em;
+}
+
+.prose-editorial li > p:only-child {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.prose-editorial li > ul,
+.prose-editorial li > ol {
+  margin-top: 0.34em;
+  margin-bottom: 0.44em;
+}
+
+.prose-editorial ul li::marker {
+  color: hsl(var(--foreground) / 0.72);
+  font-size: 0.88em;
+}
+
+.prose-editorial ol li::marker {
+  color: hsl(var(--foreground) / 0.72);
+  font-size: 0.88em;
+  font-weight: 500;
+  font-family: 'GeistMono-Variable', ui-monospace, monospace;
+}
+
+.prose-editorial a {
+  color: rgb(var(--accent-color));
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.prose-editorial a:hover {
+  opacity: 0.8;
+}
+
+/* Tables */
+.prose-editorial table {
+  width: 100%;
+  table-layout: auto;
+  text-align: left;
+  margin-top: 1.2em;
+  margin-bottom: 1.2em;
+  font-size: 0.9375rem;
+  border-collapse: collapse;
+}
+
+.prose-editorial thead {
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.prose-editorial thead th {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-weight: 400;
+  color: hsl(var(--foreground));
+  vertical-align: bottom;
+  padding: 0.75em 1em;
+  overflow-wrap: anywhere;
+}
+
+.prose-editorial tbody tr {
+  border-bottom: 1px solid hsl(var(--border) / 0.5);
+}
+
+.prose-editorial tbody td {
+  vertical-align: baseline;
+  padding: 0.75em 1em;
+  overflow-wrap: anywhere;
+}
+
+/* Editorial editor placeholder */
+.prose-editorial .is-editor-empty:first-child::before,
+.prose-editorial p.is-editor-empty:first-child::before {
+  color: hsl(var(--muted-foreground));
+  opacity: 0.5;
+  font-style: italic;
+  font-family: 'Literata', Georgia, serif;
+}
+
+/* TipTap/ProseMirror overrides for Editorial - smaller sizes for editor context */
+.tiptap .prose-editorial h1,
+.ProseMirror.prose-editorial h1 {
+  font-size: 1.75rem;
+  margin-top: 0;
+}
+
+.tiptap .prose-editorial h2,
+.ProseMirror.prose-editorial h2 {
+  font-size: 1.375rem;
+  margin-top: 1.52em;
+  margin-bottom: 0.42em;
+}
+
+.tiptap .prose-editorial h3,
+.ProseMirror.prose-editorial h3 {
+  font-size: 1.125rem;
+}
+
+.tiptap .prose-editorial p,
+.ProseMirror.prose-editorial p {
+  margin-top: 0;
+  margin-bottom: 0.88em;
+}
+
+.tiptap .prose-editorial ul,
+.tiptap .prose-editorial ol,
+.ProseMirror.prose-editorial ul,
+.ProseMirror.prose-editorial ol {
+  margin: 0.56em 0 0.86em;
+  padding-left: 1.18em;
+}
+
+.tiptap .prose-editorial li,
+.ProseMirror.prose-editorial li {
+  margin: 0.12em 0;
+}
+
+.tiptap .prose-editorial li > p,
+.ProseMirror.prose-editorial li > p {
+  margin-top: 0.08em;
+  margin-bottom: 0.08em;
+}
+
+.tiptap .prose-editorial li > p:only-child,
+.ProseMirror.prose-editorial li > p:only-child {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.tiptap .prose-editorial li > ul,
+.tiptap .prose-editorial li > ol,
+.ProseMirror.prose-editorial li > ul,
+.ProseMirror.prose-editorial li > ol {
+  margin-top: 0.34em;
+  margin-bottom: 0.44em;
+}
+
+/* Editorial Dark: remove border-radius in editor context */
+.tiptap .prose-editorial code,
+.tiptap .prose-editorial pre,
+.ProseMirror.prose-editorial code,
+.ProseMirror.prose-editorial pre {
+  border-radius: 0;
+}
+
+/* Editorial Dark: accent colors in editor */
+.tiptap .prose-editorial a,
+.ProseMirror.prose-editorial a {
+  color: rgb(var(--accent-color));
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.tiptap .prose-editorial a:hover,
+.ProseMirror.prose-editorial a:hover {
+  opacity: 0.8;
+}
+
+.tiptap .prose-editorial code,
+.ProseMirror.prose-editorial code {
+  font-family: 'GeistMono-Variable', ui-monospace, monospace;
+  font-size: 0.85em;
+  background: hsl(var(--secondary));
+  padding: 0.2em 0.5em;
+  color: rgb(var(--accent-color));
+}
+
+.tiptap .prose-editorial pre code,
+.ProseMirror.prose-editorial pre code {
+  color: hsl(var(--foreground));
+  background: transparent;
+  padding: 0;
+}
+
+.tiptap .prose-editorial blockquote,
+.ProseMirror.prose-editorial blockquote {
+  border-left-color: rgb(var(--accent-color));
+  border-left-width: 2px;
+}
+
+.tiptap .prose-editorial ::selection,
+.ProseMirror.prose-editorial ::selection {
+  background-color: rgba(var(--accent-color), 0.2);
+}
+
+/* Research prose - clean typography for chat messages */
+.research-prose {
+  font-feature-settings:
+    'liga' 1,
+    'calt' 1;
+}
+
+.research-prose > *:first-child {
+  margin-top: 0;
+}
+
+.research-prose > *:last-child {
+  margin-bottom: 0;
+}
+
+/* Research message container */
+.research-message {
+  border-radius: 0;
+}
+
+/* Shiki syntax highlighting */
+.shiki-wrapper pre {
+  background: hsl(var(--secondary) / 0.5) !important;
+}
+
+.shiki-wrapper code {
+  font-family: ui-monospace, 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+}

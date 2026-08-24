@@ -1,0 +1,27 @@
+{
+  "appId": "com.myos.markdown",
+  "productName": "myOS",
+  "artifactName": "myOS-${version}-${arch}.${ext}",
+  "icon": "build/icon.png",
+  "directories": {
+    "output": "release",
+    "buildResources": "build"
+  },
+  "files": [
+    "dist/**/*",
+    "dist-electron/**/*",
+    "package.json",
+    "!**/node_modules/**",
+    "!**/*.map"
+  ],
+  "electronLanguages": ["en"],
+  "mac": {
+    "category": "public.app-category.productivity",
+    "hardenedRuntime": true,
+    "gatekeeperAssess": false,
+    "target": ["dmg", "zip"],
+    "extendInfo": {
+      "CFBundleLocalizations": ["en"]
+    }
+  }
+}

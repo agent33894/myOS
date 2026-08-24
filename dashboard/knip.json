@@ -1,0 +1,21 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": [
+    "electron/main.ts",
+    "electron/preload.ts",
+    "public/theme-init.js",
+    "src/utils/gray-matter-engines.js"
+  ],
+  "project": [
+    "src/**/*.{ts,tsx,js,jsx}",
+    "electron/**/*.{ts,tsx}",
+    "shared/**/*.{ts,tsx}",
+    "scripts/**/*.{ts,js,mjs}"
+  ],
+  "ignoreDependencies": [
+    "@fontsource/instrument-serif",
+    "@fontsource/literata",
+    "electron-builder",
+    "non.geist"
+  ]
+}
