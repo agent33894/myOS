@@ -42,8 +42,8 @@ The AppImage is portable. On Omarchy, install the Arch [`fuse2` package](https:/
 
 ```bash
 sudo pacman -S fuse2
-chmod +x release/myOS-*-x64.AppImage
-./release/myOS-*-x64.AppImage
+chmod +x release/myOS-*.AppImage
+./release/myOS-*.AppImage
 ```
 
 The tar.gz is a fallback when AppImage mounting is unavailable. Extract it into a private directory, then launch its `myos` executable. Do not extract it into an existing installation directory, since stale Electron files can prevent startup.
