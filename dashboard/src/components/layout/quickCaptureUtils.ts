@@ -1,4 +1,7 @@
 import { getArtifactSpec } from '@shared/spec';
+import { buildSuggestedTitleFromContent, extractHashTags } from '@shared/capture';
+
+export { buildSuggestedTitleFromContent };
 import { ArtifactType, Domain, TodoPriority } from '../../types/artifacts';
 
 /**
@@ -130,29 +133,6 @@ export function stripTypePrefix(
   };
 }
 
-export function buildSuggestedTitleFromContent(text: string): string {
-  const firstLine =
-    text
-      .replace(/^(?:I need to|Remember to|Don't forget to|Make sure to)\s*/i, '')
-      .replace(/^(?:We decided(?: to)?|We chose(?: to)?)\s*/i, '')
-      .replace(/#\w+/g, '')
-      .split('\n')
-      .find((line) => line.trim().length > 0)
-      ?.trim() || '';
-
-  const clean = firstLine
-    .replace(/[.!?]+$/, '')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .slice(0, 80);
-
-  if (!clean) {
-    return 'Untitled capture';
-  }
-
-  return clean.charAt(0).toUpperCase() + clean.slice(1);
-}
-
 export function buildStructuredCaptureContent(
   input: string,
   title: string,
@@ -271,10 +251,9 @@ export function detectQuickCaptureIntent(text: string): QuickCaptureData {
     data.detectedPriority = TodoPriority.HIGH;
   }
 
-  const tagPatterns = /#(\w+)/g;
-  const hashTags = analysisText.match(tagPatterns);
-  if (hashTags) {
-    data.detectedTags = hashTags.map((tag) => tag.slice(1).toLowerCase());
+  const hashTags = extractHashTags(analysisText);
+  if (hashTags.length > 0) {
+    data.detectedTags = hashTags;
   }
 
   return data;

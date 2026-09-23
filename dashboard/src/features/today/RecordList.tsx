@@ -3,6 +3,7 @@ import type { Artifact } from '../../types/artifacts';
 import { cn } from '../../lib/utils';
 import { localDateStamp, recordDateStamp, recordKind, type RecordKind } from './todaySelectors';
 import { ChronicleCheckmark } from './ChronicleCheckmark';
+import { useProjectLabel } from '../../hooks/useProjectLabel';
 
 interface RecordListProps {
   items: Artifact[];
@@ -85,7 +86,8 @@ const RecordRow = memo(function RecordRow({
   onSelect: (artifact: Artifact) => void;
 }) {
   const kind = recordKind(item) || 'capture';
-  const project = item.project || item.tags?.[0] || 'myOS';
+  const projectLabel = useProjectLabel();
+  const project = projectLabel(item.project) || item.tags?.[0] || 'myOS';
   const label =
     kind === 'completed' ? 'Closed' : kind === 'session' ? 'Session' : kind === 'decision' ? 'Decision' : 'Captured';
 

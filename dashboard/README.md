@@ -13,6 +13,8 @@ npm test
 npm run build
 npm run build:installer
 npm run build:linux
+npm run build:arch
+npm run smoke:linux
 ```
 
 Some developer shells set `ELECTRON_RUN_AS_NODE=1`. If no app window opens, run commands as `env -u ELECTRON_RUN_AS_NODE npm run electron:dev`.

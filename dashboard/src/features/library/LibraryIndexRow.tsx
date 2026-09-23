@@ -2,6 +2,7 @@ import type { Artifact } from '../../types/artifacts';
 import { cn } from '../../lib/utils';
 import { setArtifactDragData } from '../../lib/artifactDnd';
 import type { LibrarySort } from './libraryIndex';
+import { useProjectLabel } from '../../hooks/useProjectLabel';
 
 const MAX_ROW_TAGS = 3;
 const DATE_ONLY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
@@ -38,6 +39,7 @@ export function LibraryIndexRow({
     .toLocaleDateString([], { month: 'short', day: 'numeric' });
   const dateLabel = dateField === 'created' ? 'Created' : 'Updated';
   const showStatus = artifact.status !== 'archived';
+  const projectLabel = useProjectLabel();
 
   return (
     <button
@@ -58,7 +60,7 @@ export function LibraryIndexRow({
         {artifact.project ? (
           <>
             <span className="chronicle-project-dot" style={{ background: projectInk }} aria-hidden="true" />
-            <span className="truncate">{artifact.project}</span>
+            <span className="truncate">{projectLabel(artifact.project)}</span>
           </>
         ) : null}
       </span>

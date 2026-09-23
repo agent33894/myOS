@@ -147,7 +147,7 @@ const desktopDesignTokens = {
   },
 } as const;
 
-function hexToHslTriplet(hex: string): string {
+export function hexToHslTriplet(hex: string): string {
   const value = Number.parseInt(hex.slice(1), 16);
   const r = ((value >> 16) & 255) / 255;
   const g = ((value >> 8) & 255) / 255;
@@ -168,7 +168,7 @@ function hexToHslTriplet(hex: string): string {
   return `${hue.toFixed(1)} ${(saturation * 100).toFixed(1)}% ${(lightness * 100).toFixed(1)}%`;
 }
 
-function hexToRgbTriplet(hex: string): string {
+export function hexToRgbTriplet(hex: string): string {
   const value = Number.parseInt(hex.slice(1), 16);
   return `${(value >> 16) & 255}, ${(value >> 8) & 255}, ${value & 255}`;
 }

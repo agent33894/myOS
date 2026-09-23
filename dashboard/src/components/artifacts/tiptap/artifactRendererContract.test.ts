@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { MarkdownManager } from '@tiptap/markdown';
 import {
+  createArtifactRendererExtensions,
   parseFencedCodeBlock,
   resolveRichBlockLanguage,
 } from './artifactRendererContract';
@@ -30,5 +32,13 @@ describe('artifactRendererContract', () => {
         '{"type":"pie","title":"x","data":[{"label":"a","value":1}],"nameKey":"label","valueKey":"value"}';
       expect(resolveRichBlockLanguage(null, chartRaw)).toBe('chart');
     });
+  });
+
+  it('round-trips Markdown the editor must not rewrite', () => {
+    const markdown = new MarkdownManager({
+      extensions: createArtifactRendererExtensions({ placeholder: '' }),
+    });
+    const source = '- [ ] open\n- [x] done\n  - [ ] nested';
+    expect(markdown.serialize(markdown.parse(source))).toBe(source);
   });
 });

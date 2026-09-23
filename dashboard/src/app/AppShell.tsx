@@ -18,6 +18,8 @@ import { primaryModifier } from '../utils/platform';
 const SIDEBAR_WIDTH_KEY = 'chronicle-sidebar-width';
 const SIDEBAR_COLLAPSED_KEY = 'chronicle-sidebar-collapsed';
 
+const NARROW_WINDOW_QUERY = '(max-width: 900px)';
+
 export default function AppShell() {
   const location = useLocation();
   const route = getRoute(location.pathname);
@@ -26,11 +28,21 @@ export default function AppShell() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(
     () => localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === '1',
   );
+  // Tiled windows (Omarchy halves, thirds, quarters) get the icon rail without
+  // touching the saved preference for wide windows.
+  const [isNarrowWindow, setIsNarrowWindow] = useState(() => window.matchMedia(NARROW_WINDOW_QUERY).matches);
+  const isRail = sidebarCollapsed || isNarrowWindow;
   const { isCommandPaletteOpen, isQuickCaptureOpen, isKeyboardShortcutsOpen } = useModalStates();
   const { openCommandPalette } = useCommandPaletteActions();
   const { openQuickCapture } = useQuickCaptureActions();
 
   useEffect(() => { void loadArtifacts(); }, [loadArtifacts]);
+  useEffect(() => {
+    const media = window.matchMedia(NARROW_WINDOW_QUERY);
+    const sync = () => setIsNarrowWindow(media.matches);
+    media.addEventListener('change', sync);
+    return () => media.removeEventListener('change', sync);
+  }, []);
   useEffect(() => { localStorage.setItem(SIDEBAR_WIDTH_KEY, String(sidebarWidth)); }, [sidebarWidth]);
   useEffect(() => {
     localStorage.setItem(SIDEBAR_COLLAPSED_KEY, sidebarCollapsed ? '1' : '0');
@@ -65,20 +77,22 @@ export default function AppShell() {
     document.addEventListener('keydown', onKeyDown);
     return () => document.removeEventListener('keydown', onKeyDown);
   }, [anyOverlayOpen]);
+  // `myos --capture` (e.g. from a Hyprland keybinding) opens Quick Capture here.
+  useEffect(() => window.electronAPI.onOpenQuickCapture(() => useUIStore.getState().openQuickCapture()), []);
   useFileWatcher();
   useKeyboardShortcuts();
   useNotificationGenerator();
 
   return (
     <div
-      className={sidebarCollapsed ? 'chronicle-app is-sidebar-collapsed' : 'chronicle-app'}
+      className={isRail ? 'chronicle-app is-sidebar-collapsed' : 'chronicle-app'}
       style={{ '--sidebar-width': `${sidebarWidth}px` } as React.CSSProperties}
     >
       {isCommandPaletteOpen ? <CommandPalette /> : null}
       {isQuickCaptureOpen ? <QuickCapture /> : null}
       {isKeyboardShortcutsOpen ? <KeyboardShortcutsModal /> : null}
       <Sidebar
-        collapsed={sidebarCollapsed}
+        collapsed={isRail}
         onToggleCollapsed={() => setSidebarCollapsed((prev) => !prev)}
       />
       <PaneDivider label="Resize sidebar" value={sidebarWidth} min={184} max={300} onChange={setSidebarWidth} />

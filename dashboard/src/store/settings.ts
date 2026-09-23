@@ -4,17 +4,14 @@ import {
   getStorableSettings,
   loadSettings,
   saveSettings,
-  type EditorView,
   type StoredSettings,
   type ThemeMode,
 } from './settingsPersistence';
 
-export type { EditorView } from './settingsPersistence';
-
 interface SettingsState extends StoredSettings {
   setThemeMode: (mode: ThemeMode) => void;
   setShowCompletedTasks: (show: boolean) => void;
-  setDefaultEditorView: (view: EditorView) => void;
+  setFollowSystemAccent: (follow: boolean) => void;
   setEnableAutoSave: (enable: boolean) => void;
   setHasCompletedOnboarding: (value: boolean) => void;
   resetAllSettings: () => void;
@@ -32,7 +29,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
     ...initial,
     setThemeMode: (themeMode) => persist({ themeMode }),
     setShowCompletedTasks: (showCompletedTasks) => persist({ showCompletedTasks }),
-    setDefaultEditorView: (defaultEditorView) => persist({ defaultEditorView }),
+    setFollowSystemAccent: (followSystemAccent) => persist({ followSystemAccent }),
     setEnableAutoSave: (enableAutoSave) => persist({ enableAutoSave }),
     setHasCompletedOnboarding: (hasCompletedOnboarding) => persist({ hasCompletedOnboarding }),
     resetAllSettings: () => {

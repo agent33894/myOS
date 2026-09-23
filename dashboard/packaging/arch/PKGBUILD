@@ -1,0 +1,46 @@
+# Arch/Omarchy package for the prebuilt Linux release (no FUSE needed).
+# `npm run build:arch` builds it from the local tar.gz; for the AUR, bump
+# pkgver and run `updpkgsums` against the published release.
+pkgname=myos-bin
+pkgver=1.1.0
+pkgrel=1
+pkgdesc='Local-first Markdown editor and productivity system'
+arch=('x86_64')
+url='https://github.com/agent33894/myOS'
+license=('MIT')
+depends=('gtk3' 'nss' 'alsa-lib' 'xdg-utils')
+provides=('myos')
+conflicts=('myos')
+options=('!strip' '!debug')
+source=("myOS-${pkgver}-x64.tar.gz::${url}/releases/download/v${pkgver}/myOS-${pkgver}-x64.tar.gz")
+sha256sums=('SKIP')
+
+package() {
+  install -d "${pkgdir}/opt/myOS" "${pkgdir}/usr/bin"
+  cp -a "myOS-${pkgver}-x64/." "${pkgdir}/opt/myOS/"
+  chmod 4755 "${pkgdir}/opt/myOS/chrome-sandbox"
+  ln -s /opt/myOS/myos "${pkgdir}/usr/bin/myos"
+
+  install -Dm644 "${pkgdir}/opt/myOS/resources/LICENSE" \
+    "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+  install -Dm644 "${pkgdir}/opt/myOS/resources/icon.png" \
+    "${pkgdir}/usr/share/icons/hicolor/512x512/apps/myos.png"
+  # Same entry `myos --install-desktop-entry` writes; the name matches the app_id.
+  install -Dm644 /dev/stdin "${pkgdir}/usr/share/applications/myos.desktop" <<DESKTOP
+[Desktop Entry]
+Type=Application
+Name=myOS
+Comment=Local Markdown workspace
+Exec=/usr/bin/myos %U
+Icon=myos
+Terminal=false
+Categories=Office;
+MimeType=x-scheme-handler/myos;
+StartupWMClass=myos
+Actions=capture;
+
+[Desktop Action capture]
+Name=Quick Capture
+Exec=/usr/bin/myos --capture
+DESKTOP
+}

@@ -7,9 +7,11 @@
  */
 
 import { shell } from 'electron';
+import { spawn } from 'child_process';
 import { stat } from 'fs/promises';
 import { isAbsolute, relative, resolve } from 'path';
 import { getVaultPath } from '../utils/paths.js';
+import { resolvePathWithinVault } from './file-operations/path-safety.js';
 
 function isWithinDirectory(parentDir: string, targetPath: string): boolean {
   const normalizedParent = resolve(parentDir);
@@ -27,7 +29,9 @@ function assertAllowedPath(inputPath: string): string {
     throw new Error('Path must be a non-empty string');
   }
 
-  const resolvedPath = resolve(inputPath);
+  // The renderer passes workspace-relative artifact paths; resolving them
+  // against the process cwd (`/` when packaged) rejected every one.
+  const resolvedPath = resolve(getVaultPath(), inputPath);
   if (!isWithinDirectory(getVaultPath(), resolvedPath)) {
     throw new Error(`Path is outside allowed workspace roots: ${inputPath}`);
   }
@@ -82,4 +86,34 @@ export async function openExternalUrl(url: string): Promise<string> {
 
   await shell.openExternal(safeUrl);
   return 'success';
+}
+
+/**
+ * Open a workspace Markdown file in the system's default editor, for raw
+ * Markdown editing outside the Living Page.
+ */
+export async function openArtifactFile(filePath: string): Promise<void> {
+  if (!filePath.toLowerCase().endsWith('.md')) {
+    throw new Error('Only Markdown files can be opened');
+  }
+  const safePath = resolvePathWithinVault(filePath);
+  if (process.platform === 'linux' && (await openWithGio(safePath))) return;
+  const error = await shell.openPath(safePath);
+  if (error) throw new Error(error);
+}
+
+/**
+ * xdg-open outside GNOME/KDE sniffs content, so frontmatter makes notes look
+ * like text/plain and it can start a terminal editor with no terminal (and
+ * never return). gio matches `.md` to text/markdown and handles Terminal=true.
+ */
+function openWithGio(path: string): Promise<boolean> {
+  return new Promise((done) => {
+    const child = spawn('gio', ['open', path], { detached: true, stdio: 'ignore' });
+    child.once('error', () => done(false));
+    child.once('spawn', () => {
+      child.unref();
+      done(true);
+    });
+  });
 }

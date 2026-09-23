@@ -66,3 +66,43 @@ export function findLinkedArtifact(
 
   return artifacts.find((artifact) => artifact.filePath === relativeCandidate) ?? null;
 }
+
+// `[[Target]]` or `[[Target|label]]`.
+const WIKI_LINK_PATTERN = /\[\[([^[\]|\n]+)(?:\|([^[\]\n]+))?\]\]/g;
+
+export function matchWikiLinks(text: string): Array<{ index: number; length: number; target: string }> {
+  return [...text.matchAll(WIKI_LINK_PATTERN)].map((match) => ({
+    index: match.index ?? 0,
+    length: match[0].length,
+    target: match[1].trim(),
+  }));
+}
+
+function fileStem(filePath: string): string {
+  return filePath.replace(/\\/g, '/').replace(/^.*\//, '').replace(/\.md$/i, '');
+}
+
+/** `[[Target]]` resolves by title, then id, then file name — case-insensitive. */
+export function findWikiLinkedArtifact(target: string, artifacts: Artifact[]): Artifact | null {
+  const wanted = target.trim().toLowerCase();
+  return (
+    artifacts.find((artifact) => artifact.title.toLowerCase() === wanted) ??
+    artifacts.find((artifact) => artifact.id.toLowerCase() === wanted) ??
+    artifacts.find((artifact) => fileStem(artifact.filePath).toLowerCase() === wanted) ??
+    null
+  );
+}
+
+/** Artifacts that link here with `[[...]]` or list this one in `related`. */
+export function findBacklinks(target: Artifact, artifacts: Artifact[]): Artifact[] {
+  return artifacts.filter((artifact) => {
+    if (artifact.id === target.id) return false;
+    if ((artifact.related ?? []).includes(target.id)) return true;
+    const body = artifact.searchContent ?? artifact.content ?? '';
+    if (!body.includes('[[')) return false;
+    return matchWikiLinks(body).some(
+      (link) => findWikiLinkedArtifact(link.target, [target]) !== null,
+    );
+  });
+}
+

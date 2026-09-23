@@ -7,6 +7,7 @@ import * as artifactGitignore from '../handlers/artifact-gitignore.js';
 import * as gitDiff from '../handlers/git-diff.js';
 import * as shellOperations from '../handlers/shell-operations.js';
 import { attachLocalAsset } from '../handlers/file-operations/asset-attachments.js';
+import { readOmarchyAccent } from '../utils/omarchy-theme.js';
 import type { IpcInvokeArgs } from '../../shared/ipc/contracts';
 
 interface RegisterIpcHandlersOptions {
@@ -62,6 +63,10 @@ export function registerIpcHandlers({ getMainWindow }: RegisterIpcHandlersOption
   ipcMain.handle('shell:open-external-url', (_event, url: string) =>
     shellOperations.openExternalUrl(url)
   );
+  ipcMain.handle('shell:open-artifact-file', (_event, filePath: string) =>
+    shellOperations.openArtifactFile(filePath)
+  );
+  ipcMain.handle('system:get-accent', () => readOmarchyAccent());
 
   // Workspace path handlers shared by the renderer and main process.
   ipcMain.handle('vault:set-path', (_event, path: string) => {

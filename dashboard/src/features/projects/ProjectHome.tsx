@@ -14,6 +14,9 @@ import { ProjectWorkbenchBar } from './ProjectWorkbenchBar';
 import { resolveWorkbenchItem } from './workbenchItem';
 
 const RAIL_KEY = 'chronicle-project-rail-collapsed';
+// Below this workbench width (quarter/third tiles) the rail and inspector
+// become drawers over the page, one at a time, closed by default.
+const NARROW_WORKBENCH_PX = 900;
 const INSPECTOR_KEY = 'chronicle-project-inspector-collapsed';
 
 interface ProjectHomeProps {
@@ -35,6 +38,19 @@ export function ProjectHome({ project, itemPath, onSelectItem, onCloseItem }: Pr
   const navigate = useNavigate();
   const projectInk = projectSwatchFor(project.title, project.swatch).hex;
   const centerRef = useRef<HTMLDivElement>(null);
+  const workbenchRef = useRef<HTMLElement>(null);
+  const [isNarrow, setIsNarrow] = useState(false);
+  const [narrowPanel, setNarrowPanel] = useState<'rail' | 'inspector' | null>(null);
+
+  useEffect(() => {
+    const element = workbenchRef.current;
+    if (!element) return;
+    const observer = new ResizeObserver(([entry]) => {
+      setIsNarrow(entry.contentRect.width < NARROW_WORKBENCH_PX);
+    });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
 
   const [railCollapsed, setRailCollapsed] = useState(
     () => localStorage.getItem(RAIL_KEY) === '1',
@@ -49,6 +65,18 @@ export function ProjectHome({ project, itemPath, onSelectItem, onCloseItem }: Pr
     localStorage.setItem(INSPECTOR_KEY, inspectorCollapsed ? '1' : '0');
   }, [inspectorCollapsed]);
 
+  // Narrow tiles keep their own drawer state so the wide layout preference survives.
+  const isRailHidden = isNarrow ? narrowPanel !== 'rail' : railCollapsed;
+  const isInspectorHidden = isNarrow ? narrowPanel !== 'inspector' : inspectorCollapsed;
+  const toggleRail = useCallback(() => {
+    if (isNarrow) setNarrowPanel((panel) => (panel === 'rail' ? null : 'rail'));
+    else setRailCollapsed((prev) => !prev);
+  }, [isNarrow]);
+  const toggleInspector = useCallback(() => {
+    if (isNarrow) setNarrowPanel((panel) => (panel === 'inspector' ? null : 'inspector'));
+    else setInspectorCollapsed((prev) => !prev);
+  }, [isNarrow]);
+
   const item = useMemo(() => resolveWorkbenchItem(project, itemPath), [project, itemPath]);
   const selectedPath = item?.filePath ?? null;
 
@@ -56,6 +84,7 @@ export function ProjectHome({ project, itemPath, onSelectItem, onCloseItem }: Pr
   // artifact from another corner of the vault) opens in the Library pane.
   const openArtifact = useCallback(
     (artifact: Artifact) => {
+      setNarrowPanel(null);
       if (resolveWorkbenchItem(project, artifact.filePath)) {
         onSelectItem(artifact.filePath);
       } else {
@@ -81,35 +110,36 @@ export function ProjectHome({ project, itemPath, onSelectItem, onCloseItem }: Pr
       ) {
         return;
       }
-      if (event.key === '[') setRailCollapsed((prev) => !prev);
-      if (event.key === ']') setInspectorCollapsed((prev) => !prev);
+      if (event.key === '[') toggleRail();
+      if (event.key === ']') toggleInspector();
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, []);
+  }, [toggleRail, toggleInspector]);
 
   return (
     <article
-      className="chronicle-project-workbench"
+      ref={workbenchRef}
+      className={cn('chronicle-project-workbench', isNarrow && 'is-narrow')}
       style={{ '--project-ink': projectInk } as React.CSSProperties}
     >
       <ProjectWorkbenchBar
         project={project}
         item={item}
-        railCollapsed={railCollapsed}
-        inspectorCollapsed={inspectorCollapsed}
-        onToggleRail={() => setRailCollapsed((prev) => !prev)}
-        onToggleInspector={() => setInspectorCollapsed((prev) => !prev)}
+        railCollapsed={isRailHidden}
+        inspectorCollapsed={isInspectorHidden}
+        onToggleRail={toggleRail}
+        onToggleInspector={toggleInspector}
         onCloseItem={onCloseItem}
       />
       <div className="chronicle-workbench-body">
         <nav
           className={cn(
             'chronicle-workbench-rail custom-scrollbar',
-            railCollapsed && 'is-collapsed',
+            isRailHidden && 'is-collapsed',
           )}
           aria-label="Project index"
-          aria-hidden={railCollapsed}
+          aria-hidden={isRailHidden}
         >
           <div className="chronicle-rail-inner">
             <button
@@ -132,7 +162,11 @@ export function ProjectHome({ project, itemPath, onSelectItem, onCloseItem }: Pr
             />
           </div>
         </nav>
-        <div ref={centerRef} className="chronicle-workbench-center custom-scrollbar">
+        <div
+          ref={centerRef}
+          className="chronicle-workbench-center custom-scrollbar"
+          onPointerDown={isNarrow && narrowPanel ? () => setNarrowPanel(null) : undefined}
+        >
           {item ? (
             <ProjectItemPage artifact={item} onDeleted={onCloseItem} />
           ) : (
@@ -142,10 +176,10 @@ export function ProjectHome({ project, itemPath, onSelectItem, onCloseItem }: Pr
         <aside
           className={cn(
             'chronicle-workbench-inspector custom-scrollbar',
-            inspectorCollapsed && 'is-collapsed',
+            isInspectorHidden && 'is-collapsed',
           )}
           aria-label="Properties"
-          aria-hidden={inspectorCollapsed}
+          aria-hidden={isInspectorHidden}
         >
           <div className="chronicle-inspector-inner">
             <ProjectInspector project={project} item={item} onOpenArtifact={openArtifact} />

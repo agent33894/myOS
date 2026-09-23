@@ -5,6 +5,7 @@ import { shortDate } from './format';
 import { ProjectActivitySection } from './ProjectActivitySection';
 import { ProjectBrief } from './ProjectBrief';
 import { useProjectRename } from './projectRename';
+import LinkedFrom from '../living-page/LinkedFrom';
 
 interface ProjectOverviewProps {
   project: ProjectWithStats;
@@ -71,6 +72,7 @@ export function ProjectOverview({ project, onOpenItem }: ProjectOverviewProps) {
       {dateline ? <p className="chronicle-detail-meta">{dateline}</p> : null}
       <ProjectBrief project={project} />
       <ProjectActivitySection project={project} onOpen={onOpenItem} />
+      <LinkedFrom artifact={project} />
     </div>
   );
 }

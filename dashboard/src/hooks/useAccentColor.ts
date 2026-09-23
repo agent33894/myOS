@@ -3,10 +3,10 @@ import { projectSwatches, stampColorPair } from '@shared/design-system/tokens';
 import type { Domain, ArtifactType } from '../types/artifacts';
 
 /**
- * The accent is the DS2 vermilion stamp — one ink, theme-aware, not a user
- * setting. `--accent-color` / `--accent-contrast-text` are defined per theme
- * in styles/themes/_variables.css; this hook exposes the same values to
- * components that need them imperatively (charts, canvases).
+ * The accent is the DS2 vermilion stamp — one ink, theme-aware. On Omarchy it
+ * can follow the desktop theme instead (ThemeController sets `--ds2-stamp`
+ * inline on <html>); this hook exposes the live value to components that need
+ * it imperatively (charts, canvases).
  */
 function hexToRgbTriplet(hex: string): string {
   const value = Number.parseInt(hex.slice(1), 16);
@@ -17,25 +17,28 @@ export function useAccentColor() {
   const [isDark, setIsDark] = useState(
     () => typeof document !== 'undefined' && document.documentElement.dataset.theme === 'dark',
   );
+  const [systemStamp, setSystemStamp] = useState<string | null>(null);
 
   useEffect(() => {
-    const checkDarkMode = () => {
-      setIsDark(document.documentElement.dataset.theme === 'dark');
+    const sync = () => {
+      const root = document.documentElement;
+      setIsDark(root.dataset.theme === 'dark');
+      setSystemStamp(root.style.getPropertyValue('--ds2-stamp').trim() || null);
     };
-    checkDarkMode();
-    const observer = new MutationObserver(checkDarkMode);
+    sync();
+    const observer = new MutationObserver(sync);
     observer.observe(document.documentElement, {
       attributes: true,
-      attributeFilter: ['data-theme'],
+      attributeFilter: ['data-theme', 'style'],
     });
     return () => observer.disconnect();
   }, []);
 
-  const stampHex = isDark ? stampColorPair.dark : stampColorPair.light;
+  const stampHex = systemStamp ?? (isDark ? stampColorPair.dark : stampColorPair.light);
   const pantoneColor = {
     rgb: hexToRgbTriplet(stampHex),
     hex: stampHex,
-    name: 'Vermilion',
+    name: systemStamp ? 'Desktop theme' : 'Vermilion',
   };
 
   const accentBgStyle = { backgroundColor: 'var(--ds2-stamp)' };

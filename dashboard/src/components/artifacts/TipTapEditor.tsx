@@ -17,7 +17,7 @@ import { cn } from '../../lib/utils';
 import { ArtifactType } from '../../types/artifacts';
 import { useArtifactsStore } from '../../store/artifacts';
 import { toArtifactNavigationUrl } from '../../features/artifact-route/routeContract';
-import { findLinkedArtifact } from '../../utils/artifactLinks';
+import { findLinkedArtifact, findWikiLinkedArtifact } from '../../utils/artifactLinks';
 import { type MarkdownChartSpec } from '../../utils/chartBlocks';
 import ChartInsertModal from '../editor/ChartInsertModal';
 import InsertCommandMenu, { type InsertCommandOption } from '../editor/InsertCommandMenu';
@@ -400,6 +400,16 @@ export default function TipTapEditor({
       handleClick: (_view, _pos, event) => {
         const target = event.target as HTMLElement | null;
         if (!target) return false;
+
+        const wikiLink = target.closest<HTMLElement>('[data-wikilink]');
+        if (wikiLink) {
+          const name = wikiLink.dataset.wikilink ?? '';
+          const linked = findWikiLinkedArtifact(name, artifactsRef.current);
+          event.preventDefault();
+          if (linked) navigate(toArtifactNavigationUrl(linked));
+          else toast.info(`No note titled “${name}” yet`);
+          return true;
+        }
 
         const anchor = target.closest('a[href]');
         if (!(anchor instanceof HTMLAnchorElement)) return false;

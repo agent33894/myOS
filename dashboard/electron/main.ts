@@ -5,6 +5,8 @@ import { initializePaths, getVaultPath } from './utils/paths.js';
 import { getStableAppDataPath } from './utils/stable-app-data.js';
 
 import { registerIpcHandlers } from './ipc/register-handlers.js';
+import { cliArgs, parseCliCommand, runCliCommand } from './cli.js';
+import { watchOmarchyAccent } from './utils/omarchy-theme.js';
 
 // Get the directory containing the main process script
 // In production (packaged): app.getAppPath() returns the asar root
@@ -38,16 +40,27 @@ const APP_PROTOCOL = 'myos';
 // application data directory rather than npm's package-name default.
 app.setPath('userData', getStableAppDataPath());
 
+// `myos capture|today|search` run headless and exit; they never take the
+// single-instance lock, so they work alongside a running window.
+const cliCommand = parseCliCommand(cliArgs());
+
 // Prevent multiple instances of the app
-const gotTheLock = app.requestSingleInstanceLock();
+const gotTheLock = cliCommand ? false : app.requestSingleInstanceLock();
 let appLoadUrl: string | null = null;
 let pendingArtifactDeepLink: string | null = null;
 
-if (!gotTheLock) {
+if (cliCommand) {
+  void runCliCommand(cliCommand).then((code) => app.exit(code));
+} else if (!gotTheLock) {
   app.quit();
   process.exit(0);
 } else {
   app.on('second-instance', (_event, commandLine) => {
+    if (commandLine.includes('--capture')) {
+      openQuickCapture();
+      return;
+    }
+
     const deepLinkHash = extractArtifactDeepLinkFromArgs(commandLine);
     if (deepLinkHash) {
       if (mainWindow === null) {
@@ -128,6 +141,22 @@ const openArtifactDeepLink = (deepLinkHash: string): void => {
   void mainWindow.loadURL(`${appLoadUrl}${deepLinkHash}`);
 };
 
+// `myos --capture`: bring the window forward with Quick Capture open. The
+// preload buffers the request until the renderer subscribes.
+const openQuickCapture = (): void => {
+  if (mainWindow === null) {
+    createWindow();
+  }
+  if (!mainWindow) return;
+  if (mainWindow.isMinimized()) mainWindow.restore();
+  mainWindow.show();
+  mainWindow.focus();
+  const { webContents } = mainWindow;
+  const send = () => webContents.send('quick-capture:open');
+  if (webContents.isLoading()) webContents.once('did-finish-load', send);
+  else send();
+};
+
 function isPathWithinDirectory(parentDir: string, targetPath: string): boolean {
   const normalizedParent = resolve(parentDir);
   const normalizedTarget = resolve(targetPath);
@@ -150,8 +179,10 @@ const createWindow = () => {
   mainWindow = new BrowserWindow({
     width: 1400,
     height: 900,
-    minWidth: 1000,
-    minHeight: 700,
+    // Small enough for Omarchy's quarter-width and half-height tiles; the
+    // layout collapses to an icon rail and stacked panes below 900/700px.
+    minWidth: 360,
+    minHeight: 360,
     webPreferences: {
       preload: preloadPath,
       nodeIntegration: false,
@@ -292,6 +323,7 @@ const createWindow = () => {
 
 // This method will be called when Electron has finished initialization
 app.on('ready', () => {
+  if (cliCommand) return;
   app.setAsDefaultProtocolClient(APP_PROTOCOL);
   // Initialize paths before creating window
   initializePaths();
@@ -307,6 +339,9 @@ app.on('ready', () => {
 
   // Register IPC handlers
   registerIpcHandlers({ getMainWindow: () => mainWindow });
+
+  if (process.argv.includes('--capture')) openQuickCapture();
+  watchOmarchyAccent((accent) => mainWindow?.webContents.send('system:accent-changed', { accent }));
 });
 
 app.on('open-url', (event, url) => {

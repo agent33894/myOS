@@ -7,6 +7,7 @@ import { useCommandPaletteActions } from '../../store/selectors';
 import { toArtifactNavigationUrl } from '../../features/artifact-route/routeContract';
 import { cn } from '../../lib/utils';
 import { primaryModifier } from '../../utils/platform';
+import { useProjectLabel } from '../../hooks/useProjectLabel';
 
 type PaletteResult = {
   id: string;
@@ -20,6 +21,7 @@ type PaletteResult = {
 export default function CommandPalette() {
   const navigate = useNavigate();
   const artifacts = useArtifactsStore((state) => state.artifacts);
+  const projectLabel = useProjectLabel();
   const { closeCommandPalette } = useCommandPaletteActions();
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState(0);
@@ -63,11 +65,11 @@ export default function CommandPalette() {
         group: 'Artifacts' as const,
         type: artifact.type,
         title: artifact.title,
-        subtitle: artifact.project || artifact.domain,
+        subtitle: projectLabel(artifact.project) || artifact.domain,
         run: () => navigate(toArtifactNavigationUrl(artifact)),
       }));
     return [...matches, ...actions, ...routes].slice(0, 16);
-  }, [artifacts, haystacks, navigate, query]);
+  }, [artifacts, haystacks, navigate, projectLabel, query]);
 
   useEffect(() => {
     inputRef.current?.focus();

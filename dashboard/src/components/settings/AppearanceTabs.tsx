@@ -1,10 +1,14 @@
 import { useSettingsStore } from '../../store/settings';
 import { useAccentColor } from '../../hooks/useAccentColor';
+import { useSystemAccent } from '../../hooks/useSystemAccent';
 import { Button } from '../ui/button'
+import { Toggle } from '../ui/toggle';
+import { SettingRow } from './CollapsibleSection';
 
 export default function AppearanceTabs() {
-  const { themeMode, setThemeMode } = useSettingsStore();
+  const { themeMode, setThemeMode, followSystemAccent, setFollowSystemAccent } = useSettingsStore();
   const { pantoneColor } = useAccentColor();
+  const systemAccent = useSystemAccent();
 
   return (
     <div>
@@ -44,12 +48,22 @@ export default function AppearanceTabs() {
               aria-hidden="true"
             />
             <div>
-              <h3 className="font-serif text-base text-foreground">Vermilion</h3>
+              <h3 className="font-serif text-base text-foreground">{pantoneColor.name}</h3>
               <p className="mt-0.5 text-sm text-muted-foreground">
                 Chronicle uses a single stamp ink for active states and emphasis. It follows the light and dark themes automatically.
               </p>
             </div>
           </div>
+          {systemAccent ? (
+            <div className="mt-4 max-w-xl">
+              <SettingRow
+                label="Follow Omarchy theme"
+                description="Use the active Omarchy theme accent as the stamp ink; updates when you switch themes"
+              >
+                <Toggle enabled={followSystemAccent} onChange={setFollowSystemAccent} />
+              </SettingRow>
+            </div>
+          ) : null}
         </div>
       </section>
     </div>

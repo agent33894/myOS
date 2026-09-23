@@ -169,7 +169,9 @@ async function findRepositoryRoot(vaultPath: string): Promise<string> {
     cursor = parent;
   }
 
-  return dirname(resolvedVaultPath);
+  // Outside a repository, keep rules in the workspace itself. The parent is
+  // often ~/Documents or ~, which myOS must never write to.
+  return resolvedVaultPath;
 }
 
 function getArtifactRootPrefix(repositoryRoot: string, vaultPath: string): string {

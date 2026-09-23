@@ -80,6 +80,8 @@ export interface IpcInvokeMap {
   };
   'shell:show-in-folder': { args: [itemPath: string]; result: boolean };
   'shell:open-external-url': { args: [url: string]; result: boolean };
+  'shell:open-artifact-file': { args: [filePath: string]; result: void };
+  'system:get-accent': { args: []; result: string | null };
   'notifications:show': { args: [options: { title: string; body: string }]; result: boolean };
   'vault:set-path': { args: [path: string]; result: boolean };
   'vault:get-path': { args: []; result: string };
@@ -106,6 +108,8 @@ export const IPC_INVOKE_CHANNELS = [
   'git:commit-diff',
   'shell:show-in-folder',
   'shell:open-external-url',
+  'shell:open-artifact-file',
+  'system:get-accent',
   'notifications:show',
   'vault:set-path',
   'vault:get-path',
@@ -118,4 +122,6 @@ export interface IpcEventMap {
     event: 'created' | 'updated' | 'deleted';
     data: { filePath: string };
   };
+  'quick-capture:open': Record<string, never>;
+  'system:accent-changed': { accent: string | null };
 }

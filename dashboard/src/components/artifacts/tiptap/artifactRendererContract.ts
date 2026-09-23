@@ -10,9 +10,11 @@ import { Link } from '@tiptap/extension-link';
 import { Placeholder } from '@tiptap/extension-placeholder';
 import { Typography } from '@tiptap/extension-typography';
 import { TextAlign } from '@tiptap/extension-text-align';
+import { TaskItem, TaskList } from '@tiptap/extension-list';
 import { mergeAttributes } from '@tiptap/core';
 import { parseMarkdownChartBlock } from '../../../utils/chartBlocks';
 import { resolveVaultAssetUrl } from '../../../utils/assetPaths';
+import { WikiLinks } from './wikiLinks';
 
 export type RichBlockLanguage = 'chart' | 'mermaid' | 'callout' | 'kpi' | 'roadmap';
 
@@ -83,6 +85,9 @@ export function createArtifactRendererExtensions({
         class: 'bg-foreground  text-muted-foreground rounded-md p-4 font-mono text-sm',
       },
     }),
+    // Without these, `- [ ]` parses as a plain bullet and autosave drops the checkbox.
+    TaskList,
+    TaskItem.configure({ nested: true }),
     TextAlign.configure({
       types: ['heading', 'paragraph'],
     }),
@@ -116,6 +121,7 @@ export function createArtifactRendererExtensions({
       showOnlyWhenEditable: false,
     }),
     Typography,
+    WikiLinks,
     Markdown,
     VaultLink.configure({
       openOnClick: false,

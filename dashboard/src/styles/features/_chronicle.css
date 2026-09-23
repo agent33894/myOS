@@ -41,8 +41,6 @@ select:focus-visible {
   display: grid;
   width: 100vw;
   height: 100vh;
-  min-width: 1000px;
-  min-height: 700px;
   grid-template-columns: var(--sidebar-width) 0.5px minmax(0, 1fr);
   transition: grid-template-columns var(--timing-medium) var(--easing-smooth);
   background: var(--ds2-paper);
@@ -2051,6 +2049,36 @@ button.chronicle-crumb:hover {
   min-width: 0;
   overflow-y: auto;
 }
+/* Narrow workbench (quarter/third tiles): the page keeps the full width and
+   the rail or inspector slides over it as a drawer, one at a time. */
+.chronicle-project-workbench.is-narrow .chronicle-workbench-body {
+  position: relative;
+}
+.chronicle-project-workbench.is-narrow .chronicle-workbench-rail,
+.chronicle-project-workbench.is-narrow .chronicle-workbench-inspector {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 5;
+  background: var(--ds2-paper);
+}
+.chronicle-project-workbench.is-narrow .chronicle-workbench-rail {
+  left: 0;
+}
+.chronicle-project-workbench.is-narrow .chronicle-workbench-inspector {
+  right: 0;
+}
+.chronicle-project-workbench.is-narrow .chronicle-workbench-rail:not(.is-collapsed),
+.chronicle-project-workbench.is-narrow .chronicle-workbench-inspector:not(.is-collapsed) {
+  width: min(288px, 88%);
+}
+.chronicle-project-workbench.is-narrow .chronicle-rail-inner,
+.chronicle-project-workbench.is-narrow .chronicle-inspector-inner {
+  width: auto;
+}
+.chronicle-project-workbench.is-narrow .chronicle-workbench-overview {
+  padding-inline: 20px;
+}
 .chronicle-workbench-overview {
   max-width: 820px;
   padding: 26px 40px 120px;
@@ -3161,38 +3189,9 @@ button.chronicle-activity-title:hover {
   }
 }
 
-@media (max-width: 700px) {
-  .chronicle-app {
-    min-width: 0;
-    min-height: 0;
-    grid-template-columns: 52px 0.5px minmax(0, 1fr);
-  }
-  .chronicle-sidebar-scroll {
-    padding-inline: 4px;
-  }
-  .chronicle-nav-row {
-    grid-template-columns: 1fr;
-    justify-items: center;
-    padding-inline: 0;
-  }
-  .chronicle-nav-row > span,
-  .chronicle-section-label,
-  .chronicle-section-header-row,
-  .chronicle-nav-group[aria-label='Projects'],
-  .chronicle-tool-list {
-    display: none;
-  }
-  .chronicle-sidebar-footer {
-    flex-direction: column;
-  }
-  .chronicle-footer-action,
-  .chronicle-footer-icon {
-    width: 32px;
-    margin-left: 0;
-    padding: 0;
-    gap: 0;
-    font-size: 0;
-  }
+/* Tiled windows (Omarchy halves, thirds, quarters): AppShell switches the
+   sidebar to its collapsed icon rail; the toolbar tightens to match. */
+@media (max-width: 900px) {
   .chronicle-toolbar {
     padding-inline: 10px;
   }
@@ -3202,6 +3201,12 @@ button.chronicle-activity-title:hover {
   .chronicle-search-button kbd {
     display: none;
   }
+  .chronicle-undo-pill {
+    left: 64px;
+  }
+}
+
+@media (max-width: 700px) {
   .chronicle-split {
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: minmax(120px, 45%) minmax(0, 1fr);
@@ -3234,9 +3239,6 @@ button.chronicle-activity-title:hover {
   .chronicle-detail,
   .chronicle-today-overview {
     padding: 18px 20px 40px;
-  }
-  .chronicle-undo-pill {
-    left: 64px;
   }
 }
 
@@ -3488,4 +3490,49 @@ button.chronicle-settings-section-header:hover .chronicle-settings-section-title
 
 .myos-welcome-error {
   color: hsl(var(--ed-error));
+}
+
+/* ── Linked from — backlinks under a Living Page ────────────────────── */
+.chronicle-backlinks {
+  margin-top: 40px;
+  padding-top: 14px;
+  border-top: 0.5px solid var(--rule-standard);
+}
+.chronicle-backlinks h2 {
+  margin: 0 0 8px;
+  color: var(--ds2-ink-tertiary);
+  font-family: var(--font-mono);
+  font-size: var(--type-garnish);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.chronicle-backlinks ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.chronicle-backlinks button {
+  display: flex;
+  width: 100%;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 5px 0;
+  color: var(--ds2-ink);
+  text-align: left;
+}
+.chronicle-backlinks button:hover span {
+  color: var(--ds2-stamp);
+}
+.chronicle-backlinks button span {
+  font-family: var(--font-reading);
+}
+.chronicle-backlinks button small {
+  flex: none;
+  color: var(--ds2-ink-tertiary);
+  font-family: var(--font-mono);
+  font-size: var(--type-garnish);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }

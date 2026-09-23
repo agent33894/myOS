@@ -33,13 +33,21 @@
     "category": "Office",
     "icon": "build/icon.png",
     "executableName": "myos",
+    "syncDesktopName": true,
+    "extraResources": [
+      { "from": "build/icon.png", "to": "icon.png" },
+      { "from": "../LICENSE", "to": "LICENSE" }
+    ],
     "desktop": {
       "entry": {
         "Name": "myOS",
         "Comment": "Local Markdown workspace",
         "Categories": "Office;Productivity;",
         "MimeType": "x-scheme-handler/myos;",
-        "StartupWMClass": "myOS"
+        "StartupWMClass": "myos"
+      },
+      "desktopActions": {
+        "capture": { "Name": "Quick Capture", "Exec": "myos --capture" }
       }
     }
   }

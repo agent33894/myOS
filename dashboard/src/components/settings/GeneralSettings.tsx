@@ -8,12 +8,8 @@ import {
   Check,
   RotateCcw,
   Trash2,
-  Eye,
-  Split,
-  Code,
 } from 'lucide-react';
-import { useSettingsStore, type EditorView } from '../../store/settings';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { useSettingsStore } from '../../store/settings';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Toggle } from '../ui/toggle';
@@ -23,8 +19,6 @@ export default function GeneralSettings() {
   const {
     showCompletedTasks,
     setShowCompletedTasks,
-    defaultEditorView,
-    setDefaultEditorView,
     enableAutoSave,
     setEnableAutoSave,
     resetAllSettings,
@@ -116,40 +110,6 @@ export default function GeneralSettings() {
         description="Configure the artifact editor behavior"
       >
         <div className="space-y-1">
-          <SettingRow
-            label="Default Editor View"
-            description="How the editor displays when opening artifacts"
-          >
-            <Select
-              value={defaultEditorView}
-              onValueChange={(value) => setDefaultEditorView(value as EditorView)}
-            >
-              <SelectTrigger className="w-[160px] h-9 text-sm">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="split">
-                  <div className="flex items-center gap-2">
-                    <Split className="w-4 h-4" />
-                    <span>Split View</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="preview">
-                  <div className="flex items-center gap-2">
-                    <Eye className="w-4 h-4" />
-                    <span>Preview Only</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="source">
-                  <div className="flex items-center gap-2">
-                    <Code className="w-4 h-4" />
-                    <span>Source Only</span>
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </SettingRow>
-
           <SettingRow
             label="Auto-save"
             description="Automatically save changes as you edit"

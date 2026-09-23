@@ -8,7 +8,7 @@ import {
 describe('settings persistence', () => {
   it.each([
     ['invalid theme', { themeMode: 'sepia' }, 'themeMode', 'system'],
-    ['empty editor view', { defaultEditorView: '' }, 'defaultEditorView', 'split'],
+    ['non-boolean accent follow', { followSystemAccent: 'yes' }, 'followSystemAccent', true],
   ])('migrates %s to its current default', (_label, input, key, expected) => {
     expect(normalizeStoredSettings(input)[key as keyof ReturnType<typeof getDefaultSettings>]).toBe(expected);
   });

@@ -11,9 +11,12 @@ import { ChronicleCheckmark } from '../today/ChronicleCheckmark';
 import { localDateStamp } from '../today/todaySelectors';
 import { cn } from '../../lib/utils';
 import { useLivingPageController } from './useLivingPageController';
+import { useProjectLabel } from '../../hooks/useProjectLabel';
 import LivingPageBody from './LivingPageBody';
+import LinkedFrom from './LinkedFrom';
 import LivingPageTitle from './LivingPageTitle';
 import { ArtifactDeleteMenu } from '../../components/artifacts/ArtifactDeleteMenu';
+import { OpenInEditorButton } from '../../components/artifacts/OpenInEditorButton';
 
 const PANE_OUTLINE_SCROLL_OFFSET = 40;
 
@@ -31,6 +34,7 @@ export default function LivingPageDetail({
   onDeleted?: () => void;
 }) {
   const controller = useLivingPageController(artifact);
+  const projectLabel = useProjectLabel();
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const contentRootRef = useRef<HTMLDivElement | null>(null);
   // Local, default-collapsed: the pane is narrower than the workspace and
@@ -82,7 +86,7 @@ export default function LivingPageDetail({
           <div className="chronicle-detail-tags">
             <span>{getTypeLabel(artifact.type)}</span>
             {artifact.status ? <span>{artifact.status}</span> : null}
-            {artifact.project ? <span>{artifact.project}</span> : null}
+            {artifact.project ? <span>{projectLabel(artifact.project)}</span> : null}
           </div>
           <div className="chronicle-detail-title-row">
             {isTodo ? (
@@ -109,6 +113,7 @@ export default function LivingPageDetail({
                 hasUnsavedChanges={controller.hasUnsavedChanges}
                 isActivelyEditing={controller.isActivelyEditing}
               />
+              <OpenInEditorButton artifact={artifact} />
               <ArtifactDeleteMenu
                 artifact={artifact}
                 disabled={controller.isSaving}
@@ -126,6 +131,7 @@ export default function LivingPageDetail({
               onChange={controller.onBodyChange}
             />
           </div>
+          <LinkedFrom artifact={artifact} />
         </div>
       </div>
       <EditorialFooter content={controller.docBody ?? ''} />

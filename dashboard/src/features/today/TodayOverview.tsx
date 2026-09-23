@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import type { Artifact } from "../../types/artifacts";
 import { localDateStamp, recordDateStamp, recordKind } from "./todaySelectors";
+import { useProjectLabel } from "../../hooks/useProjectLabel";
 
 export function TodayOverview({
   inPlay,
@@ -11,6 +12,7 @@ export function TodayOverview({
   record: Artifact[];
   onSelect: (artifact: Artifact) => void;
 }) {
+  const projectLabel = useProjectLabel();
   const now = new Date();
   const todayRecord = record.filter(
     (item) => recordDateStamp(item) === localDateStamp(now),
@@ -66,7 +68,7 @@ export function TodayOverview({
             </span>
             <span>
               <strong>{task.title}</strong>
-              <small>{task.project || task.tags?.[0] || "myOS"}</small>
+              <small>{projectLabel(task.project) || task.tags?.[0] || "myOS"}</small>
             </span>
           </button>
         ))}

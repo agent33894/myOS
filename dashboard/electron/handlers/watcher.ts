@@ -70,9 +70,9 @@ export function setupFileWatcher(
     const vaultPath = getVaultPath();
 
     // Check if vault exists before watching
+    // Normal before onboarding picks or creates a workspace; not an error.
     if (!existsSync(vaultPath)) {
-      console.error(`Vault directory does not exist: ${vaultPath}`);
-      console.error('Please ensure the vault directory exists or set VAULT_PATH environment variable');
+      console.info('No workspace selected yet; the file watcher starts once one is chosen.');
       return;
     }
 

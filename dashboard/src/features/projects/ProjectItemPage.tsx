@@ -9,6 +9,8 @@ import { useLivingPageController } from '../living-page/useLivingPageController'
 import LivingPageBody from '../living-page/LivingPageBody';
 import LivingPageTitle from '../living-page/LivingPageTitle';
 import { ArtifactDeleteMenu } from '../../components/artifacts/ArtifactDeleteMenu';
+import { OpenInEditorButton } from '../../components/artifacts/OpenInEditorButton';
+import LinkedFrom from '../living-page/LinkedFrom';
 
 /**
  * An artifact opened inside the workbench center: the same Living Page the
@@ -50,6 +52,7 @@ export function ProjectItemPage({
             hasUnsavedChanges={controller.hasUnsavedChanges}
             isActivelyEditing={controller.isActivelyEditing}
           />
+          <OpenInEditorButton artifact={artifact} />
           <ArtifactDeleteMenu
             artifact={artifact}
             disabled={controller.isSaving}
@@ -81,6 +84,7 @@ export function ProjectItemPage({
         body={controller.docBody}
         onChange={controller.onBodyChange}
       />
+      <LinkedFrom artifact={artifact} />
     </article>
   );
 }

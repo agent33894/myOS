@@ -602,3 +602,43 @@
 .shiki-wrapper code {
   font-family: ui-monospace, 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
 }
+
+/* Task lists: `- [ ]` items render as checkboxes instead of bullets. */
+.tiptap ul[data-type='taskList'] {
+  list-style: none;
+  padding-left: 0;
+}
+
+.tiptap ul[data-type='taskList'] li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5em;
+}
+
+.tiptap ul[data-type='taskList'] li > label {
+  flex: none;
+  padding-top: 0.2em;
+}
+
+.tiptap ul[data-type='taskList'] li > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.tiptap ul[data-type='taskList'] input[type='checkbox'] {
+  accent-color: hsl(var(--accent));
+  cursor: pointer;
+}
+
+.tiptap ul[data-type='taskList'] li[data-checked='true'] > div {
+  color: hsl(var(--muted-foreground));
+  text-decoration: line-through;
+}
+
+/* Wiki links: plain `[[Title]]` text, decorated in place. */
+.tiptap .chronicle-wikilink {
+  color: rgb(var(--accent-color));
+  cursor: pointer;
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+}

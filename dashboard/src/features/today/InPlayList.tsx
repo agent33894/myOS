@@ -3,6 +3,7 @@ import { cn } from '../../lib/utils';
 import { setArtifactDragData } from '../../lib/artifactDnd';
 import { localDateStamp } from './todaySelectors';
 import { ChronicleCheckmark } from './ChronicleCheckmark';
+import { useProjectLabel } from '../../hooks/useProjectLabel';
 
 interface InPlayListProps {
   tasks: Artifact[];
@@ -31,6 +32,7 @@ export function InPlayList({
   headingId = 'in-play-heading',
   emptyText = 'Nothing in play.',
 }: InPlayListProps) {
+  const projectLabel = useProjectLabel();
   if (tasks.length === 0 && emptyText === null) return null;
   return (
     <section aria-labelledby={headingId}>
@@ -68,7 +70,7 @@ export function InPlayList({
             <button className="chronicle-row-body active:scale-[0.98]" onClick={() => onSelect(task)}>
               <span className="chronicle-row-title">{task.title}</span>
               <span className="chronicle-row-meta">
-                {task.due ? formatDue(task.due) : 'Next'} · {task.project || task.tags?.[0] || 'myOS'}
+                {task.due ? formatDue(task.due) : 'Next'} · {projectLabel(task.project) || task.tags?.[0] || 'myOS'}
               </span>
             </button>
             {isCompleting ? <time className="chronicle-completion-time">{completing.get(task.id)}</time> : null}

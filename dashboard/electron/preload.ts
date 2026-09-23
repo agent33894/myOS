@@ -13,6 +13,14 @@ function invokeIpc<K extends IpcInvokeChannel>(
   return ipcRenderer.invoke(channel, ...args) as Promise<IpcInvokeResult<K>>;
 }
 
+// `myos --capture` can arrive before React subscribes; hold it until then.
+let quickCaptureHandler: (() => void) | null = null;
+let quickCaptureRequested = false;
+ipcRenderer.on('quick-capture:open', () => {
+  if (quickCaptureHandler) quickCaptureHandler();
+  else quickCaptureRequested = true;
+});
+
 const electronAPI = {
   readAllArtifactMetadata: () => invokeIpc('artifacts:read-all-metadata'),
   readArtifact: (filePath: string) => invokeIpc('artifacts:read', filePath),
@@ -44,6 +52,23 @@ const electronAPI = {
     invokeIpc('git:commit-diff', projectPath, commitHash),
   showItemInFolder: (itemPath: string) => invokeIpc('shell:show-in-folder', itemPath),
   openExternalUrl: (url: string) => invokeIpc('shell:open-external-url', url),
+  openArtifactFile: (filePath: string) => invokeIpc('shell:open-artifact-file', filePath),
+  getSystemAccent: () => invokeIpc('system:get-accent'),
+  onSystemAccentChanged: (callback: (data: IpcEventMap['system:accent-changed']) => void) => {
+    const listener = (_event: unknown, data: IpcEventMap['system:accent-changed']) => callback(data);
+    ipcRenderer.on('system:accent-changed', listener);
+    return () => ipcRenderer.removeListener('system:accent-changed', listener);
+  },
+  onOpenQuickCapture: (callback: () => void) => {
+    quickCaptureHandler = callback;
+    if (quickCaptureRequested) {
+      quickCaptureRequested = false;
+      callback();
+    }
+    return () => {
+      if (quickCaptureHandler === callback) quickCaptureHandler = null;
+    };
+  },
   showNotification: (options: { title: string; body: string }) =>
     invokeIpc('notifications:show', options),
   setVaultPath: (path: string) => invokeIpc('vault:set-path', path),

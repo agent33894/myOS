@@ -1,10 +1,9 @@
-export type EditorView = 'split' | 'preview' | 'source';
 export type ThemeMode = 'system' | 'light' | 'dark';
 
 export interface StoredSettings {
   themeMode: ThemeMode;
   showCompletedTasks: boolean;
-  defaultEditorView: EditorView;
+  followSystemAccent: boolean;
   enableAutoSave: boolean;
   hasCompletedOnboarding: boolean;
 }
@@ -13,7 +12,7 @@ const STORAGE_KEY = 'myos-settings';
 const DEFAULT_SETTINGS: StoredSettings = {
   themeMode: 'system',
   showCompletedTasks: false,
-  defaultEditorView: 'split',
+  followSystemAccent: true,
   enableAutoSave: true,
   hasCompletedOnboarding: false,
 };
@@ -38,9 +37,9 @@ export function normalizeStoredSettings(value: unknown): StoredSettings {
     showCompletedTasks: typeof parsed.showCompletedTasks === 'boolean'
       ? parsed.showCompletedTasks
       : defaults.showCompletedTasks,
-    defaultEditorView: isOneOf(parsed.defaultEditorView, ['split', 'preview', 'source'])
-      ? parsed.defaultEditorView
-      : defaults.defaultEditorView,
+    followSystemAccent: typeof parsed.followSystemAccent === 'boolean'
+      ? parsed.followSystemAccent
+      : defaults.followSystemAccent,
     enableAutoSave: typeof parsed.enableAutoSave === 'boolean'
       ? parsed.enableAutoSave
       : defaults.enableAutoSave,
@@ -74,7 +73,7 @@ export function getStorableSettings(state: StoredSettings): StoredSettings {
   return {
     themeMode: state.themeMode,
     showCompletedTasks: state.showCompletedTasks,
-    defaultEditorView: state.defaultEditorView,
+    followSystemAccent: state.followSystemAccent,
     enableAutoSave: state.enableAutoSave,
     hasCompletedOnboarding: state.hasCompletedOnboarding,
   };

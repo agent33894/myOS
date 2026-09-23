@@ -1,5 +1,5 @@
-import { spawn } from 'node:child_process';
-import { mkdtemp, mkdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
+import { execFile, spawn } from 'node:child_process';
+import { lstat, mkdtemp, mkdir, readFile, readlink, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -166,7 +166,39 @@ try {
   if (configJson.vaultPath !== workspacePath) {
     throw new Error('Selected workspace was not persisted in isolated config.');
   }
-  console.log(`Packaged Linux smoke passed: onboarding, default workspace, nested watcher, preload IPC create/read/delete (${roundTrip.path}).`);
+
+  // Terminal commands run headless next to the open window. ELECTRON_RUN_AS_NODE
+  // is set on purpose: the packaged fuse must ignore it.
+  const runCli = (args) => new Promise((done, fail) => {
+    execFile(executable, ['--no-sandbox', ...args], { env: { ...environment, ELECTRON_RUN_AS_NODE: '1' }, timeout: 30_000 },
+      (error, stdout, stderr) => (error ? fail(new Error(`myos ${args.join(' ')} failed: ${stderr || error.message}`)) : done(stdout)));
+  });
+  const captured = await runCli(['capture', 'Linux smoke capture #smoke']);
+  const capturedPath = captured.match(/Captured to Unfiled: (inbox\/\S+\.md)/)?.[1];
+  if (!capturedPath) throw new Error(`Unexpected capture output: ${captured}`);
+  await until('CLI capture reaches the running window', async () => {
+    const events = await evaluate('window.__myosSmokeEvents');
+    return events.some((event) => event.path === capturedPath);
+  });
+  const found = await runCli(['search', 'smoke', 'capture']);
+  if (!found.includes('Linux smoke capture')) throw new Error(`myos search missed the capture: ${found}`);
+  const today = await runCli(['today']);
+  if (!/^In play \(\d+\)$/m.test(today) || !/^Next \(\d+\)$/m.test(today)) throw new Error(`Unexpected myos today output: ${today}`);
+
+  await runCli(['--install-desktop-entry']);
+  const desktopEntry = await readFile(join(data, 'applications', 'myos.desktop'), 'utf8');
+  for (const line of ['StartupWMClass=myos', 'Icon=myos', 'MimeType=x-scheme-handler/myos;', `Exec="${executable}" %U`]) {
+    if (!desktopEntry.includes(line)) throw new Error(`Desktop entry is missing ${line}:\n${desktopEntry}`);
+  }
+  await stat(join(data, 'icons', 'hicolor', '512x512', 'apps', 'myos.png'));
+  // A native package already provides /usr/bin/myos, so the installer skips the link.
+  const hasSystemCommand = await stat('/usr/bin/myos').then(() => true, () => false);
+  const commandLink = join(home, '.local', 'bin', 'myos');
+  if (!hasSystemCommand && (!(await lstat(commandLink)).isSymbolicLink() || (await readlink(commandLink)) !== executable)) {
+    throw new Error('myos was not linked into ~/.local/bin');
+  }
+
+  console.log(`Packaged Linux smoke passed: onboarding, default workspace, nested watcher, preload IPC create/read/delete (${roundTrip.path}), terminal capture/search/today, desktop entry.`);
 } finally {
   socket?.close();
   child.kill('SIGTERM');

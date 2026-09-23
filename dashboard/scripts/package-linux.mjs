@@ -13,7 +13,9 @@ if (requestedArch !== 'x64') {
 }
 
 const builder = join(dashboardRoot, 'node_modules', '.bin', 'electron-builder');
-execFileSync(builder, ['--linux', 'AppImage', 'tar.gz', `--${requestedArch}`], {
+// Ignore ELECTRON_RUN_AS_NODE so `myos` keeps working when launched from a
+// terminal inside another Electron app (editors often export it).
+execFileSync(builder, ['--linux', `--${requestedArch}`, '-c.electronFuses.runAsNode=false'], {
   cwd: dashboardRoot,
   stdio: 'inherit',
 });
