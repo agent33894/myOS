@@ -6,6 +6,7 @@ import { useArtifactsStore } from '../../store/artifacts';
 import { useCommandPaletteActions } from '../../store/selectors';
 import { toArtifactNavigationUrl } from '../../features/artifact-route/routeContract';
 import { cn } from '../../lib/utils';
+import { primaryModifier } from '../../utils/platform';
 
 type PaletteResult = {
   id: string;
@@ -52,7 +53,7 @@ export default function CommandPalette() {
         group: 'Commands' as const,
         type: 'Command',
         title: route.label,
-        subtitle: route.shortcut ? `⌘${route.shortcut}` : route.path,
+        subtitle: route.shortcut ? `${primaryModifier}${route.shortcut}` : route.path,
         run: () => navigate(route.path),
       }));
     const matches = (needle ? artifacts.filter((_, index) => haystacks[index].includes(needle)) : [])

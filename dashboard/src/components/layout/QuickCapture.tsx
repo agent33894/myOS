@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { getDefaultStatusForType } from '@shared/spec';
 import { CommandSurface } from '../ui/CommandSurface';
+import { primaryModifier } from '../../utils/platform';
 import { TypeFilingSelect, DomainFilingSelect, PriorityFilingSelect } from '../capture/FilingSelect';
 import { useQuickCaptureActions, useCrudActions } from '../../store/selectors';
 import { useUIStore, type QuickCaptureDraft } from '../../store/ui';
@@ -141,7 +142,7 @@ export default function QuickCapture() {
           onClick={save}
           disabled={!draft.text.trim()}
         >
-          ⌘↵ Capture
+          {primaryModifier}↵ Capture
         </button>
       </div>
     </CommandSurface>

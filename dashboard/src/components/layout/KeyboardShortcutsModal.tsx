@@ -3,6 +3,7 @@ import { sidebarRoutes } from '../../app/routes';
 import { useIsKeyboardShortcutsOpen, useKeyboardShortcutsActions } from '../../store/selectors';
 import { Button } from '../ui/button';
 import { CommandSurface } from '../ui/CommandSurface';
+import { primaryModifierKey } from '../../utils/platform';
 
 interface ShortcutGroup {
   title: string;
@@ -14,12 +15,12 @@ const shortcutGroups: ShortcutGroup[] = [
     title: 'Global',
     shortcuts: [
       { keys: ['?'], description: 'Show keyboard shortcuts' },
-      { keys: ['⌘', 'N'], description: 'Quick capture' },
-      { keys: ['⌘', '⇧', 'N'], description: 'New artifact workspace' },
-      { keys: ['⌘', 'F'], description: 'Search' },
-      { keys: ['⌘', 'K'], description: 'Command palette' },
-      { keys: ['⌘', 'Z'], description: 'Undo' },
-      { keys: ['⌘', '\\'], description: 'Collapse sidebar' },
+      { keys: [primaryModifierKey, 'N'], description: 'Quick capture' },
+      { keys: [primaryModifierKey, '⇧', 'N'], description: 'New artifact workspace' },
+      { keys: [primaryModifierKey, 'F'], description: 'Search' },
+      { keys: [primaryModifierKey, 'K'], description: 'Command palette' },
+      { keys: [primaryModifierKey, 'Z'], description: 'Undo' },
+      { keys: [primaryModifierKey, '\\'], description: 'Collapse sidebar' },
       { keys: ['Esc'], description: 'Close overlay' },
     ],
   },
@@ -33,10 +34,10 @@ const shortcutGroups: ShortcutGroup[] = [
   },
   {
     title: 'Navigation',
-    // Derived from the sidebar order — the same source the ⌘1-9 handler uses.
+    // Derived from the sidebar order, like the primary-modifier 1-9 handler.
     shortcuts: sidebarRoutes
       .filter((route) => route.shortcut)
-      .map((route) => ({ keys: ['⌘', route.shortcut!], description: route.label })),
+      .map((route) => ({ keys: [primaryModifierKey, route.shortcut!], description: route.label })),
   },
   {
     title: 'Lists',
@@ -44,7 +45,7 @@ const shortcutGroups: ShortcutGroup[] = [
       { keys: ['↓', '/', 'j'], description: 'Next row' },
       { keys: ['↑', '/', 'k'], description: 'Previous row' },
       { keys: ['Esc'], description: 'Clear selection' },
-      { keys: ['⌘', '↵'], description: 'Complete selected task' },
+      { keys: [primaryModifierKey, '↵'], description: 'Complete selected task' },
     ],
   },
 ];
@@ -88,7 +89,6 @@ export default function KeyboardShortcutsModal() {
             ))}
           </section>
         ))}
-        <p className="chronicle-empty-state">On Windows and Linux, use Ctrl instead of ⌘.</p>
       </div>
     </CommandSurface>
   );

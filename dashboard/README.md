@@ -12,6 +12,7 @@ npm run lint
 npm test
 npm run build
 npm run build:installer
+npm run build:linux
 ```
 
 Some developer shells set `ELECTRON_RUN_AS_NODE=1`. If no app window opens, run commands as `env -u ELECTRON_RUN_AS_NODE npm run electron:dev`.
@@ -26,4 +27,4 @@ Some developer shells set `ELECTRON_RUN_AS_NODE=1`. If no app window opens, run 
 - `src/features/`: Today, Library, Projects, Settings, and artifact detail behavior
 - `src/styles/`: Chronicle Mac v3 tokens and component treatment
 
-The active workspace is selected on first launch and stored in `~/Library/Application Support/myOS/myos-config.json`. No workspace content is copied into Application Support.
+The active workspace is selected on first launch and stored in Electron's per-user application data directory (`~/Library/Application Support/myOS` on macOS, `~/.config/myOS` on Linux). No workspace content is copied there.

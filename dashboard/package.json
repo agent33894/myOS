@@ -1,7 +1,7 @@
 {
   "name": "myos-markdown",
-  "version": "1.0.0",
-  "description": "A local-first Markdown editor and productivity system for macOS",
+  "version": "1.1.0",
+  "description": "A local-first Markdown editor and productivity system for macOS and Linux",
   "main": "dist-electron/main.js",
   "scripts": {
     "dev": "vite",
@@ -15,6 +15,7 @@
     "migrate:artifact-schema": "vite-node scripts/migrate-artifact-schema-debt.ts",
     "build": "npm run clean && vite build && node scripts/package-macos.mjs --arch=arm64",
     "build:installer": "npm run clean && vite build && node scripts/package-macos.mjs --arch=arm64 --installer",
+    "build:linux": "npm run clean && vite build && node scripts/package-linux.mjs --arch=x64",
     "preview": "vite preview",
     "electron:dev": "vite",
     "electron:build": "npm run build",

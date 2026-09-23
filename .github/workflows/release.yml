@@ -11,10 +11,19 @@ permissions:
 
 jobs:
   package:
-    runs-on: macos-15
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        arch: [arm64, x64]
+        include:
+          - os: macos-15
+            arch: arm64
+            platform: macos
+          - os: macos-15
+            arch: x64
+            platform: macos
+          - os: ubuntu-24.04
+            arch: x64
+            platform: linux
     defaults:
       run:
         working-directory: dashboard
@@ -29,13 +38,22 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npx vite build
-      - run: node scripts/package-macos.mjs --arch=${{ matrix.arch }} --installer
+      - if: matrix.platform == 'macos'
+        run: node scripts/package-macos.mjs --arch=${{ matrix.arch }} --installer
+      - if: matrix.platform == 'linux'
+        run: node scripts/package-linux.mjs --arch=${{ matrix.arch }}
+      - if: matrix.platform == 'linux'
+        run: command -v xvfb-run || (sudo apt-get update && sudo apt-get install -y xvfb)
+      - if: matrix.platform == 'linux'
+        run: xvfb-run -a node scripts/smoke-linux.mjs
       - uses: actions/upload-artifact@v4
         with:
-          name: myOS-${{ matrix.arch }}
+          name: myOS-${{ matrix.platform }}-${{ matrix.arch }}
           path: |
             dashboard/release/*.dmg
             dashboard/release/*.zip
+            dashboard/release/*.AppImage
+            dashboard/release/*.tar.gz
           if-no-files-found: error
 
   publish:

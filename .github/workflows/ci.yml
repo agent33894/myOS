@@ -9,7 +9,10 @@ permissions:
 
 jobs:
   validate:
-    runs-on: macos-15
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-15, ubuntu-24.04]
     defaults:
       run:
         working-directory: dashboard
@@ -28,3 +31,17 @@ jobs:
       - run: npm run audit:ipc
       - run: npm run design-system:check
       - run: npm run audit:design-tokens
+      - if: runner.os == 'Linux'
+        run: npm run build:linux
+      - if: runner.os == 'Linux'
+        run: command -v xvfb-run || (sudo apt-get update && sudo apt-get install -y xvfb)
+      - if: runner.os == 'Linux'
+        run: xvfb-run -a node scripts/smoke-linux.mjs
+      - if: runner.os == 'Linux'
+        uses: actions/upload-artifact@v4
+        with:
+          name: myOS-linux-x64-${{ github.sha }}
+          path: |
+            dashboard/release/*.AppImage
+            dashboard/release/*.tar.gz
+          if-no-files-found: error

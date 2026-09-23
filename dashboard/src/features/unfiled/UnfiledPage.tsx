@@ -17,6 +17,7 @@ import { localDateStamp } from '../today/todaySelectors';
 import { PaneDivider } from '../../components/ui/PaneDivider';
 import { cn } from '../../lib/utils';
 import { setArtifactDragData } from '../../lib/artifactDnd';
+import { primaryModifier } from '../../utils/platform';
 
 const LIST_WIDTH_KEY = 'chronicle-unfiled-list-width';
 const COMPLETION_HOLD_MS = 450;
@@ -175,7 +176,7 @@ export default function UnfiledPage() {
             ) : null}
           </div>
           {inboxEntries.length === 0 ? (
-            <p className="chronicle-empty-row">Nothing waiting. Capture with ⌘N and it lands here.</p>
+            <p className="chronicle-empty-row">Nothing waiting. Capture with {primaryModifier}N and it lands here.</p>
           ) : null}
           {displayEntries.map((entry) => {
             const id = entryId(entry);

@@ -8,6 +8,7 @@ import { useUndoRedoStore } from '../../store/undoRedo';
 import { useUndoableArtifact } from '../../hooks/useUndoableArtifact';
 import Modal from '../ui/Modal';
 import { Button } from '../ui/button';
+import { primaryModifier } from '../../utils/platform';
 
 interface ArtifactDeleteMenuProps {
   artifact: Artifact;
@@ -96,7 +97,7 @@ export function ArtifactDeleteMenu({
         }
       >
         <p className="text-sm text-muted-foreground">
-          This removes the file from your workspace. You can restore it immediately with Undo or ⌘Z.
+          This removes the file from your workspace. You can restore it immediately with Undo or {primaryModifier}Z.
         </p>
       </Modal>
     </>

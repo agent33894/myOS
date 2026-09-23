@@ -96,7 +96,7 @@ function initializeWorkspace(targetPath: string): string {
     const today = new Date().toISOString().slice(0, 10);
     writeFileSync(
       welcomePath,
-      `---\nid: welcome-to-myos\ntitle: Welcome to myOS\ndomain: personal\ntype: memo\ntags: [getting-started, myos]\ncreated: ${today}\nupdated: ${today}\nstatus: active\nrelated: []\n---\n\n# Welcome to myOS\n\nmyOS keeps your work in ordinary Markdown files on this Mac.\n\n## Start here\n\n- Press Command-N to capture a thought or task.\n- Use Today for active work and Library for everything else.\n- Create project notes to group related tasks and context.\n- Change the workspace folder at any time in Settings.\n\nYou own this folder. Back it up, sync it with a provider you trust, or put it in Git. myOS itself never uploads it.\n`,
+      `---\nid: welcome-to-myos\ntitle: Welcome to myOS\ndomain: personal\ntype: memo\ntags: [getting-started, myos]\ncreated: ${today}\nupdated: ${today}\nstatus: active\nrelated: []\n---\n\n# Welcome to myOS\n\nmyOS keeps your work in ordinary Markdown files on this computer.\n\n## Start here\n\n- Press ${process.platform === 'darwin' ? 'Command' : 'Ctrl'}-N to capture a thought or task.\n- Use Today for active work and Library for everything else.\n- Create project notes to group related tasks and context.\n- Change the workspace folder at any time in Settings.\n\nYou own this folder. Back it up, sync it with a provider you trust, or put it in Git. myOS itself never uploads it.\n`,
       'utf8',
     );
   }

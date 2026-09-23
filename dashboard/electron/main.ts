@@ -34,8 +34,8 @@ protocol.registerSchemesAsPrivileged([
 
 const APP_PROTOCOL = 'myos';
 
-// Keep Chromium preferences, cache, and the small myOS config together under
-// ~/Library/Application Support/myOS rather than npm's package-name default.
+// Keep Chromium preferences, cache, and config together in the platform's
+// application data directory rather than npm's package-name default.
 app.setPath('userData', getStableAppDataPath());
 
 // Prevent multiple instances of the app
@@ -161,7 +161,7 @@ const createWindow = () => {
       allowRunningInsecureContent: false,
       webviewTag: false,
     },
-    titleBarStyle: 'hiddenInset',
+    ...(process.platform === 'darwin' ? { titleBarStyle: 'hiddenInset' as const } : {}),
     backgroundColor: windowBackgroundColor(),
   });
 

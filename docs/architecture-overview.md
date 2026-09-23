@@ -33,7 +33,7 @@ Electron file handlers + watcher
 Zustand stores and React views
 ```
 
-On first launch, the user selects any folder or creates `Documents/myOS`. The chosen absolute path is stored in macOS Application Support. Artifact content and attachments remain in the selected folder.
+On first launch, the user selects any folder or creates `Documents/myOS`. The chosen absolute path is stored in Electron's per-user application data directory (macOS Application Support or Linux `~/.config/myOS`). Artifact content and attachments remain in the selected folder.
 
 Plain Markdown is accepted. When YAML frontmatter matches the artifact spec, myOS also exposes task status, dates, projects, priorities, tags, and canonical create locations. Unknown frontmatter is preserved during edits.
 

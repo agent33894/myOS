@@ -1,6 +1,6 @@
 # myOS
 
-myOS is a local-first Markdown editor and project workspace for macOS. It turns an ordinary folder of `.md` files into a focused place for daily planning, project context, notes, and lightweight task management.
+myOS is a local-first Markdown editor and project workspace for macOS and Linux (including Omarchy). It turns an ordinary folder of `.md` files into a focused place for daily planning, project context, notes, and lightweight task management.
 
 No account is required. myOS has no hosted sync service, telemetry, advertising, or bundled model provider. Your files stay in the folder you choose and remain usable in any text editor.
 
@@ -21,7 +21,7 @@ No account is required. myOS has no hosted sync service, telemetry, advertising,
 
 ## Install
 
-Download the latest `.dmg` or `.zip` from [GitHub Releases](https://github.com/agent33894/myOS/releases), then drag **myOS** to Applications.
+Download the latest release from [GitHub Releases](https://github.com/agent33894/myOS/releases). On macOS, use the `.dmg` or `.zip` and drag **myOS** to Applications. On Linux x64, download the `.AppImage`, make it executable, and launch it. A `.tar.gz` archive is also available. See [building and updating](docs/building-and-updating.md) for Omarchy desktop and `myos:` link integration.
 
 The first launch asks you to choose a Markdown folder. Selecting a folder never uploads or relocates it. If you are starting fresh, myOS can create a small example workspace for you.
 
@@ -49,7 +49,7 @@ The canonical artifact rules live in [`dashboard/shared/spec/`](dashboard/shared
 
 ## Development
 
-Requirements: macOS, Node.js 22+, and npm.
+Requirements: macOS or Linux x64, Node.js 22+, and npm.
 
 ```bash
 cd dashboard
@@ -76,6 +76,12 @@ Build an Apple Silicon installer:
 npm run build:installer
 ```
 
+On Linux x64, build an AppImage and tar.gz:
+
+```bash
+npm run build:linux
+```
+
 Artifacts are written to `dashboard/release/`. See [`docs/building-and-updating.md`](docs/building-and-updating.md) for architecture builds and local installation.
 
 ## Project structure
@@ -89,7 +95,7 @@ myOS/
 
 ## Privacy and integrations
 
-myOS reads and writes only the workspace folder you select, plus small local preferences in macOS Application Support. Network access is not required for core operation. Cloud synchronization and AI/model integrations are deliberately outside this repository; add your own local or organizational integration in a private fork if needed.
+myOS reads and writes only the workspace folder you select, plus small local preferences in the operating system's application data directory. Network access is not required for core operation. Cloud synchronization and AI/model integrations are deliberately outside this repository; add your own local or organizational integration in a private fork if needed.
 
 ## License
 

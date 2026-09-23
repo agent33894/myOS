@@ -4,7 +4,7 @@ Run all commands in this directory.
 
 ## Product contract
 
-- macOS desktop only
+- macOS and Linux desktop
 - local Markdown files remain portable and user-owned
 - no required account, remote sync, telemetry, or bundled model provider
 - arbitrary Markdown works; typed frontmatter unlocks richer task/project views

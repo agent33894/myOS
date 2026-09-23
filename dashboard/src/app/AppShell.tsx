@@ -13,6 +13,7 @@ import { useNotificationGenerator } from '../hooks/useNotificationGenerator';
 import { useModalStates, useCommandPaletteActions, useQuickCaptureActions } from '../store/selectors';
 import { useUIStore } from '../store/ui';
 import { getRoute } from './routes';
+import { primaryModifier } from '../utils/platform';
 
 const SIDEBAR_WIDTH_KEY = 'chronicle-sidebar-width';
 const SIDEBAR_COLLAPSED_KEY = 'chronicle-sidebar-collapsed';
@@ -35,10 +36,10 @@ export default function AppShell() {
     localStorage.setItem(SIDEBAR_COLLAPSED_KEY, sidebarCollapsed ? '1' : '0');
   }, [sidebarCollapsed]);
 
-  // ⌘\ collapses the sidebar to the icon rail the narrow window already uses.
+  // Collapse the sidebar to the icon rail the narrow window already uses.
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === '\\' && event.metaKey && !event.altKey && !event.ctrlKey) {
+      if (event.key === '\\' && (event.metaKey || event.ctrlKey) && !event.altKey) {
         event.preventDefault();
         setSidebarCollapsed((prev) => !prev);
       }
@@ -85,7 +86,7 @@ export default function AppShell() {
         <header className="chronicle-toolbar window-drag-region">
           <strong>{route?.label ?? 'Not found'}</strong>
           <div className="chronicle-toolbar-actions no-drag">
-            <button className="chronicle-search-button active:scale-[0.99]" onClick={openCommandPalette}><Search className="h-4 w-4" /> Search or command… <kbd>⌘K</kbd></button>
+            <button className="chronicle-search-button active:scale-[0.99]" onClick={openCommandPalette}><Search className="h-4 w-4" /> Search or command… <kbd>{primaryModifier}K</kbd></button>
             <button className="chronicle-capture-button active:scale-[0.96]" onClick={openQuickCapture} aria-label="Quick capture"><Feather className="h-4 w-4" /></button>
           </div>
         </header>

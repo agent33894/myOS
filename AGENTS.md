@@ -1,6 +1,6 @@
 # myOS contributor instructions
 
-myOS is a macOS-only Electron application for managing local Markdown files. It has no hosted sync layer, account system, telemetry, or built-in model provider.
+myOS is a macOS and Linux Electron application for managing local Markdown files. It has no hosted sync layer, account system, telemetry, or built-in model provider.
 
 ## Working rules
 

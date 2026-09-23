@@ -10,6 +10,7 @@ import { cn } from '../../lib/utils';
 import { SidebarProjects } from './sidebar/SidebarProjects';
 import { SidebarMasthead } from './sidebar/SidebarMasthead';
 import { SidebarInPlay } from './sidebar/SidebarInPlay';
+import { isMac, primaryModifier } from '../../utils/platform';
 
 interface SidebarProps {
   collapsed: boolean;
@@ -49,7 +50,7 @@ export function Sidebar({ collapsed, onToggleCollapsed }: SidebarProps) {
 
   return (
     <aside className="chronicle-sidebar">
-      <div className="chronicle-traffic-spacer window-drag-region" aria-hidden="true" />
+      {isMac ? <div className="chronicle-traffic-spacer window-drag-region" aria-hidden="true" /> : null}
       <SidebarMasthead />
       <div className="chronicle-sidebar-scroll custom-scrollbar">
         <nav aria-label="Primary" className="chronicle-nav-group">
@@ -85,19 +86,19 @@ export function Sidebar({ collapsed, onToggleCollapsed }: SidebarProps) {
         <button
           onClick={openQuickCapture}
           className="chronicle-capture-plate active:scale-[0.98]"
-          title="Capture — ⌘N"
+          title={`Capture — ${primaryModifier}N`}
         >
           <Feather className="h-4 w-4" />
           <span className="chronicle-capture-label">Capture</span>
-          <span className="chronicle-capture-kbd">⌘N</span>
+          <span className="chronicle-capture-kbd">{primaryModifier}N</span>
         </button>
         <div className="chronicle-system-line">
           <button
             onClick={openCommandPalette}
             className="chronicle-sys-btn active:scale-[0.96]"
-            title="Command — ⌘K"
+            title={`Command — ${primaryModifier}K`}
           >
-            <span>⌘K</span>
+            <span>{primaryModifier}K</span>
             <span className="chronicle-sys-label">Command</span>
           </button>
           <span className="chronicle-sys-spacer" aria-hidden="true" />
@@ -113,7 +114,7 @@ export function Sidebar({ collapsed, onToggleCollapsed }: SidebarProps) {
             className="chronicle-sys-btn is-icon"
             aria-pressed={collapsed}
             aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            title="Sidebar — ⌘\"
+            title={`Sidebar — ${primaryModifier}\\`}
           >
             {collapsed ? <PanelLeftOpen /> : <PanelLeftClose />}
           </button>
