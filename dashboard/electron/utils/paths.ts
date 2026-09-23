@@ -105,7 +105,13 @@ function initializeWorkspace(targetPath: string): string {
 }
 
 export function createDefaultWorkspace(): string {
-  const defaultPath = join(app.getPath('documents'), 'myOS');
+  const documentsPath = app.getPath('documents');
+  // Electron falls back to HOME when XDG_DOCUMENTS_DIR does not exist yet.
+  // Keep the onboarding promise of creating the workspace in Documents.
+  const workspaceParent = process.platform === 'linux' && documentsPath === app.getPath('home')
+    ? join(documentsPath, 'Documents')
+    : documentsPath;
+  const defaultPath = join(workspaceParent, 'myOS');
   const initializedPath = initializeWorkspace(defaultPath);
   if (!setVaultPath(initializedPath)) {
     throw new Error('Unable to use the default myOS workspace.');
