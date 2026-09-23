@@ -13,7 +13,7 @@ import { useNotificationGenerator } from '../hooks/useNotificationGenerator';
 import { useModalStates, useCommandPaletteActions, useQuickCaptureActions } from '../store/selectors';
 import { useUIStore } from '../store/ui';
 import { getRoute } from './routes';
-import { primaryModifier } from '../utils/platform';
+import { hasPrimaryModifier, primaryModifier } from '../utils/platform';
 
 const SIDEBAR_WIDTH_KEY = 'chronicle-sidebar-width';
 const SIDEBAR_COLLAPSED_KEY = 'chronicle-sidebar-collapsed';
@@ -51,7 +51,7 @@ export default function AppShell() {
   // Collapse the sidebar to the icon rail the narrow window already uses.
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === '\\' && (event.metaKey || event.ctrlKey) && !event.altKey) {
+      if (event.key === '\\' && hasPrimaryModifier(event) && !event.altKey) {
         event.preventDefault();
         setSidebarCollapsed((prev) => !prev);
       }

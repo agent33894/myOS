@@ -3,7 +3,7 @@ import type { ProjectWithStats } from '../../hooks/useProjects';
 export interface ProjectGroups {
   active: ProjectWithStats[];
   dormant: ProjectWithStats[];
-  archived: ProjectWithStats[];
+  closed: ProjectWithStats[];
 }
 
 export type ProjectSort = 'at-risk' | 'activity' | 'progress' | 'title';
@@ -35,7 +35,7 @@ const COMPARATORS: Record<ProjectSort, (a: ProjectWithStats, b: ProjectWithStats
   title: (a, b) => a.title.localeCompare(b.title),
 };
 
-/** Active, dormant, and closed projects; the sort orders within each group. */
+/** Active, dormant, and closed (done, cancelled, archived) projects; the sort orders within each group. */
 export function groupProjects(
   projects: ProjectWithStats[],
   sort: ProjectSort = 'at-risk',
@@ -45,6 +45,6 @@ export function groupProjects(
   return {
     active: open.filter((p) => p.health !== 'dormant').sort(compare),
     dormant: open.filter((p) => p.health === 'dormant').sort(compare),
-    archived: projects.filter((p) => p.isClosed).sort(compare),
+    closed: projects.filter((p) => p.isClosed).sort(compare),
   };
 }

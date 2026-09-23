@@ -7,6 +7,7 @@ import { ProjectIndex } from './ProjectIndex';
 import { ProjectHome } from './ProjectHome';
 
 const SORT_KEY = 'chronicle-projects-sort';
+const CLOSED_HIDDEN_KEY = 'chronicle-projects-closed-hidden';
 
 const NO_ITEMS: ProjectWithStats[] = [];
 const noop = () => {};
@@ -29,7 +30,14 @@ export default function ProjectsPage() {
   }, [sort]);
 
   const groups = useMemo(() => groupProjects(allProjects, sort), [allProjects, sort]);
-  const [showArchive, setShowArchive] = useState(false);
+  // Closed projects stay on the roster by default so their home is always one
+  // click away; folding the section is a remembered preference.
+  const [showClosed, setShowClosed] = useState(
+    () => localStorage.getItem(CLOSED_HIDDEN_KEY) !== '1',
+  );
+  useEffect(() => {
+    localStorage.setItem(CLOSED_HIDDEN_KEY, showClosed ? '0' : '1');
+  }, [showClosed]);
 
   // `?create=1` (command palette) focuses the index create row, then the param is stripped.
   const [createFocusToken, setCreateFocusToken] = useState(0);
@@ -101,8 +109,8 @@ export default function ProjectsPage() {
         groups={groups}
         sort={sort}
         onSortChange={setSort}
-        showArchive={showArchive}
-        onToggleArchive={() => setShowArchive((prev) => !prev)}
+        showClosed={showClosed}
+        onToggleClosed={() => setShowClosed((prev) => !prev)}
         onOpen={openProject}
         createFocusToken={createFocusToken}
       />

@@ -5,6 +5,7 @@ import { useCommandPaletteActions, useModalToggleActions } from '../store/select
 import { useUIStore } from '../store/ui';
 import { useUndoRedoStore } from '../store/undoRedo';
 import { sidebarRoutes } from '../app/routes';
+import { hasPrimaryModifier } from '../utils/platform';
 
 export function useKeyboardShortcuts() {
   const navigate = useNavigate();
@@ -16,28 +17,28 @@ export function useKeyboardShortcuts() {
     const handleKeyDown = (e: KeyboardEvent) => {
       // New Artifact: Cmd+Shift+N — Quick Capture, same as Cmd+N. Creation
       // happens in the overlay; nothing navigates to the hidden workspace.
-      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'n') {
+      if (hasPrimaryModifier(e) && e.shiftKey && e.key.toLowerCase() === 'n') {
         e.preventDefault();
         toggleQuickCapture();
         return;
       }
 
       // Quick Capture: Cmd+N (Mac) or Ctrl+N (Windows)
-      if ((e.metaKey || e.ctrlKey) && !e.shiftKey && e.key.toLowerCase() === 'n') {
+      if (hasPrimaryModifier(e) && !e.shiftKey && e.key.toLowerCase() === 'n') {
         e.preventDefault();
         toggleQuickCapture();
         return;
       }
 
       // Search: Cmd+F (Mac) or Ctrl+F (Windows)
-      if ((e.metaKey || e.ctrlKey) && !e.shiftKey && e.key.toLowerCase() === 'f') {
+      if (hasPrimaryModifier(e) && !e.shiftKey && e.key.toLowerCase() === 'f') {
         e.preventDefault();
         openCommandPalette();
         return;
       }
 
       // Command Palette: Cmd+K (Mac) or Ctrl+K (Windows)
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+      if (hasPrimaryModifier(e) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         toggleCommandPalette();
         return;
@@ -46,7 +47,7 @@ export function useKeyboardShortcuts() {
       // Cmd/Ctrl + 1-9: Navigate to pages (sequentially based on top nav order).
       // Suppressed while an overlay is open — navigating underneath a capture
       // or palette reads as the app losing your place.
-      if ((e.metaKey || e.ctrlKey) && e.key >= '1' && e.key <= '9') {
+      if (hasPrimaryModifier(e) && e.key >= '1' && e.key <= '9') {
         const ui = useUIStore.getState();
         if (ui.isCommandPaletteOpen || ui.isQuickCaptureOpen || ui.isKeyboardShortcutsOpen) return;
         // Component-local dialogs (Inbox processor, Refine, save/load modals)
@@ -72,7 +73,7 @@ export function useKeyboardShortcuts() {
 
       // Undo: Cmd+Z (Mac) or Ctrl+Z (Windows)
       // Only handle global undo when not in a content editable area (TipTap has its own undo)
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z' && !e.shiftKey) {
+      if (hasPrimaryModifier(e) && e.key.toLowerCase() === 'z' && !e.shiftKey) {
         const target = e.target as HTMLElement;
         const isContentEditable = target.isContentEditable || target.closest('[contenteditable="true"]');
         const isTextArea = target.tagName === 'TEXTAREA';
@@ -93,7 +94,7 @@ export function useKeyboardShortcuts() {
       }
 
       // Redo: Cmd+Shift+Z (Mac) or Ctrl+Shift+Z (Windows)
-      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'z') {
+      if (hasPrimaryModifier(e) && e.shiftKey && e.key.toLowerCase() === 'z') {
         const target = e.target as HTMLElement;
         const isContentEditable = target.isContentEditable || target.closest('[contenteditable="true"]');
         const isTextArea = target.tagName === 'TEXTAREA';

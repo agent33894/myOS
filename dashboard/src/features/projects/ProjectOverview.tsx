@@ -5,6 +5,7 @@ import { shortDate } from './format';
 import { ProjectActivitySection } from './ProjectActivitySection';
 import { ProjectBrief } from './ProjectBrief';
 import { useProjectRename } from './projectRename';
+import { useProjectStatus } from './projectMutations';
 import LinkedFrom from '../living-page/LinkedFrom';
 
 interface ProjectOverviewProps {
@@ -15,10 +16,12 @@ interface ProjectOverviewProps {
 /**
  * The project's own page in the workbench center: an in-place editable title,
  * the dateline, then the brief (a Living Page) and the activity ledger at
- * reading measure. Status, deadline, and vitals live in the inspector.
+ * reading measure. Status, deadline, and vitals live in the inspector; a
+ * closed project says so under its title, with a one-click way back.
  */
 export function ProjectOverview({ project, onOpenItem }: ProjectOverviewProps) {
   const { rename } = useProjectRename();
+  const { setProjectStatus } = useProjectStatus();
   const [draft, setDraft] = useState(project.title);
   // Escape reverts the draft; the guard keeps the following blur from re-committing.
   const revertingRef = useRef(false);
@@ -35,6 +38,15 @@ export function ProjectOverview({ project, onOpenItem }: ProjectOverviewProps) {
     }
     void rename(project, title);
   };
+
+  const closedLabel = project.isClosed
+    ? [
+        String(project.status).replace(/^./, (c) => c.toUpperCase()),
+        shortDate(project.completedDate),
+      ]
+        .filter(Boolean)
+        .join(' ')
+    : null;
 
   const dateline = [
     shortDate(project.created) ? `Created ${shortDate(project.created)}` : null,
@@ -69,7 +81,26 @@ export function ProjectOverview({ project, onOpenItem }: ProjectOverviewProps) {
           }}
         />
       </div>
-      {dateline ? <p className="chronicle-detail-meta">{dateline}</p> : null}
+      {dateline || closedLabel ? (
+        <p className="chronicle-detail-meta">
+          {closedLabel ? (
+            <>
+              <span className="chronicle-closed-state">{closedLabel}</span>
+              {dateline ? ' · ' : null}
+            </>
+          ) : null}
+          {dateline}
+          {closedLabel ? (
+            <button
+              type="button"
+              className="chronicle-heading-action chronicle-reopen-action"
+              onClick={() => setProjectStatus(project.id, 'active')}
+            >
+              Reopen
+            </button>
+          ) : null}
+        </p>
+      ) : null}
       <ProjectBrief project={project} />
       <ProjectActivitySection project={project} onOpen={onOpenItem} />
       <LinkedFrom artifact={project} />

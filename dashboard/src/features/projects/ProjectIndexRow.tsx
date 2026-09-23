@@ -3,11 +3,11 @@ import type { ProjectWithStats } from '../../hooks/useProjects';
 import { cn } from '../../lib/utils';
 import { shortDate } from './format';
 
-export type ProjectIndexGroup = 'active' | 'dormant' | 'archived';
+export type ProjectIndexGroup = 'active' | 'dormant' | 'closed';
 
 /** The section heading already names the group — rows only garnish what differs. */
 function stateLabel(project: ProjectWithStats, group: ProjectIndexGroup): string | null {
-  if (group === 'archived') {
+  if (group === 'closed') {
     return String(project.status ?? 'archived').replace(/^./, (c) => c.toUpperCase());
   }
   if (group === 'active' && project.health === 'at-risk') return 'At-risk';
@@ -21,18 +21,18 @@ interface ProjectIndexRowProps {
   onOpen: (projectId: string) => void;
 }
 
-/** One roster line on the index: cover chip, title, state, and the ledger. */
+/** One roster line on the index: project dot, title, state, and the ledger. */
 export function ProjectIndexRow({ project, group, isHighlighted, onOpen }: ProjectIndexRowProps) {
   const ink = projectSwatchFor(project.title, project.swatch).hex;
   const progress = project.todoProgress;
-  const activity = shortDate(project.lastActivity);
   const label = stateLabel(project, group);
-  const meta = [
-    label,
-    activity ? `Last activity ${activity}` : null,
-  ]
-    .filter(Boolean)
-    .join(' · ');
+  // Closed projects date from when they closed; open ones from their last touch.
+  const completed = group === 'closed' ? shortDate(project.completedDate) : null;
+  const activity = completed
+    ? `Completed ${completed}`
+    : shortDate(project.lastActivity)
+      ? `Last activity ${shortDate(project.lastActivity)}`
+      : null;
 
   return (
     <div
@@ -41,23 +41,22 @@ export function ProjectIndexRow({ project, group, isHighlighted, onOpen }: Proje
         'chronicle-task-row chronicle-project-row',
         isHighlighted && 'is-selected',
         group === 'dormant' && 'is-dormant',
+        group === 'closed' && 'is-closed',
       )}
+      style={{ '--project-ink': ink } as React.CSSProperties}
     >
       <span className="chronicle-capture-glyph" aria-hidden="true">
-        <span
-          className={cn('chronicle-project-cover', isHighlighted && 'is-focused')}
-          style={{ '--project-ink': ink } as React.CSSProperties}
-        />
+        <span className="chronicle-project-mark" />
       </span>
       <button className="chronicle-row-body active:scale-[0.98]" onClick={() => onOpen(project.id)}>
         <span className="chronicle-row-title">{project.title}</span>
-        {meta ? (
+        {label || activity ? (
           <span className="chronicle-row-meta">
             {label ? (
               <span className={label === 'At-risk' ? 'is-risk' : undefined}>{label}</span>
             ) : null}
             {label && activity ? ' · ' : null}
-            {activity ? `Last activity ${activity}` : null}
+            {activity}
           </span>
         ) : null}
       </button>

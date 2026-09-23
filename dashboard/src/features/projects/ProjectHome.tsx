@@ -4,7 +4,7 @@ import { projectSwatchFor } from '@shared/design-system/tokens';
 import type { ProjectWithStats } from '../../hooks/useProjects';
 import type { Artifact } from '../../types/artifacts';
 import { cn } from '../../lib/utils';
-import { toLibraryArtifactUrl } from '../artifact-route/routeContract';
+import { toArtifactNavigationUrl } from '../artifact-route/routeContract';
 import { ProjectInspector } from './ProjectInspector';
 import { ProjectItemPage } from './ProjectItemPage';
 import { ProjectMaterialsSection } from './ProjectMaterialsSection';
@@ -81,14 +81,15 @@ export function ProjectHome({ project, itemPath, onSelectItem, onCloseItem }: Pr
   const selectedPath = item?.filePath ?? null;
 
   // Anything the project owns opens in place; anything outside it (a related
-  // artifact from another corner of the vault) opens in the Library pane.
+  // artifact from another corner of the vault) opens in the Library pane, or
+  // in its own workbench when it is another project.
   const openArtifact = useCallback(
     (artifact: Artifact) => {
       setNarrowPanel(null);
       if (resolveWorkbenchItem(project, artifact.filePath)) {
         onSelectItem(artifact.filePath);
       } else {
-        navigate(toLibraryArtifactUrl(artifact.filePath));
+        navigate(toArtifactNavigationUrl(artifact));
       }
     },
     [project, onSelectItem, navigate],

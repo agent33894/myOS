@@ -15,7 +15,7 @@ export function projectBaseArtifact(projectId: string): Artifact | undefined {
 
 /**
  * Shared project lifecycle change: status pill, sidebar menu, delete dialog.
- * Marking a project done stamps completedDate.
+ * Marking a project done stamps completedDate; leaving done clears it.
  */
 export function useProjectStatus() {
   const { applyEdit } = useArtifactEdit();
@@ -26,6 +26,7 @@ export function useProjectStatus() {
       if (!base || String(base.status ?? 'active') === status) return;
       const changes: Partial<Artifact> = { status: status as Artifact['status'] };
       if (status === 'done') changes.completedDate = localDateStamp();
+      else if (String(base.status) === 'done') changes.completedDate = undefined;
       void applyEdit(base, changes, `Mark project ${status}`);
     },
     [applyEdit],

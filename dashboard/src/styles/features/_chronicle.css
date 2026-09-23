@@ -333,9 +333,11 @@ select:focus-visible {
 }
 
 .chronicle-project-dot {
+  flex: none;
   width: 7px;
   height: 7px;
   border-radius: 50%;
+  background: var(--project-ink, var(--ds2-ink-tertiary));
 }
 
 /* Projects section header: label plus a hover-revealed create affordance. */
@@ -801,9 +803,6 @@ select:focus-visible {
 }
 .chronicle-task-row.is-selected {
   background: color-mix(in srgb, var(--ds2-ink) 8%, transparent);
-}
-.chronicle-task-row.is-selected::before {
-  background: var(--ds2-stamp);
 }
 
 .chronicle-completion {
@@ -1602,51 +1601,31 @@ select:focus-visible {
   text-transform: uppercase;
 }
 
-/* Projects */
-.chronicle-project-cover {
-  position: relative;
+/* Projects: the roster mark is the project's own ink, nothing more. A
+   closed project keeps its color as an open ring. */
+.chronicle-project-mark {
   display: block;
-  width: 28px;
-  height: 20px;
-  overflow: hidden;
-  border-radius: var(--radius-chip);
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
   background: var(--project-ink);
-  filter: saturate(0.92);
+  transition: transform var(--timing-fast) var(--easing-standard);
 }
-.chronicle-project-cover::after {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--ds2-paper) 22%, transparent),
-    color-mix(in srgb, var(--ds2-ink) 18%, transparent)
-  );
-  content: '';
+.chronicle-project-row.is-selected .chronicle-project-mark {
+  transform: scale(1.25);
 }
-.chronicle-project-cover.is-focused::before {
-  position: absolute;
-  z-index: 1;
-  inset: 0 auto 0 0;
-  width: 3px;
-  background: var(--ds2-stamp);
-  content: '';
+.chronicle-project-row.is-closed .chronicle-project-mark {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--project-ink);
+}
+.chronicle-project-row.is-closed .chronicle-row-title {
+  color: var(--ds2-ink-secondary);
 }
 .chronicle-project-row.is-dormant {
   opacity: 0.55;
 }
-.chronicle-project-row.is-dormant .chronicle-project-cover {
-  filter: saturate(0.45);
-}
 .chronicle-project-row .chronicle-row-meta .is-risk {
   color: hsl(var(--ed-error));
-}
-/* The home masthead band bleeds across the page; its content stays on the
-   home's centered 760px column (34px gutter + auto margins = the body math). */
-.chronicle-project-title-block {
-  position: relative;
-  padding: 38px max(34px, calc((100% - var(--console-width, 760px)) / 2)) 24px;
-  border-left: 3px solid var(--project-ink);
-  background: color-mix(in srgb, var(--project-ink) 15%, var(--ds2-paper));
 }
 .chronicle-project-title-input {
   min-width: 0;
@@ -1789,9 +1768,7 @@ select:focus-visible {
 .chronicle-project-newrow input:focus {
   outline: none;
 }
-.chronicle-project-newrow:focus-within {
-  box-shadow: inset 3px 0 0 var(--ds2-stamp);
-}
+
 /* Row affordances stay visible while their popover holds focus in a portal. */
 .chronicle-row-affordances.is-open {
   opacity: 1;
@@ -2041,8 +2018,19 @@ button.chronicle-crumb:hover {
 }
 .chronicle-rail-overview.is-selected {
   color: var(--ds2-ink);
-  background: var(--rule-faint);
-  box-shadow: inset 2px 0 0 var(--project-ink);
+  background: color-mix(in srgb, var(--ds2-ink) 6%, transparent);
+  font-weight: 500;
+}
+/* Rail rows select like sidebar rows: a rounded tint, no edge marker. */
+.chronicle-workbench-rail .chronicle-task-row {
+  border-radius: 6px;
+}
+/* A closed project states its status on the dateline, with the way back. */
+.chronicle-closed-state {
+  color: var(--ds2-ink-secondary);
+}
+.chronicle-reopen-action {
+  margin-left: 14px;
 }
 .chronicle-workbench-center {
   flex: 1;
@@ -2439,9 +2427,6 @@ button.chronicle-activity-title:hover {
 .chronicle-library-row.is-selected {
   background: color-mix(in srgb, var(--ds2-ink) 8%, transparent);
 }
-.chronicle-library-row.is-selected::before {
-  background: var(--ds2-stamp);
-}
 .chronicle-library-row:active {
   transform: scale(0.99);
 }
@@ -2593,9 +2578,6 @@ button.chronicle-activity-title:hover {
 }
 .chronicle-index-row.is-selected {
   background: color-mix(in srgb, var(--ds2-ink) 8%, transparent);
-}
-.chronicle-index-row.is-selected::before {
-  background: var(--ds2-stamp);
 }
 .chronicle-index-row:active {
   transform: scale(0.995);
@@ -3072,7 +3054,6 @@ button.chronicle-activity-title:hover {
   .chronicle-nav-row,
   .chronicle-search-button,
   .chronicle-command-row,
-  .chronicle-project-cover,
   .chronicle-stamp-label,
   .chronicle-shortcut-key,
   .chronicle-command-surface {

@@ -10,8 +10,8 @@ interface ProjectIndexProps {
   groups: ProjectGroups;
   sort: ProjectSort;
   onSortChange: (sort: ProjectSort) => void;
-  showArchive: boolean;
-  onToggleArchive: () => void;
+  showClosed: boolean;
+  onToggleClosed: () => void;
   onOpen: (projectId: string) => void;
   createFocusToken?: number;
 }
@@ -24,16 +24,16 @@ export function ProjectIndex({
   groups,
   sort,
   onSortChange,
-  showArchive,
-  onToggleArchive,
+  showClosed,
+  onToggleClosed,
   onOpen,
   createFocusToken,
 }: ProjectIndexProps) {
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
 
   const navigable = useMemo(
-    () => [...groups.active, ...groups.dormant, ...(showArchive ? groups.archived : [])],
-    [groups, showArchive],
+    () => [...groups.active, ...groups.dormant, ...(showClosed ? groups.closed : [])],
+    [groups, showClosed],
   );
 
   useListNavigation({
@@ -56,11 +56,11 @@ export function ProjectIndex({
       />
     ));
 
-  const total = groups.active.length + groups.dormant.length + groups.archived.length;
+  const total = groups.active.length + groups.dormant.length + groups.closed.length;
   const masthead = [
     `${groups.active.length} active`,
     groups.dormant.length ? `${groups.dormant.length} dormant` : null,
-    groups.archived.length ? `${groups.archived.length} archived` : null,
+    groups.closed.length ? `${groups.closed.length} closed` : null,
   ]
     .filter(Boolean)
     .join(' · ');
@@ -88,15 +88,20 @@ export function ProjectIndex({
           {renderRows(groups.dormant, 'dormant')}
         </section>
       ) : null}
-      {groups.archived.length > 0 ? (
-        <section aria-labelledby="archive-heading">
+      {groups.closed.length > 0 ? (
+        <section aria-labelledby="closed-heading">
           <div className="chronicle-list-heading chronicle-list-heading-row">
-            <span id="archive-heading">Archived · {groups.archived.length}</span>
-            <button className="chronicle-heading-action active:scale-[0.98]" onClick={onToggleArchive}>
-              {showArchive ? 'Hide' : 'Show'}
+            <span id="closed-heading">Closed · {groups.closed.length}</span>
+            <button
+              className="chronicle-heading-action"
+              aria-expanded={showClosed}
+              aria-controls="closed-projects"
+              onClick={onToggleClosed}
+            >
+              {showClosed ? 'Hide' : 'Show'}
             </button>
           </div>
-          {showArchive ? renderRows(groups.archived, 'archived') : null}
+          {showClosed ? <div id="closed-projects">{renderRows(groups.closed, 'closed')}</div> : null}
         </section>
       ) : null}
     </div>

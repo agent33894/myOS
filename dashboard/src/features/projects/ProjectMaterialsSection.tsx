@@ -52,7 +52,8 @@ export function ProjectMaterialsSection({
                 <button className="chronicle-row-body active:scale-[0.98]" onClick={() => onOpen(item)}>
                   <span className="chronicle-row-title">{item.title}</span>
                   <span className="chronicle-row-meta">
-                    {[item.status, shortDate(item.updated) ? `edited ${shortDate(item.updated)}` : null]
+                    {/* Active is the resting state; only departures from it earn ink. */}
+                    {[item.status === 'active' ? null : item.status, shortDate(item.updated) ? `edited ${shortDate(item.updated)}` : null]
                       .filter(Boolean)
                       .join(' · ')}
                   </span>

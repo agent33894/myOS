@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { useArtifactsStore } from '../../store/artifacts';
 import { isTypingTarget, useListNavigation } from '../../hooks/useListNavigation';
-import type { Artifact } from '../../types/artifacts';
+import { ArtifactType, type Artifact } from '../../types/artifacts';
+import { toProjectArtifactUrl } from '../artifact-route/routeContract';
 import { ArtifactDetail } from '../shell/ArtifactDetail';
 import { LibraryMasthead } from './LibraryMasthead';
 import { LibrarySearchHero } from './LibrarySearchHero';
@@ -14,11 +15,13 @@ import { useLibrarySearch } from './useLibrarySearch';
  * The Index: /library as a search-first, full-width index. Sections group the
  * vault by type; ?artifact=<filePath> renders the Living Page full-width and
  * Escape (or the back affordance) returns to the index with state intact.
+ * Projects never open as bare Markdown here: they route to their workbench.
  */
 export default function LibraryPage() {
   const artifacts = useArtifactsStore((state) => state.artifacts);
   const isLoading = useArtifactsStore((state) => state.isLoading);
   const [params, setParams] = useSearchParams();
+  const navigate = useNavigate();
   const openPath = params.get('artifact');
   const openArtifactItem = openPath
     ? (artifacts.find((artifact) => artifact.filePath === openPath) ?? null)
@@ -30,11 +33,15 @@ export default function LibraryPage() {
 
   const openArtifact = useCallback(
     (artifact: Artifact) => {
+      if (artifact.type === ArtifactType.PROJECT) {
+        navigate(toProjectArtifactUrl(artifact.id));
+        return;
+      }
       const next = new URLSearchParams(params);
       next.set('artifact', artifact.filePath);
       setParams(next);
     },
-    [params, setParams],
+    [params, setParams, navigate],
   );
   const closeArtifact = useCallback(() => {
     const next = new URLSearchParams(params);
@@ -69,6 +76,10 @@ export default function LibraryPage() {
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [openPath, closeArtifact]);
+
+  if (openArtifactItem?.type === ArtifactType.PROJECT) {
+    return <Navigate replace to={toProjectArtifactUrl(openArtifactItem.id)} />;
+  }
 
   if (openPath) {
     return (
