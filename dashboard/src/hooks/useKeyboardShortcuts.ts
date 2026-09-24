@@ -9,7 +9,7 @@ export function useKeyboardShortcuts() {
   const navigate = useNavigate();
   const { openCommandPalette, toggleCommandPalette } = useCommandPaletteActions();
   const { toggleQuickCapture, toggleKeyboardShortcuts } = useModalToggleActions();
-  const navRoutes = useMemo(() => sidebarRoutes.map((item) => item.path), []);
+  const navRoutes = useMemo(() => sidebarRoutes.map((item) => item.href), []);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

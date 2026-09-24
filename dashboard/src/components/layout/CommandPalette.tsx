@@ -55,8 +55,8 @@ export default function CommandPalette() {
         group: 'Commands' as const,
         type: 'Command',
         title: route.label,
-        subtitle: route.shortcut ? `${primaryModifier}${route.shortcut}` : route.path,
-        run: () => navigate(route.path),
+        subtitle: route.shortcut ? `${primaryModifier}${route.shortcut}` : route.href,
+        run: () => navigate(route.href),
       }));
     const matches = (needle ? artifacts.filter((_, index) => haystacks[index].includes(needle)) : [])
       .slice(0, 12)

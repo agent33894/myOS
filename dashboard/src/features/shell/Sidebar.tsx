@@ -29,14 +29,14 @@ export function Sidebar({ collapsed, onToggleCollapsed }: SidebarProps) {
   const lastUrlBySection = useRef(new Map<string, string>());
   useEffect(() => {
     const section = sidebarRoutes.find((route) =>
-      route.path === '/' ? location.pathname === '/' : location.pathname.startsWith(route.path),
+      route.href === "/" ? location.pathname === "/" : location.pathname.startsWith(route.href),
     );
     if (section) {
       lastUrlBySection.current.set(section.id, `${location.pathname}${location.search}`);
     }
   }, [location.pathname, location.search]);
 
-  const linkTarget = (route: AppRoute) => lastUrlBySection.current.get(route.id) || route.path;
+  const linkTarget = (route: AppRoute) => lastUrlBySection.current.get(route.id) || route.href;
 
   return (
     <aside className="chronicle-sidebar">
@@ -55,7 +55,7 @@ export function Sidebar({ collapsed, onToggleCollapsed }: SidebarProps) {
                 <NavLink
                   key={route.id}
                   to={linkTarget(route)}
-                  end={route.path === '/'}
+                  end={route.href === "/"}
                   aria-label={route.label}
                   onMouseEnter={route.preload}
                   onFocus={route.preload}
