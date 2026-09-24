@@ -1,26 +1,25 @@
 /**
- * Disallow the styling escape hatches removed by Chronicle Mac v3.
- * Theme switching now happens through DS2 variables, neutrals are semantic,
- * and elevated surfaces use one of the two Chronicle shadow tokens.
+ * Disallow styling escape hatches outside the token system: `dark:` variants
+ * (themes switch through tokens), neutral palettes, and shadows other than the
+ * three elevation tokens. `shadow-chronicle-*` remains allowed until the
+ * legacy screens are rebuilt.
  */
 
 const LEGACY_UTILITY_PATTERN =
-  /(?:\b(?:dark:[^\s"'`<>}]+|(?:bg|text|border|ring|outline|divide|fill|stroke|from|via|to)-(?:slate|gray|zinc|neutral|stone)-\d{2,3}(?:\/\d+)?)\b|(?<!-)\bshadow-(?!chronicle-(?:lifted|overlay)\b|none\b)[^\s"'`<>}]+)/g;
+  /(?:\b(?:dark:[^\s"'`<>}]+|(?:bg|text|border|ring|outline|divide|fill|stroke|from|via|to)-(?:slate|gray|zinc|neutral|stone)-\d{2,3}(?:\/\d+)?)\b|(?<![-\w])shadow-(?!(?:raised|overlay|dialog|none|chronicle-lifted|chronicle-overlay)\b)[^\s"'`<>}]+)/g;
 
-const SUGGESTION =
-  'Use DS2 semantic colors and theme variables, plus shadow-chronicle-lifted or shadow-chronicle-overlay.';
+const SUGGESTION = 'Use semantic token utilities, and shadow-raised, shadow-overlay, or shadow-dialog for elevation.';
 
 module.exports = {
   meta: {
     type: 'problem',
     docs: {
-      description: 'Disallow Chronicle v2 dark variants, neutral utilities, and legacy shadows',
-      category: 'Stylistic Issues',
+      description: 'Disallow dark: variants, neutral palettes, and non-token shadows',
       recommended: true,
     },
     schema: [],
     messages: {
-      legacyUtility: 'Legacy utility "{{value}}" is not part of Chronicle v3. {{suggestion}}',
+      legacyUtility: 'Utility "{{value}}" is outside the design system. {{suggestion}}',
     },
   },
 

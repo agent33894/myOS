@@ -27,6 +27,37 @@ const STRICT_SCOPE_FILES = [
   'src/utils/urlParams.ts',
 ];
 
+const LEGACY_ARBITRARY_COLOR_FILES = [
+  'src/components/ErrorBoundary.tsx',
+  'src/components/artifacts/TipTapEditor.tsx',
+  'src/components/artifacts/outline/OutlineRail.tsx',
+  'src/components/diff/CommitDiffModal.tsx',
+  'src/components/diff/CommitDiffPopover.tsx',
+  'src/components/diff/DiffFileSection.tsx',
+  'src/components/editor/ChartInsertModal.tsx',
+  'src/components/editor/InlineCalloutBlockEditor.tsx',
+  'src/components/editor/InlineChartBlockEditor.tsx',
+  'src/components/editor/InlineKpiBlockEditor.tsx',
+  'src/components/editor/InlineMermaidBlockEditor.tsx',
+  'src/components/editor/InlineRoadmapBlockEditor.tsx',
+  'src/components/editor/InsertCommandMenu.tsx',
+  'src/components/markdown/CodeBlockWithCopy.tsx',
+  'src/components/markdown/MarkdownCalloutBlock.tsx',
+  'src/components/markdown/MarkdownChartBlock.tsx',
+  'src/components/markdown/MarkdownKpiBlock.tsx',
+  'src/components/markdown/MarkdownMermaidBlock.tsx',
+  'src/components/markdown/MarkdownRoadmapBlock.tsx',
+  'src/components/settings/CollapsibleSection.tsx',
+  'src/components/settings/GeneralSettings.tsx',
+  'src/components/settings/GitActivitySettings.tsx',
+  'src/components/settings/NotificationSettings.tsx',
+  'src/components/ui/button.tsx',
+  'src/components/ui/context-menu.tsx',
+  'src/components/ui/input.tsx',
+  'src/components/ui/select.tsx',
+  'src/components/ui/toggle.tsx',
+];
+
 const MUTATION_IPC_METHODS = [
   'createArtifact',
   'updateArtifact',
@@ -42,8 +73,18 @@ export default tseslint.config(
     },
     rules: {
       'design-tokens/no-fractional-spacing': 'error',
-      'design-tokens/no-hardcoded-colors': ['error', { allowDarkModePairs: false }],
+      'design-tokens/no-hardcoded-colors': 'error',
       'design-tokens/no-legacy-utilities': 'error',
+      // enabled in cleanup once features use src/ui
+      'design-tokens/no-raw-controls': 'off',
+    },
+  },
+  {
+    // TEMPORARY baseline: screens still using arbitrary color escapes such as
+    // `text-[hsl(var(--ed-error))]`. Remove files as they are rebuilt on src/ui.
+    files: LEGACY_ARBITRARY_COLOR_FILES,
+    rules: {
+      'design-tokens/no-hardcoded-colors': ['error', { arbitrary: false }],
     },
   },
   {

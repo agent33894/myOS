@@ -1,158 +1,73 @@
 /**
  * Rule: no-hardcoded-colors
  *
- * Disallows hardcoded Tailwind color utilities in favor of semantic tokens.
+ * Colors come from tokens (src/styles/tokens.css via tailwind.config.mjs):
+ * `bg-raised`, `text-text-secondary`, `border-border`, `bg-accent-soft`, …
  *
- * Allowed semantic colors:
- * - bg-background, bg-card, bg-secondary
- * - text-foreground, text-muted-foreground
- * - border-border
- * - Semantic status colors generated from DS2 tokens
- *
- * Disallowed patterns:
- * - bg-gray-900, text-orange-600, border-blue-500, etc.
+ * Reports:
+ * - Tailwind palette utilities: `bg-gray-900`, `text-orange-600`, …
+ * - Arbitrary color values: `text-[#fff]`, `bg-[hsl(var(--x))]`,
+ *   `border-[rgb(var(--accent-color))]`, `bg-[color-mix(…)]`, `text-[var(--x)]`.
+ *   Pass `{ arbitrary: false }` to skip these (legacy files only).
  */
 
-// Pattern to match hardcoded Tailwind colors
-// Matches: bg-{color}-{shade}, text-{color}-{shade}, border-{color}-{shade}, etc.
-const HARDCODED_COLOR_PATTERN = /\b(bg|text|border|ring|outline|fill|stroke|from|via|to)-(slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-(\d{2,3})\b/g;
+const PREFIXES = 'bg|text|border(?:-[trblxyse])?|ring|ring-offset|outline|fill|stroke|from|via|to|shadow|decoration|caret|accent|divide|placeholder';
 
-// Whitelisted patterns - these are allowed
-const WHITELISTED_FILES = [
-  /status-colors\.ts$/,
-  /tailwind\.config/,
-  /\.css$/,
-];
+const PALETTE_PATTERN = new RegExp(
+  `\\b(?:${PREFIXES})-(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-\\d{2,3}\\b`,
+  'g',
+);
 
-// Semantic color mappings for suggestions
-const COLOR_SUGGESTIONS = {
-  // Grays
-  'bg-gray-900': 'bg-background',
-  'bg-gray-800': 'bg-card',
-  'bg-gray-700': 'bg-secondary',
-  'bg-gray-100': 'bg-background',
-  'bg-gray-50': 'bg-background',
-  'text-gray-900': 'text-foreground',
-  'text-gray-700': 'text-foreground',
-  'text-gray-600': 'text-muted-foreground',
-  'text-gray-500': 'text-muted-foreground',
-  'text-gray-400': 'text-muted-foreground',
-  'border-gray-200': 'border-border',
-  'border-gray-300': 'border-border',
-
-  // Status colors
-  'bg-red-100': 'bg-background',
-  'text-red-600': 'text-foreground',
-  'text-red-700': 'text-foreground',
-  'bg-green-100': 'bg-background',
-  'text-green-600': 'text-foreground',
-  'text-green-700': 'text-foreground',
-  'bg-yellow-100': 'bg-background',
-  'text-yellow-600': 'text-foreground',
-  'text-yellow-700': 'text-foreground',
-  'bg-blue-100': 'bg-background',
-  'text-blue-600': 'text-foreground',
-  'text-blue-700': 'text-foreground',
-};
+// `text-[13px]` and `border-[1.5px]` are sizes, not colors, so only color syntax is matched.
+const ARBITRARY_PATTERN = new RegExp(
+  `(?:^|[\\s"'\`:])(?:${PREFIXES})-\\[(?:#|rgba?\\(|hsla?\\(|oklch\\(|color-mix\\(|var\\(--)[^\\]]*\\]`,
+  'g',
+);
 
 module.exports = {
   meta: {
     type: 'suggestion',
     docs: {
-      description: 'Disallow hardcoded Tailwind colors, prefer semantic tokens',
-      category: 'Stylistic Issues',
+      description: 'Disallow palette and arbitrary color utilities; use semantic color tokens',
       recommended: true,
     },
-    fixable: null, // Manual suggestion only
     schema: [
       {
         type: 'object',
         properties: {
-          allowedPatterns: {
-            type: 'array',
-            items: { type: 'string' },
-            description: 'File patterns to whitelist',
-          },
-          allowDarkModePairs: {
-            type: 'boolean',
-            description: 'Legacy compatibility only. Chronicle v3 sets this to false.',
-            default: false,
-          },
+          arbitrary: { type: 'boolean', default: true },
         },
         additionalProperties: false,
       },
     ],
     messages: {
       noHardcodedColor:
-        'Avoid hardcoded color "{{value}}". {{suggestion}}',
+        'Avoid hardcoded color "{{value}}". Use a semantic token utility such as bg-raised, text-text-secondary, border-border, or bg-accent-soft.',
     },
   },
 
   create(context) {
-    const options = context.options[0] || {};
-    const allowedPatterns = (options.allowedPatterns || []).map(
-      (p) => new RegExp(p)
-    );
-    const allowDarkModePairs = options.allowDarkModePairs === true;
+    const checkArbitrary = context.options[0]?.arbitrary !== false;
 
-    // Check if file is whitelisted
-    const filename = context.filename || context.getFilename();
-    const isWhitelisted =
-      WHITELISTED_FILES.some((pattern) => pattern.test(filename)) ||
-      allowedPatterns.some((pattern) => pattern.test(filename));
-
-    if (isWhitelisted) {
-      return {};
+    function report(node, pattern, value) {
+      pattern.lastIndex = 0;
+      let match;
+      while ((match = pattern.exec(value)) !== null) {
+        context.report({ node, messageId: 'noHardcodedColor', data: { value: match[0].trim() } });
+      }
     }
 
-    function checkStringLiteral(node, value) {
-      // Reset regex lastIndex
-      HARDCODED_COLOR_PATTERN.lastIndex = 0;
-
-      // If allowDarkModePairs is true, check if this value has dark: pairs
-      const hasDarkModePair = allowDarkModePairs && /\bdark:/.test(value);
-
-      let match;
-      while ((match = HARDCODED_COLOR_PATTERN.exec(value)) !== null) {
-        const [fullMatch] = match;
-
-        // Skip if this color has a dark mode pair
-        if (hasDarkModePair) {
-          // Check if this specific color has a dark: variant in the same string
-          const darkVariantPattern = new RegExp(
-            `dark:${fullMatch.replace('-', '-')}|dark:[a-z]+-${match[2]}-\\d+`
-          );
-          if (darkVariantPattern.test(value)) {
-            continue;
-          }
-        }
-
-        const suggestion = COLOR_SUGGESTIONS[fullMatch];
-        const suggestionText = suggestion
-          ? `Consider using "${suggestion}" instead.`
-          : 'Use semantic tokens from status-colors.ts or ensure dark mode support.';
-
-        context.report({
-          node,
-          messageId: 'noHardcodedColor',
-          data: {
-            value: fullMatch,
-            suggestion: suggestionText,
-          },
-        });
-      }
+    function check(node, value) {
+      report(node, PALETTE_PATTERN, value);
+      if (checkArbitrary) report(node, ARBITRARY_PATTERN, value);
     }
 
     return {
       Literal(node) {
-        if (typeof node.value === 'string') {
-          checkStringLiteral(node, node.value);
-        }
+        if (typeof node.value === 'string') check(node, node.value);
       },
       TemplateElement(node) {
-        if (node.value && node.value.raw) {
-          checkStringLiteral(node, node.value.raw);
-        }
+        if (node.value?.raw) check(node, node.value.raw);
       },
     };
   },

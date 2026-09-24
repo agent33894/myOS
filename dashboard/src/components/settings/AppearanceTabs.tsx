@@ -1,9 +1,10 @@
 import { useSettingsStore } from '../../store/settings';
 import { Button } from '../ui/button';
+import { SegmentedControl } from '../../ui';
 import { AccentPicker } from './AccentPicker';
 
 export default function AppearanceTabs() {
-  const { themeMode, setThemeMode } = useSettingsStore();
+  const { themeMode, setThemeMode, readingFont, setReadingFont } = useSettingsStore();
 
   return (
     <div>
@@ -32,10 +33,28 @@ export default function AppearanceTabs() {
 
       <section className="chronicle-settings-section">
         <div className="chronicle-settings-section-header">
+          <h3 className="chronicle-settings-section-title">Reading font</h3>
+          <p className="chronicle-settings-section-desc">The typeface for the body of your notes</p>
+        </div>
+        <div className="chronicle-settings-section-body">
+          <SegmentedControl
+            aria-label="Reading font"
+            className="max-w-xs"
+            value={readingFont}
+            onValueChange={setReadingFont}
+            options={[
+              { value: 'sans', label: 'Sans' },
+              { value: 'serif', label: 'Serif' },
+            ]}
+          />
+        </div>
+      </section>
+
+      <section className="chronicle-settings-section">
+        <div className="chronicle-settings-section-header">
           <h3 className="chronicle-settings-section-title">Accent</h3>
           <p className="chronicle-settings-section-desc">
-            One ink for active states, links, and focus. Hover to preview; every color is adjusted to stay legible
-            on light and dark paper.
+            Used for selection, links, and focus. Hover a color to preview it.
           </p>
         </div>
         <div className="chronicle-settings-section-body">
