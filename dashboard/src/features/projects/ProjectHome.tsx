@@ -24,7 +24,7 @@ import {
   Textarea,
 } from '../../ui';
 import { createNote } from '../notes/createNote';
-import { bodyChange } from '../page/bodyChange';
+import { documentBody } from '../page/documentBody';
 import { ConflictBanner } from '../page/ConflictBanner';
 import { kindLabel } from '../page/kinds';
 import { PageMenu } from '../page/PageMenu';
@@ -140,6 +140,7 @@ export function ProjectHome({ project }: { project: ProjectWithStats }) {
   const doc = useDocument(project.filePath);
   const isNew = useNewParam(project.filePath);
   const [showDone, setShowDone] = useState(false);
+  const body = documentBody(doc);
   const notes = project.materials.filter((item) => item.type !== ArtifactType.INBOX);
   const tasks = showDone ? [...project.openTodos, ...project.doneTodos] : project.openTodos;
   const newNote = () => void createNote({ project: project.id }).then((url) => url && navigate(url));
@@ -174,8 +175,8 @@ export function ProjectHome({ project }: { project: ProjectWithStats }) {
         <div className="mt-6">
           {doc.content !== null ? (
             <Editor
-              value={doc.content}
-              onChange={bodyChange(doc)}
+              value={body.value}
+              onChange={body.onChange}
               artifact={{ id: project.id, filePath: project.filePath, type: project.type }}
               placeholder="What is this project about?"
             />

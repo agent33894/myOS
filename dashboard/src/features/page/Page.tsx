@@ -5,10 +5,10 @@ import { useDocument } from '../../data/useDocument';
 import { Editor } from '../../editor';
 import { EmptyState, LoadingState, Textarea } from '../../ui';
 import { ConflictBanner } from './ConflictBanner';
+import { documentBody } from './documentBody';
 import { LinkedFrom } from './LinkedFrom';
 import { PageMenu } from './PageMenu';
 import { PageProperties } from './PageProperties';
-import { bodyChange } from './bodyChange';
 import { SaveState } from './SaveState';
 import { useNewParam } from './useNewParam';
 
@@ -35,6 +35,7 @@ export function Page({ path, leading, onDeleted, onMoved, missingAction }: PageP
   const bodyRef = useRef<HTMLDivElement>(null);
   const item = doc.artifact;
   const loaded = doc.content !== null;
+  const body = documentBody(doc);
 
   useEffect(() => {
     if (!isNew || !loaded) return;
@@ -80,7 +81,7 @@ export function Page({ path, leading, onDeleted, onMoved, missingAction }: PageP
           autosize
           variant="ghost"
           value={doc.title}
-          onChange={(event) => doc.edit({ title: event.target.value.replace(/\n/g, ' ') })}
+          onChange={(event) => body.onTitleChange(event.target.value.replace(/\n/g, ' '))}
           onKeyDown={(event) => {
             if (event.key === 'Enter') {
               event.preventDefault();
@@ -102,8 +103,8 @@ export function Page({ path, leading, onDeleted, onMoved, missingAction }: PageP
         <div ref={bodyRef} className="mt-6">
           {loaded && item ? (
             <Editor
-              value={doc.content ?? ''}
-              onChange={bodyChange(doc)}
+              value={body.value}
+              onChange={body.onChange}
               artifact={{ id: item.id, filePath: item.filePath, type: item.type }}
               placeholder={item.type === ArtifactType.TODO ? 'Add notes…' : undefined}
             />

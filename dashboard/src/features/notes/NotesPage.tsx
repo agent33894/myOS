@@ -70,7 +70,8 @@ export default function NotesPage() {
       aria-label="Notes"
       className={narrow ? 'flex h-full w-full flex-col bg-canvas' : 'flex h-full w-80 shrink-0 flex-col border-r border-border bg-canvas'}
     >
-      <div className="flex items-center gap-1 px-3 pb-2 pt-4">
+      <h1 className="px-4 pt-6 text-lg font-semibold text-text">Notes</h1>
+      <div className="flex items-center gap-1 px-3 pb-2 pt-3">
         <Input
           icon={Search}
           value={query}
