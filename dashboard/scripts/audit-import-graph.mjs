@@ -31,9 +31,7 @@ function dependencies(file) {
 
 const all = walk(sourceRoot).filter((file) => extensions.includes(extname(file)) && !ignored.test(file));
 const reachable = new Set();
-// Vite loads the gray-matter engine shim through config, outside the renderer graph.
-const configuredEntries = [join(sourceRoot, 'utils/gray-matter-engines.js')];
-const queue = [join(sourceRoot, 'main.tsx'), ...configuredEntries];
+const queue = [join(sourceRoot, 'main.tsx')];
 
 while (queue.length) {
   const file = queue.pop();
@@ -46,7 +44,6 @@ const unreachable = all.filter((file) => !reachable.has(file)).map((file) => rel
 const reachableSourceFiles = all.filter((file) => reachable.has(file)).length;
 console.log(JSON.stringify({
   entry: 'src/main.tsx',
-  configuredEntries: configuredEntries.map((file) => relative(root, file)),
   sourceFiles: all.length,
   reachable: reachableSourceFiles,
   unreachable,

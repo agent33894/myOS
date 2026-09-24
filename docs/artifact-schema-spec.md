@@ -1,73 +1,54 @@
-# Artifact Schema Spec
+# Artifact schema
 
-## Purpose
+An artifact is one Markdown file: YAML frontmatter plus a body. The app, the `myos` CLI, and external tools all read and write the same files, so the on-disk schema stays stable.
 
-myOS artifact creation and updates now use a machine-readable schema/spec contract in `dashboard/shared/spec/`.
-This contract is the single source of truth for:
+## Frontmatter
 
-- Required fields and defaults
-- Allowed status and domain values per artifact type
-- Canonical vault storage paths
-- Minimal scaffold sections for new artifact content
+`dashboard/shared/spec/fields.ts` holds the one field table, `ARTIFACT_FIELDS`. Every known key is listed there once, with its kind (`string`, `strings`, `date`, `number`, `boolean`), in the order myOS writes them:
 
-`AGENTS.md`, skills, and slash commands describe orchestration and workflow behavior, but they should not redefine validation or storage rules.
+`id, title, type, tags, created, updated, status, related, domain, project, priority, due, parentId, deferDate, estimatedMinutes, sequential, flagged, completedDate, repeatRule, localPath, repoUrl, isExternalProject, language, order, pinned, swatch`
 
-## Spec Modules
+The table drives parsing (`readFields`), writing (`writeFields`), and patch validation (`normalizeField`):
 
-- `dashboard/shared/spec/artifact-spec.ts`
-  - Contract types (`ArtifactSpec`, `FieldRule`, `StatusRule`, `StorageRule`, `ScaffoldRule`)
-- `dashboard/shared/spec/artifact-rules.ts`
-  - Per-type spec map (`ARTIFACT_SPECS`)
-  - Normalization, validation, and path derivation helpers
-- `dashboard/shared/spec/artifact-scaffold.ts`
-  - Generic scaffold builder for heading/placeholder sections
-- `dashboard/shared/spec/index.ts`
-  - Shared exports for Electron and renderer
+- Unknown keys are kept in `Artifact.extra` and written back after the known ones, unchanged.
+- A known key whose value doesn't fit its kind also stays in `extra`, so it still round-trips.
+- YAML is read with the core schema, so dates stay the strings that were written.
+- Frontmatter-only changes (`artifacts:patch`, `artifacts:retype`) rewrite the frontmatter and keep the body byte for byte.
 
-## Runtime Helpers
+Missing values are inferred when a file is read, not written until the file is next changed. `id` comes from the path. `title` is the first `# heading`, or else the file name. `type` comes from the storage folder, or else `memo`. `status` is the type's default. `domain` comes from the first path segment, or else the type's default.
 
-Use these helpers instead of local per-feature maps or defaults:
+## Types
 
-- `getArtifactSpec(type)`
-- `getDefaultStatusForType(type)`
-- `getDefaultDomainForType(type)`
-- `getAllowedStatusesForType(type)`
-- `isStatusAllowedForType(type, status)`
-- `deriveArtifactPathFromSpec({ id, type, domain })`
-- `buildScaffoldForType(type, options)`
-- `normalizeDraftFromSpec(draft, options)`
-- `validateArtifactAgainstSpec(artifact)`
+`dashboard/shared/spec/types.ts` has one row per type:
 
-## Canonical Behavior
+| Type | Folder | Statuses (default first) | Domain |
+| --- | --- | --- | --- |
+| todo | `<domain>/todos/` | pending, in-progress, done, cancelled | work |
+| memo | `<domain>/memos/` | active, draft, archived, done | work |
+| project | `<domain>/projects/` | active, draft, archived, done, cancelled | work |
+| inbox | `inbox/` | draft, active, archived | none |
+| decision | `<domain>/decisions/` | active, superseded, archived | work |
+| meeting | `<domain>/meetings/` | active, draft, archived | work |
+| research | `<domain>/topics/` | active, draft, archived | research |
+| query | `<domain>/queries/` | active, archived | work |
+| snippet | `<domain>/code/` | active, archived | work |
+| prompt | `<domain>/prompts/` | active, draft, archived | work |
+| development | `<domain>/development/` | active, draft, archived, done | work |
 
-### Create Flow
+Helpers: `statusesFor`, `defaultStatusFor`, `isStatusAllowed`, `domainFor`, `canonicalPath(id, type, domain)`, `typeFromPath`.
 
-1. Normalize draft with spec defaults (`normalizeDraftFromSpec`)
-2. Validate normalized artifact (`validateArtifactAgainstSpec`)
-3. Derive/write canonical path (`deriveArtifactPathFromSpec`)
-4. Persist markdown frontmatter + content
+## Writes
 
-### Update Flow
+The main process owns every write (`dashboard/electron/documents/artifacts.ts`):
 
-1. Keep existing file location for compatibility (warn if not canonical)
-2. Re-validate type/domain/status using spec
-3. Preserve legacy/custom frontmatter fields on roundtrip
-4. Persist updated artifact
+- **create**: a new file at the canonical path, with an empty body unless the draft has content. A draft that names a `project` and no `domain` takes the project's domain.
+- **save**: frontmatter changes plus the whole body. It requires the `rev` (`mtimeMs:size`) the editor loaded, and fails with `CONFLICT` if the file changed since then.
+- **patch**: frontmatter only. `null` removes an optional key. Statuses are checked against the type.
+- **retype**: changes the type and moves the file to that type's folder.
+- **delete**: returns a full snapshot. **restore** writes the snapshot back to the same path (the original bytes when the app still has them) and refuses to replace a file that exists.
 
-## Compatibility
+## Tests
 
-- Existing markdown artifacts in `vault/` remain valid; no bulk migration required.
-- Runtime/UI template management is removed from Electron IPC + renderer settings.
-
-## Testing
-
-Schema-spec coverage lives in:
-
-- `dashboard/shared/spec/__tests__/artifact-spec.test.ts`
-- `dashboard/shared/spec/__tests__/artifact-normalize.test.ts`
-- `dashboard/shared/spec/__tests__/artifact-paths.test.ts`
-- `dashboard/shared/spec/__tests__/artifact-scaffold.test.ts`
-
-Roundtrip preservation coverage lives in:
-
-- `dashboard/electron/handlers/file-operations/__tests__/artifact-format.test.ts`
+- `dashboard/electron/documents/documents.test.ts` covers round trips, conflicts, body-preserving patches, and exact restore.
+- `dashboard/electron/workspace/paths.test.ts` covers workspace containment.
+- `dashboard/shared/today.test.ts` covers the Today buckets and capture parsing.

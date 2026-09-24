@@ -29,7 +29,6 @@
  *   --autofix   Apply mechanical fixes in-place (text tokens, bg-white, text-black)
  *   --dry-run   With --autofix, show what would change without writing
  *   --files F   Scan only the specified files (space-separated paths)
- *   --reference F  Output design system reference (json|markdown|cheatsheet)
  *
  * Exit codes:
  *   0  — clean (no violations)
@@ -595,15 +594,6 @@ function applyAutofix(filePath, dryRun) {
 
 function main() {
   const args = process.argv.slice(2);
-
-  // --reference: output design system reference and exit
-  const refIdx = args.indexOf('--reference');
-  if (refIdx !== -1) {
-    const format = args[refIdx + 1] || 'cheatsheet';
-    const { generateReference } = require('./design-system-reference');
-    console.log(generateReference(format));
-    process.exit(0);
-  }
 
   const showFixes = args.includes('--fix');
   const jsonOutput = args.includes('--json');

@@ -25,7 +25,7 @@ An **artifact** is one Markdown file: YAML frontmatter plus a body. This is the 
 | Module | Responsibility |
 | --- | --- |
 | `workspace/` | The selected root, which can only be set through the native folder dialog or starter creation. It provides one `resolveInWorkspace()` (realpath and symlink aware) used by every handler and by the `myos://` asset protocol. Scans skip `.git`, `node_modules`, and dot-folders |
-| `documents/` | Parse and serialize, list (metadata and rev, with a cache keyed by rev), read, create, write (`expectRev` → `CONFLICT`), delete, restore (exact undo), assets |
+| `documents/` | Parse and serialize, list (metadata and rev, with a cache keyed by rev), read, create, save (`expectRev` → `CONFLICT`), frontmatter-only patch, retype (moves to the type's folder), delete, restore (exact undo), assets |
 | `watch/` | Debounced change events, `{ path, kind, rev }` |
 | `git/` | Commit summary and diff, only for the workspace or a project's registered `localPath` |
 | `shell/` | Reveal, open externally, notifications |

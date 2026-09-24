@@ -116,13 +116,13 @@ try {
   }
 
   await until('onboarding and preload', async () => {
-    const state = await evaluate('({welcome: !!document.querySelector("#welcome-title"), preload: typeof window.electronAPI?.createDefaultVault === "function"})');
+    const state = await evaluate('({welcome: !!document.querySelector("#welcome-title"), preload: typeof window.electronAPI?.invoke === "function"})');
     return state?.welcome && state?.preload;
   });
 
   await evaluate('document.querySelector(".myos-welcome-actions button:last-child").click()');
   const workspacePath = await until('default workspace', async () => {
-    const state = await evaluate('(async () => ({welcome: !!document.querySelector("#welcome-title"), path: await window.electronAPI.getVaultPath()}))()');
+    const state = await evaluate('(async () => ({welcome: !!document.querySelector("#welcome-title"), path: (await window.electronAPI.invoke("workspace:current")).value}))()');
     return !state.welcome && state.path?.endsWith('/Documents/myOS') ? state.path : null;
   });
   if (!workspacePath.startsWith(home + '/')) {
@@ -132,28 +132,35 @@ try {
 
   await evaluate(`(() => {
     window.__myosSmokeEvents = [];
-    window.electronAPI.onFileChanged((event, data) => window.__myosSmokeEvents.push({event, path: data.filePath}));
+    window.electronAPI.on('artifacts:changed', (change) => window.__myosSmokeEvents.push(change));
   })()`);
   const externalRelativePath = 'work/memos/external-linux-smoke.md';
   await writeFile(join(workspacePath, externalRelativePath), '# External Linux smoke\n', 'utf8');
   await until('nested external Markdown watcher', async () => {
     const events = await evaluate('window.__myosSmokeEvents');
-    return events.some((event) => event.path === 'work/memos/external-linux-smoke.md' && (event.event === 'created' || event.event === 'updated'));
+    return events.some((event) => event.path === 'work/memos/external-linux-smoke.md' && event.kind !== 'deleted');
   });
-  const externalContent = await evaluate(`window.electronAPI.readArtifactContent(${JSON.stringify(externalRelativePath)})`);
+  const externalContent = await evaluate(`window.electronAPI.invoke('artifacts:read', ${JSON.stringify(externalRelativePath)}).then((result) => result.value.content)`);
   if (externalContent !== '# External Linux smoke') {
     throw new Error(`External Markdown read failed: ${externalContent}`);
   }
 
   const roundTrip = await evaluate(`(async () => {
-    const api = window.electronAPI;
-    const created = await api.createArtifact({title: 'Linux smoke memo', type: 'memo', domain: 'work', content: 'Packaged IPC round trip'});
-    const content = await api.readArtifactContent(created.filePath);
-    const read = await api.readArtifact(created.filePath);
-    await api.deleteArtifact(created.filePath);
-    return {path: created.filePath, content, title: read?.title};
+    const call = async (channel, ...args) => {
+      const result = await window.electronAPI.invoke(channel, ...args);
+      if (!result.ok) throw new Error(channel + ': ' + result.error.code + ' ' + result.error.message);
+      return result.value;
+    };
+    const created = await call('artifacts:create', {title: 'Linux smoke memo', type: 'memo', content: 'Packaged IPC round trip'});
+    const saved = await call('artifacts:save', created.filePath, {fields: {}, content: 'Saved once'}, created.rev);
+    const stale = await window.electronAPI.invoke('artifacts:save', created.filePath, {fields: {}, content: 'Stale'}, created.rev);
+    const snapshot = await call('artifacts:delete', created.filePath, saved.rev);
+    const restored = await call('artifacts:restore', snapshot);
+    const read = await call('artifacts:read', created.filePath);
+    await call('artifacts:delete', created.filePath);
+    return {path: created.filePath, content: read.content, title: restored.title, stale: stale.ok ? 'ok' : stale.error.code};
   })()`);
-  if (roundTrip.title !== 'Linux smoke memo' || roundTrip.content !== 'Packaged IPC round trip') {
+  if (roundTrip.title !== 'Linux smoke memo' || roundTrip.content !== 'Saved once' || roundTrip.stale !== 'CONFLICT') {
     throw new Error(`IPC round trip returned unexpected data: ${JSON.stringify(roundTrip)}`);
   }
   try {
@@ -174,7 +181,7 @@ try {
       (error, stdout, stderr) => (error ? fail(new Error(`myos ${args.join(' ')} failed: ${stderr || error.message}`)) : done(stdout)));
   });
   const captured = await runCli(['capture', 'Linux smoke capture #smoke']);
-  const capturedPath = captured.match(/Captured to Unfiled: (inbox\/\S+\.md)/)?.[1];
+  const capturedPath = captured.match(/Captured to Inbox: (inbox\/\S+\.md)/)?.[1];
   if (!capturedPath) throw new Error(`Unexpected capture output: ${captured}`);
   await until('CLI capture reaches the running window', async () => {
     const events = await evaluate('window.__myosSmokeEvents');
@@ -183,7 +190,7 @@ try {
   const found = await runCli(['search', 'smoke', 'capture']);
   if (!found.includes('Linux smoke capture')) throw new Error(`myos search missed the capture: ${found}`);
   const today = await runCli(['today']);
-  if (!/^In play \(\d+\)$/m.test(today) || !/^Next \(\d+\)$/m.test(today)) throw new Error(`Unexpected myos today output: ${today}`);
+  if (!/^Today \(\d+\)$/m.test(today) || !/^Upcoming \(\d+\)$/m.test(today)) throw new Error(`Unexpected myos today output: ${today}`);
 
   await runCli(['--install-desktop-entry']);
   const desktopEntry = await readFile(join(data, 'applications', 'myos.desktop'), 'utf8');
@@ -196,7 +203,7 @@ try {
     throw new Error('myos was not linked into ~/.local/bin');
   }
 
-  console.log(`Packaged Linux smoke passed: onboarding, default workspace, nested watcher, preload IPC create/read/delete (${roundTrip.path}), terminal capture/search/today, desktop entry.`);
+  console.log(`Packaged Linux smoke passed: onboarding, default workspace, nested watcher, IPC create/save/conflict/delete/restore (${roundTrip.path}), terminal capture/search/today, desktop entry.`);
 } finally {
   socket?.close();
   child.kill('SIGTERM');

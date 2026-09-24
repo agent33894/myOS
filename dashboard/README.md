@@ -6,7 +6,7 @@ The desktop app is Electron + React + TypeScript. Electron owns filesystem, Git,
 
 ```bash
 npm install
-npm run electron:dev
+npm run dev
 npm run typecheck
 npm run lint
 npm test
@@ -17,14 +17,16 @@ npm run build:arch
 npm run smoke:linux
 ```
 
-Some developer shells set `ELECTRON_RUN_AS_NODE=1`. If no app window opens, run commands as `env -u ELECTRON_RUN_AS_NODE npm run electron:dev`.
+Some developer shells set `ELECTRON_RUN_AS_NODE=1`. If no app window opens, run commands as `env -u ELECTRON_RUN_AS_NODE npm run dev`.
 
 ## Key directories
 
-- `electron/`: main process, IPC handlers, path security, watcher, and workspace selection
-- `shared/ipc/`: invoke and event contracts shared by main and renderer
-- `shared/spec/`: typed artifact rules, normalization, validation, paths, and scaffolding
-- `shared/types/`: canonical artifact model
+- `electron/`: main process: `workspace/` (root and path containment), `documents/` (Markdown files), `watch/`, `git/`, `shell/`, `ipc/`
+- `shared/ipc/`: the channel table shared by main and renderer
+- `shared/spec/`: the frontmatter field table and per-type rules (statuses, storage folders)
+- `shared/types/`: the `Artifact` model
+- `shared/today.ts`, `shared/inbox.ts`: Today buckets, the Inbox, and capture parsing (also used by the `myos` CLI)
+- `src/data/`: the renderer's store, selectors, write gateway, undo, and `useDocument`
 - `src/app/`: routes and shell
 - `src/features/`: Today, Library, Projects, Settings, and artifact detail behavior
 - `src/styles/`: Chronicle Mac v3 tokens and component treatment
