@@ -1,19 +1,12 @@
-export type {
-  ArtifactTypeValue,
-  DomainValue,
-} from './artifact-spec';
-
+export { isFieldName, normalizeField, readFields, writeFields } from './fields';
 export {
-  buildScaffoldForType,
-  deriveArtifactPathFromSpec,
-  getAllowedStatusesForType,
-  getArtifactSpec,
-  getDefaultStatusForType,
-  isStatusAllowedForType,
-  normalizeDraftFromSpec,
-  validateArtifactAgainstSpec,
-} from './artifact-rules';
-
-export type {
-  ArtifactDraftInput,
-} from './artifact-rules';
+  ARTIFACT_TYPES,
+  canonicalPath,
+  defaultStatusFor,
+  domainFor,
+  isArtifactType,
+  isDomain,
+  isStatusAllowed,
+  statusesFor,
+  typeFromPath,
+} from './types';

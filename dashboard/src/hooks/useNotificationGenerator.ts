@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { useArtifacts } from '../store/selectors';
+import { invoke } from '../data/ipc';
+import { useArtifacts } from '../data/selectors';
 import { useNotificationsStore } from '../store/notifications';
 import { parseISO, startOfDay, isToday, isTomorrow, isBefore, differenceInDays } from 'date-fns';
 
@@ -233,20 +234,15 @@ function isQuietHours(settings: { quietHoursEnabled: boolean; quietHoursStart: s
 function triggerDesktopNotifications(
   notifications: Array<{ type: string; title: string; body: string; artifactPath: string }>
 ) {
-  if (!window.electronAPI?.showNotification) return;
-
   // Group notifications to avoid spam
   if (notifications.length > 3) {
-    window.electronAPI.showNotification({
+    void invoke('notifications:show', {
       title: 'myOS',
       body: `You have ${notifications.length} items that need attention`,
-    });
+    }).catch(() => undefined);
   } else {
     for (const notification of notifications) {
-      window.electronAPI.showNotification({
-        title: notification.title,
-        body: notification.body,
-      });
+      void invoke('notifications:show', { title: notification.title, body: notification.body }).catch(() => undefined);
     }
   }
 }

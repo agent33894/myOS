@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ArtifactStatus, ArtifactType, type Artifact } from '../../types/artifacts';
+import { ArtifactStatus, ArtifactType, type ArtifactSummary } from '@shared/types';
 import {
   buildProjectInkMap,
   buildSections,
@@ -10,11 +10,11 @@ import {
 } from './libraryIndex';
 
 let seq = 0;
-function makeArtifact(overrides: Partial<Artifact>): Artifact {
+function makeArtifact(overrides: Partial<ArtifactSummary>): ArtifactSummary {
   seq += 1;
   return {
     id: `artifact-${seq}`,
-    title: `Artifact ${seq}`,
+    title: `ArtifactSummary ${seq}`,
     type: ArtifactType.MEMO,
     tags: [],
     status: 'active',
@@ -24,10 +24,10 @@ function makeArtifact(overrides: Partial<Artifact>): Artifact {
     updated: '2026-08-01T00:00:00.000Z',
     filePath: `vault/work/memos/artifact-${seq}.md`,
     ...overrides,
-  } as Artifact;
+  } as ArtifactSummary;
 }
 
-const hit = (artifact: Artifact) => ({ artifact, score: 1 });
+const hit = (artifact: ArtifactSummary) => ({ artifact, score: 1 });
 
 describe('buildSections', () => {
   it('defaults to one uncapped list, newest created first, with a trailing archive section', () => {

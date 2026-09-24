@@ -1,11 +1,9 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { Feather, PanelLeftClose, PanelLeftOpen, Settings } from 'lucide-react';
 import { sidebarRoutes, type AppRoute } from '../../app/routes';
-import { useArtifactsStore } from '../../store/artifacts';
-import { useTasksStore } from '../../store/tasks';
+import { useArtifacts, useCounts } from '../../data/selectors';
 import { useCommandPaletteActions, useQuickCaptureActions } from '../../store/selectors';
-import { selectInPlay } from '../today/todaySelectors';
 import { cn } from '../../lib/utils';
 import { SidebarProjects } from './sidebar/SidebarProjects';
 import { SidebarMasthead } from './sidebar/SidebarMasthead';
@@ -19,20 +17,12 @@ interface SidebarProps {
 
 export function Sidebar({ collapsed, onToggleCollapsed }: SidebarProps) {
   const location = useLocation();
-  const artifacts = useArtifactsStore((state) => state.artifacts);
+  const artifacts = useArtifacts();
   const { openCommandPalette } = useCommandPaletteActions();
   const { openQuickCapture } = useQuickCaptureActions();
-  // Badges must count exactly what their page renders: Today shows In Play,
-  // Unfiled shows the tasks store's waiting queue (archived/done excluded).
-  const unfiledCount = useTasksStore((state) => state.inboxEntries.length);
-  const counts = useMemo(
-    () => ({
-      today: selectInPlay(artifacts).length,
-      unfiled: unfiledCount,
-      library: artifacts.length,
-    }),
-    [artifacts, unfiledCount],
-  );
+  // Badges count exactly what their page renders.
+  const { today, inbox } = useCounts();
+  const counts = { today, unfiled: inbox, library: artifacts.length };
 
   // Remember the last URL (lens, selection, project) per section so switching
   // sections and back restores your place instead of resetting it.

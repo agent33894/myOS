@@ -6,8 +6,9 @@ import { PaneDivider } from '../components/ui/PaneDivider';
 import CommandPalette from '../components/layout/CommandPalette';
 import QuickCapture from '../components/layout/QuickCapture';
 import KeyboardShortcutsModal from '../components/layout/KeyboardShortcutsModal';
-import { useArtifactsStore } from '../store/artifacts';
-import { useFileWatcher } from '../hooks/useFileWatcher';
+import { useArtifactSync } from '../data/store';
+import { invoke, subscribe } from '../data/ipc';
+import { useUndoShortcuts } from '../data/undo';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { useNotificationGenerator } from '../hooks/useNotificationGenerator';
 import { useModalStates, useCommandPaletteActions, useQuickCaptureActions } from '../store/selectors';
@@ -23,7 +24,6 @@ const NARROW_WINDOW_QUERY = '(max-width: 900px)';
 export default function AppShell() {
   const location = useLocation();
   const route = getRoute(location.pathname);
-  const loadArtifacts = useArtifactsStore((state) => state.loadArtifacts);
   const [sidebarWidth, setSidebarWidth] = useState(() => Number(localStorage.getItem(SIDEBAR_WIDTH_KEY)) || 212);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(
     () => localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === '1',
@@ -36,7 +36,6 @@ export default function AppShell() {
   const { openCommandPalette } = useCommandPaletteActions();
   const { openQuickCapture } = useQuickCaptureActions();
 
-  useEffect(() => { void loadArtifacts(); }, [loadArtifacts]);
   useEffect(() => {
     const media = window.matchMedia(NARROW_WINDOW_QUERY);
     const sync = () => setIsNarrowWindow(media.matches);
@@ -78,8 +77,9 @@ export default function AppShell() {
     return () => document.removeEventListener('keydown', onKeyDown);
   }, [anyOverlayOpen]);
   // `myos --capture` (e.g. from a Hyprland keybinding) opens Quick Capture here.
-  useEffect(() => window.electronAPI.onOpenQuickCapture(() => useUIStore.getState().openQuickCapture()), []);
-  useFileWatcher();
+  useEffect(() => subscribe('capture:open', () => useUIStore.getState().openQuickCapture()), []);
+  useArtifactSync();
+  useUndoShortcuts();
   useKeyboardShortcuts();
   useNotificationGenerator();
 
@@ -105,7 +105,7 @@ export default function AppShell() {
             {isLinux ? (
               <button
                 className="chronicle-window-close"
-                onClick={() => void window.electronAPI.closeWindow()}
+                onClick={() => void invoke('window:close')}
                 aria-label="Close window"
                 title="Close window"
               >

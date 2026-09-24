@@ -1,7 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import {
-  ListTodo,
-  FileEdit,
   Database,
   FolderOpen,
   Copy,
@@ -10,60 +9,29 @@ import {
   Trash2,
 } from 'lucide-react';
 import { useSettingsStore } from '../../store/settings';
+import { chooseWorkspace, useWorkspacePath } from '../../data/workspace';
 import { Button } from '../ui/button';
-import { Input } from '../ui/input';
-import { Toggle } from '../ui/toggle';
-import { CollapsibleSection, SettingRow } from './CollapsibleSection';
+import { CollapsibleSection } from './CollapsibleSection';
 
 export default function GeneralSettings() {
-  const {
-    showCompletedTasks,
-    setShowCompletedTasks,
-    enableAutoSave,
-    setEnableAutoSave,
-    resetAllSettings,
-  } = useSettingsStore();
+  const resetAllSettings = useSettingsStore((state) => state.resetAllSettings);
 
   const [copiedPath, setCopiedPath] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [showClearStorageConfirm, setShowClearStorageConfirm] = useState(false);
-  const [vaultPath, setVaultPath] = useState<string>('');
-  const [vaultPathInput, setVaultPathInput] = useState<string>('');
-  const [isEditingVaultPath, setIsEditingVaultPath] = useState(false);
-  const [vaultPathError, setVaultPathError] = useState<string | null>(null);
+  const [vaultPath, setVaultPath] = useWorkspacePath();
 
-  // Get vault path from electron on mount
-  useEffect(() => {
-    window.electronAPI.getVaultPath().then((path) => {
-      setVaultPath(path);
-      setVaultPathInput(path);
-    }).catch((err) => {
-      console.error('Failed to get vault path:', err);
-    });
-  }, []);
-
-  const handleSaveVaultPath = async () => {
-    const success = await window.electronAPI.setVaultPath(vaultPathInput);
-    if (success) {
-      setVaultPath(vaultPathInput);
-      setIsEditingVaultPath(false);
-      setVaultPathError(null);
-      window.location.reload();
-    } else {
-      setVaultPathError('Invalid path or directory does not exist');
+  const handleChooseVaultPath = async () => {
+    try {
+      const selectedPath = await chooseWorkspace();
+      if (selectedPath) setVaultPath(selectedPath);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Could not use that folder');
     }
   };
 
-  const handleChooseVaultPath = async () => {
-    const selectedPath = await window.electronAPI.chooseVaultFolder();
-    if (!selectedPath) return;
-    setVaultPath(selectedPath);
-    setVaultPathInput(selectedPath);
-    setVaultPathError(null);
-    window.location.reload();
-  };
-
   const handleCopyPath = async () => {
+    if (!vaultPath) return;
     await navigator.clipboard.writeText(vaultPath);
     setCopiedPath(true);
     setTimeout(() => setCopiedPath(false), 2000);
@@ -79,46 +47,8 @@ export default function GeneralSettings() {
     window.location.reload();
   };
 
-  // Perspective labels
-
-  // Sort labels
-
-  // Domain labels
-
   return (
     <div className="space-y-10">
-      {/* Tasks Section */}
-      <CollapsibleSection
-        title="Tasks"
-        icon={ListTodo}
-        description="Behavior for task lists across Today, Unfiled, and Projects"
-      >
-        <div className="space-y-1">
-          <SettingRow
-            label="Show Completed Tasks"
-            description="Display completed tasks in task lists"
-          >
-            <Toggle enabled={showCompletedTasks} onChange={setShowCompletedTasks} />
-          </SettingRow>
-        </div>
-      </CollapsibleSection>
-
-      {/* Editor Section */}
-      <CollapsibleSection
-        title="Editor"
-        icon={FileEdit}
-        description="Configure the artifact editor behavior"
-      >
-        <div className="space-y-1">
-          <SettingRow
-            label="Auto-save"
-            description="Automatically save changes as you edit"
-          >
-            <Toggle enabled={enableAutoSave} onChange={setEnableAutoSave} />
-          </SettingRow>
-        </div>
-      </CollapsibleSection>
-
       {/* Data & Storage Section */}
       <CollapsibleSection
         title="Data & Storage"
@@ -133,53 +63,14 @@ export default function GeneralSettings() {
             <div className="text-xs text-muted-foreground mb-2">
               Your knowledge artifacts are stored here
             </div>
-            {isEditingVaultPath ? (
-              <div className="space-y-2">
-                <Input
-                  type="text"
-                  value={vaultPathInput}
-                  onChange={(e) => setVaultPathInput(e.target.value)}
-                  className="font-mono text-xs"
-                  placeholder="/path/to/vault"
-                />
-                {vaultPathError && (
-                  <div className="text-xs ed-text-error">{vaultPathError}</div>
-                )}
-                <div className="flex items-center gap-2">
-                  <Button size="sm" onClick={handleSaveVaultPath}>
-                    <Check className="w-4 h-4 mr-1" />
-                    Save
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setIsEditingVaultPath(false);
-                      setVaultPathInput(vaultPath);
-                      setVaultPathError(null);
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <code className="block w-full truncate rounded-md bg-secondary px-3 py-2 font-mono text-xs text-foreground">
-                  {vaultPath || 'Loading…'}
-                </code>
-                <div className="flex items-center gap-2">
-                  <Button onClick={() => void handleChooseVaultPath()} variant="outline" size="sm">
-                    <FolderOpen className="mr-1 h-4 w-4" />
-                    Choose folder…
-                  </Button>
-                <Button
-                  onClick={() => setIsEditingVaultPath(true)}
-                  variant="outline"
-                  size="sm"
-                >
-                  <FileEdit className="mr-1 h-4 w-4" />
-                  Enter path
+            <div className="space-y-2">
+              <code className="block w-full truncate rounded-md bg-secondary px-3 py-2 font-mono text-xs text-foreground">
+                {vaultPath || 'Loading…'}
+              </code>
+              <div className="flex items-center gap-2">
+                <Button onClick={() => void handleChooseVaultPath()} variant="outline" size="sm">
+                  <FolderOpen className="mr-1 h-4 w-4" />
+                  Change folder…
                 </Button>
                 <Button
                   onClick={handleCopyPath}
@@ -194,9 +85,8 @@ export default function GeneralSettings() {
                     <Copy className="w-4 h-4 text-muted-foreground" />
                   )}
                 </Button>
-                </div>
               </div>
-            )}
+            </div>
           </div>
 
           {/* Danger Zone */}

@@ -1,12 +1,12 @@
 import { useCallback, useMemo } from 'react';
-import { useArtifactsStore } from '../store/artifacts';
+import { useArtifacts } from '../data/selectors';
 
 /**
  * `project:` may hold a project's id or its title (see isLinkedToProject);
  * rows should always show the title.
  */
 export function useProjectLabel(): (project: string | undefined) => string | undefined {
-  const artifacts = useArtifactsStore((state) => state.artifacts);
+  const artifacts = useArtifacts();
   const titles = useMemo(
     () =>
       new Map(

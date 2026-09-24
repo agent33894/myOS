@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { projectSwatchFor } from '@shared/design-system/tokens';
-import type { Artifact } from '../../../types/artifacts';
+import type { ArtifactSummary } from '@shared/types';
 import { cn } from '../../../lib/utils';
 import { useProjectRename } from '../../projects/projectRename';
 import { useSidebarRowDnd } from './sidebarRowDnd';
@@ -9,9 +9,9 @@ import { SidebarProjectMenu } from './SidebarProjectMenu';
 import { SidebarProjectDeleteDialog } from './SidebarProjectDeleteDialog';
 
 interface SidebarProjectRowProps {
-  project: Artifact;
+  project: ArtifactSummary;
   /** Current pinned rows, for reorder targets and appending to the pin order. */
-  pinnedRows: Artifact[];
+  pinnedRows: ArtifactSummary[];
   preload?: () => void;
 }
 

@@ -5,7 +5,8 @@ import Modal from '../ui/Modal';
 import { Skeleton } from '../ui/skeleton';
 import DiffFileSection from './DiffFileSection';
 import { parseDiff } from '../../utils/parseDiff';
-import type { CommitSummary } from './types';
+import type { CommitSummary } from '@shared/ipc/contracts';
+import { invoke } from '../../data/ipc';
 
 interface CommitDiffModalProps {
   isOpen: boolean;
@@ -39,15 +40,8 @@ export default function CommitDiffModal({
     setError(null);
     setRawDiff(null);
 
-    window.electronAPI
-      .getCommitDiff(projectPath, commitHash)
-      .then((result) => {
-        if (result.success && result.data) {
-          setRawDiff(result.data);
-        } else {
-          setError(result.error || 'Failed to load diff');
-        }
-      })
+    invoke('git:commit-diff', projectPath, commitHash)
+      .then(setRawDiff)
       .catch((err) => {
         setError(err instanceof Error ? err.message : 'Failed to load diff');
       })

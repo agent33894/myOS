@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Plus } from 'lucide-react';
-import { Domain } from '../../types/artifacts';
+import { Domain } from '@shared/types';
 import { useCreateProject } from './useCreateProject';
 
 interface ProjectCreateRowProps {

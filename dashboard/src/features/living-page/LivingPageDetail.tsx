@@ -1,14 +1,15 @@
 import { useCallback, useRef, useState } from 'react';
 import { format } from 'date-fns';
-import type { Artifact } from '../../types/artifacts';
-import { ArtifactType, TodoStatus } from '../../types/artifacts';
+import { toast } from 'sonner';
+import { ArtifactType, TodoStatus, type ArtifactSummary } from '@shared/types';
+import { toggleComplete } from '../../data/gateway';
+import { ConflictBanner } from './ConflictBanner';
 import { getTypeLabel } from '../../utils/typeIcons';
 import SaveStateIndicator from '../../components/artifacts/SaveStateIndicator';
 import EditorialFooter from '../../components/artifacts/EditorialFooter';
 import OutlineRail from '../../components/artifacts/outline/OutlineRail';
 import { useOutlineHeadings } from '../../components/artifacts/outline/useOutlineHeadings';
 import { ChronicleCheckmark } from '../today/ChronicleCheckmark';
-import { localDateStamp } from '../today/todaySelectors';
 import { cn } from '../../lib/utils';
 import { useLivingPageController } from './useLivingPageController';
 import { useProjectLabel } from '../../hooks/useProjectLabel';
@@ -30,10 +31,10 @@ export default function LivingPageDetail({
   artifact,
   onDeleted,
 }: {
-  artifact: Artifact;
+  artifact: ArtifactSummary;
   onDeleted?: () => void;
 }) {
-  const controller = useLivingPageController(artifact);
+  const controller = useLivingPageController(artifact.filePath);
   const projectLabel = useProjectLabel();
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const contentRootRef = useRef<HTMLDivElement | null>(null);
@@ -54,13 +55,10 @@ export default function LivingPageDetail({
   const isTodo = artifact.type === ArtifactType.TODO;
   const isDone = artifact.status === TodoStatus.DONE;
 
-  const toggleDone = () => {
-    const label = isDone ? `Reopen ${artifact.title}` : `Complete ${artifact.title}`;
-    const overrides = isDone
-      ? { status: TodoStatus.PENDING, completedDate: undefined }
-      : { status: TodoStatus.DONE, completedDate: localDateStamp() };
-    void controller.saveNow(overrides, label);
-  };
+  const toggleDone = () =>
+    void toggleComplete(artifact).catch((error: unknown) =>
+      toast.error(error instanceof Error ? error.message : 'Could not update the task'),
+    );
 
   const metaLine = [
     new Date(artifact.updated).toLocaleDateString([], {
@@ -117,8 +115,7 @@ export default function LivingPageDetail({
               <ArtifactDeleteMenu
                 artifact={artifact}
                 disabled={controller.isSaving}
-                onDeleteStart={controller.beginDelete}
-                onDeleteFailure={controller.cancelDelete}
+                onDeleteStart={controller.saveNow}
                 onDeleted={onDeleted}
               />
             </div>
@@ -135,6 +132,9 @@ export default function LivingPageDetail({
         </div>
       </div>
       <EditorialFooter content={controller.docBody ?? ''} />
+      {controller.conflict ? (
+        <ConflictBanner onLoadTheirs={controller.loadTheirs} onKeepMine={() => void controller.keepMine()} />
+      ) : null}
     </article>
   );
 }

@@ -1,28 +1,13 @@
-import { getArtifactSpec, getDefaultDomainForType } from '@shared/spec/artifact-rules';
-import type { ArtifactDraft } from '@/gateways/artifactsGateway';
-import { ArtifactStatus, ArtifactType, Domain } from '../../types/artifacts';
+import { ArtifactType, Domain, type ArtifactDraft } from '@shared/types';
 
-/** Domains a project may live in, in spec order (Work first). */
-export const PROJECT_DOMAINS = getArtifactSpec(ArtifactType.PROJECT)
-  .allowedDomains as readonly Domain[];
+export const PROJECT_DOMAINS = Object.values(Domain);
 
 /** The quiet default the creation panel opens with. */
-export const DEFAULT_PROJECT_DOMAIN = (getDefaultDomainForType(ArtifactType.PROJECT) ??
-  Domain.WORK) as Domain;
+export const DEFAULT_PROJECT_DOMAIN = Domain.WORK;
 
-/**
- * The complete draft a new project is created from: name and domain only.
- * Projects carry no due date — scheduling belongs to future milestones — and
- * omitting content lets the spec scaffold (Intent / Outcomes / Rationale)
- * build the brief.
- */
+/** A new project is a name and a domain; its page starts empty. */
 export function buildProjectDraft(title: string, domain: Domain): ArtifactDraft {
-  return {
-    title,
-    type: ArtifactType.PROJECT,
-    domain,
-    status: ArtifactStatus.ACTIVE,
-  };
+  return { title, type: ArtifactType.PROJECT, domain };
 }
 
 /**

@@ -1,5 +1,5 @@
 import { projectSwatchFor } from '@shared/design-system/tokens';
-import { ArtifactType, type Artifact } from '../../types/artifacts';
+import { ArtifactType, type ArtifactSummary } from '@shared/types';
 import type { SearchHit } from './librarySearch';
 
 /** Editorial section order: knowledge documents first, operational streams last. */
@@ -56,18 +56,18 @@ function sectionLabel(id: SectionId): string {
   return label.charAt(0).toUpperCase() + label.slice(1);
 }
 
-function artifactTimestamp(artifact: Artifact, sort: LibrarySort): number {
+function artifactTimestamp(artifact: ArtifactSummary, sort: LibrarySort): number {
   const timestamp = new Date(artifact[sort]).getTime();
   return Number.isFinite(timestamp) ? timestamp : 0;
 }
 
-const byArtifactDateDesc = (sort: LibrarySort) => (a: Artifact, b: Artifact) =>
+const byArtifactDateDesc = (sort: LibrarySort) => (a: ArtifactSummary, b: ArtifactSummary) =>
   artifactTimestamp(b, sort) - artifactTimestamp(a, sort);
 
 const byHitDateDesc = (sort: LibrarySort) => (a: SearchHit, b: SearchHit) =>
   artifactTimestamp(b.artifact, sort) - artifactTimestamp(a.artifact, sort);
 
-const asHits = (artifacts: Artifact[]): SearchHit[] =>
+const asHits = (artifacts: ArtifactSummary[]): SearchHit[] =>
   artifacts.map((artifact) => ({ artifact, score: 0 }));
 
 function toSection(id: SectionId, rows: SearchHit[], expanded: boolean, cap: number | null = SECTION_CAP): IndexSection {
@@ -99,7 +99,7 @@ interface SectionOptions {
  */
 export function buildSections(
   hits: SearchHit[] | null,
-  artifacts: Artifact[],
+  artifacts: ArtifactSummary[],
   { types = new Set(), expanded = null, sort = 'created', grouping = 'none' }: SectionOptions = {},
 ): IndexSection[] {
   const browsing = hits === null;
@@ -134,7 +134,7 @@ export function buildSections(
 }
 
 /** Per-type counts for the filter chips, over the current (pre-chip) result set. */
-export function typeMatchCounts(hits: SearchHit[] | null, artifacts: Artifact[]): Map<ArtifactType, number> {
+export function typeMatchCounts(hits: SearchHit[] | null, artifacts: ArtifactSummary[]): Map<ArtifactType, number> {
   const counts = new Map<ArtifactType, number>();
   const source = hits ?? asHits(artifacts);
   for (const { artifact } of source) {
@@ -145,7 +145,7 @@ export function typeMatchCounts(hits: SearchHit[] | null, artifacts: Artifact[])
 }
 
 /** Masthead garnish: "312 artifacts · 11 types" over the live (non-archived) vault. */
-export function mastheadCounts(artifacts: Artifact[]): { total: number; typeCount: number } {
+export function mastheadCounts(artifacts: ArtifactSummary[]): { total: number; typeCount: number } {
   const live = artifacts.filter((artifact) => artifact.status !== 'archived');
   return { total: live.length, typeCount: new Set(live.map((artifact) => artifact.type)).size };
 }
@@ -155,7 +155,7 @@ export function mastheadCounts(artifacts: Artifact[]): { total: number; typeCoun
  * artifact's pinned swatch (or title hash) wins; unknown references fall back
  * to hashing the raw string so renames stay stable.
  */
-export function buildProjectInkMap(artifacts: Artifact[]): Map<string, string> {
+export function buildProjectInkMap(artifacts: ArtifactSummary[]): Map<string, string> {
   const inks = new Map<string, string>();
   for (const artifact of artifacts) {
     if (artifact.type !== ArtifactType.PROJECT) continue;

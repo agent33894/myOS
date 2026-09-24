@@ -1,6 +1,6 @@
 import type { RefObject } from 'react';
 import { Search } from 'lucide-react';
-import type { ArtifactType } from '../../types/artifacts';
+import type { ArtifactType } from '@shared/types';
 import { SegmentedControl } from '../../components/ui/SegmentedControl';
 import { cn } from '../../lib/utils';
 import { INDEX_TYPE_ORDER, type LibraryGrouping, type LibrarySort } from './libraryIndex';

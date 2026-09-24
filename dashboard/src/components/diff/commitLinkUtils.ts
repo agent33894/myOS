@@ -18,9 +18,3 @@ export function extractCommitHashFromHref(href: string): string | null {
     return null;
   }
 }
-
-export function deriveProjectPathFromArtifactFilePath(filePath?: string): string | null {
-  if (!filePath) return null;
-  const match = filePath.match(/^(.*)[/\\]vault(?:[/\\]|$)/);
-  return match ? match[1] : null;
-}

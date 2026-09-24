@@ -1,4 +1,4 @@
-import type { Artifact } from '../../types/artifacts';
+import type { ArtifactSummary } from '@shared/types';
 import { projectInkFor, SECTION_CAP, type IndexSection, type LibrarySort, type SectionId } from './libraryIndex';
 import { LibraryIndexRow } from './LibraryIndexRow';
 
@@ -9,7 +9,7 @@ interface LibraryTypeSectionProps {
   sort: LibrarySort;
   /** Label each row with its type when sections no longer imply it. */
   showType: boolean;
-  onOpen: (artifact: Artifact) => void;
+  onOpen: (artifact: ArtifactSummary) => void;
   onToggleExpand: (id: SectionId) => void;
 }
 

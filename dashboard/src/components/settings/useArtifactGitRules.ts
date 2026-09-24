@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import type { ArtifactGitRule } from '../../../shared/ipc/contracts';
+import type { ArtifactGitRule } from '@shared/ipc/contracts';
+import { invoke } from '../../data/ipc';
 import {
   artifactDomains,
   countArtifactRuleModes,
@@ -33,7 +34,7 @@ export function useArtifactGitRules() {
       setArtifactRulesLoading(true);
       setArtifactRulesError(null);
       try {
-        const config = await window.electronAPI.getArtifactGitRules();
+        const config = await invoke('git:rules:get');
         if (!isMounted) return;
         setArtifactGitRules(config.rules);
         setArtifactRootPrefix(config.artifactRootPrefix || '');
@@ -60,7 +61,7 @@ export function useArtifactGitRules() {
     setArtifactRulesSaving(true);
     setArtifactRulesError(null);
     try {
-      const config = await window.electronAPI.setArtifactGitRules(rules);
+      const config = await invoke('git:rules:set', rules);
       setArtifactGitRules(config.rules);
       setArtifactRootPrefix(config.artifactRootPrefix || '');
       setArtifactGitignorePath(config.gitignorePath);

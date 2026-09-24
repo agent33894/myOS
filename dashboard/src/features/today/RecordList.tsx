@@ -1,21 +1,21 @@
 import { memo, useMemo } from 'react';
-import type { Artifact } from '../../types/artifacts';
+import type { ArtifactSummary } from '@shared/types';
 import { cn } from '../../lib/utils';
 import { localDateStamp, recordDateStamp, recordKind, type RecordKind } from './todaySelectors';
 import { ChronicleCheckmark } from './ChronicleCheckmark';
 import { useProjectLabel } from '../../hooks/useProjectLabel';
 
 interface RecordListProps {
-  items: Artifact[];
-  allArtifacts: Artifact[];
+  items: ArtifactSummary[];
+  allArtifacts: ArtifactSummary[];
   selectedId: string | null;
   /** id -> timestamp for rows that just crossed the now line. */
   arriving: Map<string, string>;
   completionTimes: Record<string, string>;
-  onSelect: (artifact: Artifact) => void;
+  onSelect: (artifact: ArtifactSummary) => void;
 }
 
-const EMPTY_CHILDREN: Artifact[] = [];
+const EMPTY_CHILDREN: ArtifactSummary[] = [];
 
 export function RecordList({
   items,
@@ -27,7 +27,7 @@ export function RecordList({
 }: RecordListProps) {
   const groups = useMemo(() => groupByDay(items), [items]);
   const doneChildrenByParent = useMemo(() => {
-    const map = new Map<string, Artifact[]>();
+    const map = new Map<string, ArtifactSummary[]>();
     for (const artifact of allArtifacts) {
       if (!artifact.parentId || artifact.status !== 'done') continue;
       const group = map.get(artifact.parentId);
@@ -78,12 +78,12 @@ const RecordRow = memo(function RecordRow({
   displayTimestamp,
   onSelect,
 }: {
-  item: Artifact;
-  children: Artifact[];
+  item: ArtifactSummary;
+  children: ArtifactSummary[];
   selected: boolean;
   arriving: boolean;
   displayTimestamp?: string | null;
-  onSelect: (artifact: Artifact) => void;
+  onSelect: (artifact: ArtifactSummary) => void;
 }) {
   const kind = recordKind(item) || 'capture';
   const projectLabel = useProjectLabel();
@@ -115,7 +115,7 @@ const RecordRow = memo(function RecordRow({
   );
 });
 
-function RecordTitle({ item, kind }: { item: Artifact; kind: RecordKind }) {
+function RecordTitle({ item, kind }: { item: ArtifactSummary; kind: RecordKind }) {
   if (kind === 'capture')
     return (
       <strong className="chronicle-record-quote">
@@ -150,8 +150,8 @@ function RecordTitle({ item, kind }: { item: Artifact; kind: RecordKind }) {
   );
 }
 
-function groupByDay(items: Artifact[]): Array<[string, Artifact[]]> {
-  const groups = new Map<string, Artifact[]>();
+function groupByDay(items: ArtifactSummary[]): Array<[string, ArtifactSummary[]]> {
+  const groups = new Map<string, ArtifactSummary[]>();
   for (const item of items) {
     const day = recordDateStamp(item);
     const group = groups.get(day) || [];
@@ -171,7 +171,7 @@ function formatDayTitle(day: string): string {
   });
 }
 
-function buildDateline(day: string, items: Artifact[]): string {
+function buildDateline(day: string, items: ArtifactSummary[]): string {
   const date = new Date(`${day}T12:00:00`);
   const counts = items.reduce(
     (summary, item) => {
@@ -189,7 +189,7 @@ function buildDateline(day: string, items: Artifact[]): string {
   return parts.join(' · ');
 }
 
-function formatRecordTime(item: Artifact): string {
+function formatRecordTime(item: ArtifactSummary): string {
   const raw = item.updated || item.created;
   if (!raw || !raw.includes('T')) return '—';
   const date = new Date(raw);

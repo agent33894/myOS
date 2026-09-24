@@ -1,4 +1,4 @@
-import type { Artifact } from '../../types/artifacts';
+import type { ArtifactSummary } from '@shared/types';
 import LivingPageDetail from '../living-page/LivingPageDetail';
 
 /**
@@ -10,7 +10,7 @@ export function ArtifactDetail({
   artifact,
   onDeleted,
 }: {
-  artifact: Artifact | null;
+  artifact: ArtifactSummary | null;
   onDeleted?: () => void;
 }) {
   if (!artifact) {

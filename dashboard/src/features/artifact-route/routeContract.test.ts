@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ArtifactType } from '../../types/artifacts';
+import { ArtifactType } from '@shared/types';
 import {
   toArtifactNavigationUrl,
   toLegacyArtifactRedirectUrl,

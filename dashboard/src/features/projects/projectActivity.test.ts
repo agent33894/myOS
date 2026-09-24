@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import type { Artifact } from '../../types/artifacts';
-import { ArtifactType, TodoStatus } from '../../types/artifacts';
+import type { ArtifactSummary } from '@shared/types';
+import { ArtifactType, TodoStatus } from '@shared/types';
 import { deriveActivity } from './projectActivity';
 
-function artifact(overrides: Partial<Artifact>): Artifact {
+function artifact(overrides: Partial<ArtifactSummary>): ArtifactSummary {
   return {
     id: 'a-1',
-    title: 'Artifact',
+    title: 'ArtifactSummary',
     type: ArtifactType.TODO,
     tags: [],
     status: 'pending',
@@ -16,7 +16,7 @@ function artifact(overrides: Partial<Artifact>): Artifact {
     updated: '2026-08-01',
     filePath: '/vault/work/todos/a-1.md',
     ...overrides,
-  } as Artifact;
+  } as ArtifactSummary;
 }
 
 const doneTask = (id: string, title: string, completedDate?: string, updated = '2026-08-01') =>

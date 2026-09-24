@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { format, parse } from 'date-fns';
 import { ChevronDown, FolderOpen, GitBranch } from 'lucide-react';
-import { getAllowedStatusesForType } from '@shared/spec/artifact-rules';
-import type { ProjectWithStats } from '../../hooks/useProjects';
-import type { Artifact } from '../../types/artifacts';
-import { ArtifactType, TodoPriority, TodoStatus } from '../../types/artifacts';
-import { dateOnly } from '../../hooks/projectStats';
-import { useArtifactsStore } from '../../store/artifacts';
+import { statusesFor } from '@shared/spec';
+import type { ProjectWithStats } from '../../data/projects';
+import type { ArtifactPatch, ArtifactSummary } from '@shared/types';
+import { ArtifactType, TodoPriority, TodoStatus } from '@shared/types';
+import { dateOnly } from '../../data/projects';
+import { useArtifacts } from '../../data/selectors';
+import { invoke } from '../../data/ipc';
 import { getTypeLabel } from '../../utils/typeIcons';
 import { Calendar } from '../../components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '../../components/ui/popover';
@@ -38,16 +39,16 @@ function Prop({ label, children }: { label: string; children: React.ReactNode })
 }
 
 /** Status menu driven by the artifact spec's allowed statuses for the type. */
-function StatusControl({ artifact }: { artifact: Artifact }) {
+function StatusControl({ artifact }: { artifact: ArtifactSummary }) {
   const { applyEdit } = useArtifactEdit();
-  const statuses = getAllowedStatusesForType(artifact.type);
+  const statuses = statusesFor(artifact.type);
   const current = String(artifact.status ?? statuses[0]);
 
   const setStatus = (status: string) => {
     if (status === current) return;
-    const changes: Partial<Artifact> = { status: status as Artifact['status'] };
+    const changes: ArtifactPatch = { status: status as ArtifactSummary['status'] };
     if (status === TodoStatus.DONE) changes.completedDate = localDateStamp();
-    else if (current === TodoStatus.DONE) changes.completedDate = undefined;
+    else if (current === TodoStatus.DONE) changes.completedDate = null;
     void applyEdit(artifact, changes, `Mark ${status}`);
   };
 
@@ -75,7 +76,7 @@ function StatusControl({ artifact }: { artifact: Artifact }) {
   );
 }
 
-function PriorityControl({ artifact }: { artifact: Artifact }) {
+function PriorityControl({ artifact }: { artifact: ArtifactSummary }) {
   const { applyEdit } = useArtifactEdit();
   const current = artifact.priority ?? '';
 
@@ -168,8 +169,8 @@ function DateControl({
 
 interface ProjectInspectorProps {
   project: ProjectWithStats;
-  item: Artifact | null;
-  onOpenArtifact: (artifact: Artifact) => void;
+  item: ArtifactSummary | null;
+  onOpenArtifact: (artifact: ArtifactSummary) => void;
 }
 
 /**
@@ -178,14 +179,14 @@ interface ProjectInspectorProps {
  * the calendar; free text is reserved for tags.
  */
 export function ProjectInspector({ project, item, onOpenArtifact }: ProjectInspectorProps) {
-  const artifacts = useArtifactsStore((state) => state.artifacts);
+  const artifacts = useArtifacts();
   const { applyEdit } = useArtifactEdit();
   const { setProjectStatus } = useProjectStatus();
 
   if (!item) {
     // The project is an artifact too: its own properties live here.
     const base = projectBaseArtifact(project.id);
-    const projectStatuses = getAllowedStatusesForType(ArtifactType.PROJECT);
+    const projectStatuses = statusesFor(ArtifactType.PROJECT);
     const current = String(project.status ?? 'active');
     return (
       <div className="chronicle-inspector-body">
@@ -228,7 +229,7 @@ export function ProjectInspector({ project, item, onOpenArtifact }: ProjectInspe
           <Prop label="Repository">
             <button
               className="chronicle-inspector-link"
-              onClick={() => void window.electronAPI.openExternalUrl(project.repoUrl!)}
+              onClick={() => void invoke('shell:open-external', project.repoUrl!)}
               title={project.repoUrl}
             >
               <GitBranch className="h-3 w-3" aria-hidden="true" />
@@ -241,7 +242,7 @@ export function ProjectInspector({ project, item, onOpenArtifact }: ProjectInspe
         <Prop label="File">
           <button
             className="chronicle-inspector-link"
-            onClick={() => void window.electronAPI.showItemInFolder(project.filePath)}
+            onClick={() => void invoke('shell:reveal', project.filePath)}
             title="Reveal in Finder"
           >
             <FolderOpen className="h-3 w-3" aria-hidden="true" />
@@ -257,7 +258,7 @@ export function ProjectInspector({ project, item, onOpenArtifact }: ProjectInspe
   const overdue = due !== null && due < localDateStamp() && item.status !== TodoStatus.DONE;
   const related = (item.related ?? [])
     .map((id) => artifacts.find((artifact) => artifact.id === id))
-    .filter((artifact): artifact is Artifact => Boolean(artifact));
+    .filter((artifact): artifact is ArtifactSummary => Boolean(artifact));
   const dateline = [
     shortDate(item.created) ? `created ${shortDate(item.created)}` : null,
     shortDate(item.updated) ? `edited ${shortDate(item.updated)}` : null,
@@ -320,7 +321,7 @@ export function ProjectInspector({ project, item, onOpenArtifact }: ProjectInspe
       <Prop label="File">
         <button
           className="chronicle-inspector-link"
-          onClick={() => void window.electronAPI.showItemInFolder(item.filePath)}
+          onClick={() => void invoke('shell:reveal', item.filePath)}
           title="Reveal in Finder"
         >
           <FolderOpen className="h-3 w-3" aria-hidden="true" />

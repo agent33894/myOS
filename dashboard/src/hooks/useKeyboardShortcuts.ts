@@ -1,9 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
 import { useCommandPaletteActions, useModalToggleActions } from '../store/selectors';
 import { useUIStore } from '../store/ui';
-import { useUndoRedoStore } from '../store/undoRedo';
 import { sidebarRoutes } from '../app/routes';
 import { hasPrimaryModifier } from '../utils/platform';
 
@@ -70,48 +68,6 @@ export function useKeyboardShortcuts() {
           toggleKeyboardShortcuts();
         }
       }
-
-      // Undo: Cmd+Z (Mac) or Ctrl+Z (Windows)
-      // Only handle global undo when not in a content editable area (TipTap has its own undo)
-      if (hasPrimaryModifier(e) && e.key.toLowerCase() === 'z' && !e.shiftKey) {
-        const target = e.target as HTMLElement;
-        const isContentEditable = target.isContentEditable || target.closest('[contenteditable="true"]');
-        const isTextArea = target.tagName === 'TEXTAREA';
-        // Skip if in TipTap editor or textarea - they have their own undo
-        if (!isContentEditable && !isTextArea) {
-          e.preventDefault();
-          // Access store directly in event handler (safe pattern)
-          const undoStore = useUndoRedoStore.getState();
-          if (undoStore.canUndo()) {
-            const lastOp = undoStore.getLastOperation();
-            undoStore.undo().then((success) => {
-              if (success && lastOp) {
-                toast.success(`Undone: ${lastOp.description}`);
-              }
-            });
-          }
-        }
-      }
-
-      // Redo: Cmd+Shift+Z (Mac) or Ctrl+Shift+Z (Windows)
-      if (hasPrimaryModifier(e) && e.shiftKey && e.key.toLowerCase() === 'z') {
-        const target = e.target as HTMLElement;
-        const isContentEditable = target.isContentEditable || target.closest('[contenteditable="true"]');
-        const isTextArea = target.tagName === 'TEXTAREA';
-        if (!isContentEditable && !isTextArea) {
-          e.preventDefault();
-          // Access store directly in event handler (safe pattern)
-          const undoStore = useUndoRedoStore.getState();
-          if (undoStore.canRedo()) {
-            undoStore.redo().then((success) => {
-              if (success) {
-                toast.success('Redone');
-              }
-            });
-          }
-        }
-      }
-
     };
 
     window.addEventListener('keydown', handleKeyDown);

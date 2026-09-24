@@ -14,8 +14,10 @@ import { toast } from 'sonner';
 import { Toolbar } from '../tiptap-templates/simple/toolbar';
 import { FloatingToolbar } from './FloatingToolbar';
 import { cn } from '../../lib/utils';
-import { ArtifactType } from '../../types/artifacts';
-import { useArtifactsStore } from '../../store/artifacts';
+import { ArtifactType } from '@shared/types';
+import { invoke } from '../../data/ipc';
+import { useArtifacts } from '../../data/selectors';
+import { useWorkspacePath } from '../../data/workspace';
 import { toArtifactNavigationUrl } from '../../features/artifact-route/routeContract';
 import { findLinkedArtifact, findWikiLinkedArtifact } from '../../utils/artifactLinks';
 import { type MarkdownChartSpec } from '../../utils/chartBlocks';
@@ -23,10 +25,7 @@ import ChartInsertModal from '../editor/ChartInsertModal';
 import InsertCommandMenu, { type InsertCommandOption } from '../editor/InsertCommandMenu';
 import CommitDiffModal from '../diff/CommitDiffModal';
 import CommitDiffPopover from '../diff/CommitDiffPopover';
-import {
-  deriveProjectPathFromArtifactFilePath,
-  extractCommitHashFromHref,
-} from '../diff/commitLinkUtils';
+import { extractCommitHashFromHref } from '../diff/commitLinkUtils';
 import {
   createArtifactRendererExtensions,
   parseFencedCodeBlock,
@@ -122,7 +121,7 @@ export default function TipTapEditor({
   artifactType,
 }: TipTapEditorProps) {
   const navigate = useNavigate();
-  const artifacts = useArtifactsStore((state) => state.artifacts);
+  const artifacts = useArtifacts();
   const isReadMode = mode === 'read';
   // Default showToolbar based on variant if not explicitly set
   const shouldShowToolbar = !isReadMode && (showToolbar ?? (variant === 'default'));
@@ -142,12 +141,16 @@ export default function TipTapEditor({
   const draftAttachmentKeyRef = useRef(`draft-${Date.now().toString(36)}`);
   const slashSessionActiveRef = useRef(false);
   const isDevelopmentArtifact = artifactType === ArtifactType.DEVELOPMENT;
-  const derivedCommitDiffProjectPath = useMemo(
-    () => deriveProjectPathFromArtifactFilePath(artifactFilePath),
-    [artifactFilePath]
-  );
-  const [fallbackCommitDiffProjectPath, setFallbackCommitDiffProjectPath] = useState<string | null>(null);
-  const commitDiffProjectPath = derivedCommitDiffProjectPath ?? fallbackCommitDiffProjectPath;
+  // Commit links resolve in the owning project's registered repository, else the workspace's.
+  const [workspacePath] = useWorkspacePath();
+  const commitDiffProjectPath = useMemo(() => {
+    if (!isDevelopmentArtifact) return null;
+    const ref = artifacts.find((artifact) => artifact.filePath === artifactFilePath)?.project;
+    const project = ref
+      ? artifacts.find((artifact) => artifact.type === ArtifactType.PROJECT && (artifact.id === ref || artifact.title === ref))
+      : undefined;
+    return project?.localPath ?? workspacePath;
+  }, [artifactFilePath, artifacts, isDevelopmentArtifact, workspacePath]);
   const commitDiffContextRef = useRef<{
     isDevelopmentArtifact: boolean;
     projectPath: string | null;
@@ -175,38 +178,6 @@ export default function TipTapEditor({
       projectPath: commitDiffProjectPath,
     };
   }, [commitDiffProjectPath, isDevelopmentArtifact]);
-
-  useEffect(() => {
-    if (!isDevelopmentArtifact) {
-      setFallbackCommitDiffProjectPath(null);
-      return;
-    }
-
-    if (derivedCommitDiffProjectPath) {
-      setFallbackCommitDiffProjectPath(null);
-      return;
-    }
-
-    if (!window.electronAPI?.getVaultPath) {
-      setFallbackCommitDiffProjectPath(null);
-      return;
-    }
-
-    let isActive = true;
-    window.electronAPI.getVaultPath()
-      .then((vaultPath) => {
-        if (!isActive) return;
-        setFallbackCommitDiffProjectPath(vaultPath.replace(/[/\\]vault[/\\]?$/, ''));
-      })
-      .catch(() => {
-        if (!isActive) return;
-        setFallbackCommitDiffProjectPath(null);
-      });
-
-    return () => {
-      isActive = false;
-    };
-  }, [derivedCommitDiffProjectPath, isDevelopmentArtifact]);
 
   const syncSlashCommand = (editorInstance: TiptapEditor) => {
     if (isReadMode) {
@@ -748,7 +719,7 @@ export default function TipTapEditor({
 
     setIsAttachingAsset(true);
     try {
-      const result = await window.electronAPI.attachLocalAsset({
+      const result = await invoke('artifacts:attach-asset', {
         artifactId: artifactId || draftAttachmentKeyRef.current,
         artifactFilePath,
       });

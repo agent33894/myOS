@@ -1,16 +1,16 @@
-import type { Artifact } from '../../types/artifacts';
+import type { ArtifactSummary } from '@shared/types';
 
 export type SearchScope = 'full' | 'titles' | 'tags';
 
 export interface SearchHit {
-  artifact: Artifact;
+  artifact: ArtifactSummary;
   score: number;
   /** Short body excerpt around the first body match (full-text scope only). */
   context?: string;
 }
 
 interface IndexEntry {
-  artifact: Artifact;
+  artifact: ArtifactSummary;
   title: string;
   tags: string[];
   body: string;
@@ -29,9 +29,9 @@ const BODY_TOKEN = 4;
 
 const CONTEXT_RADIUS = 45;
 
-export function buildSearchIndex(artifacts: Artifact[]): LibrarySearchIndex {
+export function buildSearchIndex(artifacts: ArtifactSummary[]): LibrarySearchIndex {
   return artifacts.map((artifact) => {
-    const bodyRaw = artifact.searchContent ?? '';
+    const bodyRaw = artifact.searchText ?? '';
     const updatedAt = new Date(artifact.updated).getTime();
     return {
       artifact,

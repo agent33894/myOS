@@ -1,12 +1,9 @@
 import { useState } from 'react';
 import { Check } from 'lucide-react';
 import { toast } from 'sonner';
-import type { ProjectWithStats } from '../../hooks/useProjects';
-import type { Artifact } from '../../types/artifacts';
-import { TodoStatus } from '../../types/artifacts';
-import { useArtifactsStore } from '../../store/artifacts';
-import { useUndoableArtifact } from '../../hooks/useUndoableArtifact';
-import { localDateStamp } from '../today/todaySelectors';
+import type { ProjectWithStats } from '../../data/projects';
+import type { ArtifactSummary } from '@shared/types';
+import { toggleComplete } from '../../data/gateway';
 import { cn } from '../../lib/utils';
 import { shortDate } from './format';
 import { ProjectQuickAdd } from './ProjectQuickAdd';
@@ -15,14 +12,12 @@ import { ProjectTaskRow } from './ProjectTaskRow';
 interface ProjectTasksSectionProps {
   project: ProjectWithStats;
   /** Opening a task keeps it inside the workbench — the caller owns selection. */
-  onOpen: (task: Artifact) => void;
+  onOpen: (task: ArtifactSummary) => void;
   selectedPath?: string | null;
 }
 
 /** Open tasks with undoable completion, the quick-add row, and the done record. */
 export function ProjectTasksSection({ project, onOpen, selectedPath }: ProjectTasksSectionProps) {
-  const updateStoreArtifact = useArtifactsStore((state) => state.updateArtifact);
-  const { undoableUpdate } = useUndoableArtifact();
   const [completingId, setCompletingId] = useState<string | null>(null);
   // Collapsed by default so materials and the brief stay above the fold.
   const [showDone, setShowDone] = useState(false);
@@ -30,13 +25,10 @@ export function ProjectTasksSection({ project, onOpen, selectedPath }: ProjectTa
   const { openTodos, doneTodos, todoProgress } = project;
   const doneVisible = showDone;
 
-  const complete = async (task: Artifact) => {
+  const complete = async (task: ArtifactSummary) => {
     setCompletingId(task.id);
-    const stamp = localDateStamp();
-    const next: Artifact = { ...task, status: TodoStatus.DONE, completedDate: stamp, updated: stamp };
     try {
-      const persisted = await undoableUpdate(task.filePath, task, next, `Complete ${task.title}`);
-      updateStoreArtifact(persisted);
+      await toggleComplete(task);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Could not complete task');
     } finally {

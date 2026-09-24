@@ -1,5 +1,5 @@
-import type { ProjectWithStats } from '../../hooks/useProjects';
-import type { Artifact } from '../../types/artifacts';
+import type { ProjectWithStats } from '../../data/projects';
+import type { ArtifactSummary } from '@shared/types';
 import { getTypeIcon, getTypeLabel } from '../../utils/typeIcons';
 import { cn } from '../../lib/utils';
 import { shortDate } from './format';
@@ -7,7 +7,7 @@ import { shortDate } from './format';
 interface ProjectMaterialsSectionProps {
   project: ProjectWithStats;
   /** Opening a material keeps it inside the workbench — the caller owns selection. */
-  onOpen: (artifact: Artifact) => void;
+  onOpen: (artifact: ArtifactSummary) => void;
   selectedPath?: string | null;
 }
 

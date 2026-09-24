@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { Artifact } from '../../../types/artifacts';
-import { TodoStatus } from '../../../types/artifacts';
-import { useArtifactsStore } from '../../../store/artifacts';
-import { useUndoableArtifact } from '../../../hooks/useUndoableArtifact';
-import { selectInPlay, localDateStamp } from '../../today/todaySelectors';
+import { toast } from 'sonner';
+import type { ArtifactSummary } from '@shared/types';
+import { toggleComplete } from '../../../data/gateway';
+import { useToday } from '../../../data/selectors';
 import { toLibraryArtifactUrl } from '../../artifact-route/routeContract';
 import { cn } from '../../../lib/utils';
 
@@ -15,14 +14,11 @@ const COMPLETION_HOLD_MS = 700;
 
 /**
  * The Daybook's ambient block: today's In Play todos as ledger lines with
- * completion rings. Completing persists through the undo stack, mirroring
- * the Today page's transition (status, completedDate, updated).
+ * completion rings. Completing is undoable, like the Today page.
  */
 export function SidebarInPlay() {
   const navigate = useNavigate();
-  const artifacts = useArtifactsStore((state) => state.artifacts);
-  const updateStoreArtifact = useArtifactsStore((state) => state.updateArtifact);
-  const { undoableUpdate } = useUndoableArtifact();
+  const today = useToday();
   const [completingIds, setCompletingIds] = useState<ReadonlySet<string>>(new Set());
   const timers = useRef<number[]>([]);
 
@@ -33,27 +29,21 @@ export function SidebarInPlay() {
     [],
   );
 
-  const inPlay = useMemo(() => selectInPlay(artifacts).slice(0, ROW_LIMIT), [artifacts]);
+  const inPlay = useMemo(() => [...today.overdue, ...today.today].slice(0, ROW_LIMIT), [today]);
 
   const complete = useCallback(
-    async (task: Artifact) => {
+    async (task: ArtifactSummary) => {
       if (completingIds.has(task.id)) return;
       setCompletingIds((current) => new Set(current).add(task.id));
-      const today = localDateStamp();
-      const next: Artifact = {
-        ...task,
-        status: TodoStatus.DONE,
-        completedDate: today,
-        updated: today,
-      };
       try {
-        const [persisted] = await Promise.all([
-          undoableUpdate(task.filePath, task, next, `Complete ${task.title}`),
+        await Promise.all([
+          toggleComplete(task),
           new Promise<void>((resolve) => {
             timers.current.push(window.setTimeout(resolve, COMPLETION_HOLD_MS));
           }),
         ]);
-        updateStoreArtifact(persisted);
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : 'Could not complete task');
       } finally {
         setCompletingIds((current) => {
           const nextIds = new Set(current);
@@ -62,7 +52,7 @@ export function SidebarInPlay() {
         });
       }
     },
-    [completingIds, undoableUpdate, updateStoreArtifact],
+    [completingIds],
   );
 
   if (inPlay.length === 0) return null;

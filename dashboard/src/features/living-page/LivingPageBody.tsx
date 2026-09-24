@@ -1,8 +1,8 @@
-import type { Artifact } from '../../types/artifacts';
+import type { ArtifactSummary } from '@shared/types';
 import TipTapEditor from '../../components/artifacts/TipTapEditor';
 
 interface LivingPageBodyProps {
-  artifact: Artifact;
+  artifact: ArtifactSummary;
   body: string | null;
   onChange: (markdown: string) => void;
 }

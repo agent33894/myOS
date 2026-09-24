@@ -1,4 +1,4 @@
-import type { Artifact } from '../types/artifacts';
+import type { ArtifactSummary } from '@shared/types';
 
 const URI_SCHEME_PATTERN = /^[a-z][a-z0-9+.-]*:/i;
 
@@ -37,8 +37,8 @@ function pathFromMyOsLink(href: string): string | null {
 export function findLinkedArtifact(
   href: string,
   currentArtifactPath: string | undefined,
-  artifacts: Artifact[],
-): Artifact | null {
+  artifacts: ArtifactSummary[],
+): ArtifactSummary | null {
   const trimmedHref = href.trim();
   if (!trimmedHref || trimmedHref.startsWith('#')) return null;
 
@@ -83,7 +83,7 @@ function fileStem(filePath: string): string {
 }
 
 /** `[[Target]]` resolves by title, then id, then file name — case-insensitive. */
-export function findWikiLinkedArtifact(target: string, artifacts: Artifact[]): Artifact | null {
+export function findWikiLinkedArtifact(target: string, artifacts: ArtifactSummary[]): ArtifactSummary | null {
   const wanted = target.trim().toLowerCase();
   return (
     artifacts.find((artifact) => artifact.title.toLowerCase() === wanted) ??
@@ -94,11 +94,11 @@ export function findWikiLinkedArtifact(target: string, artifacts: Artifact[]): A
 }
 
 /** Artifacts that link here with `[[...]]` or list this one in `related`. */
-export function findBacklinks(target: Artifact, artifacts: Artifact[]): Artifact[] {
+export function findBacklinks(target: ArtifactSummary, artifacts: ArtifactSummary[]): ArtifactSummary[] {
   return artifacts.filter((artifact) => {
     if (artifact.id === target.id) return false;
     if ((artifact.related ?? []).includes(target.id)) return true;
-    const body = artifact.searchContent ?? artifact.content ?? '';
+    const body = artifact.searchText ?? '';
     if (!body.includes('[[')) return false;
     return matchWikiLinks(body).some(
       (link) => findWikiLinkedArtifact(link.target, [target]) !== null,

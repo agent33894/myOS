@@ -1,9 +1,10 @@
 import { FileEdit } from 'lucide-react';
 import { toast } from 'sonner';
-import type { Artifact } from '../../types/artifacts';
+import { invoke } from '../../data/ipc';
+import type { ArtifactSummary } from '@shared/types';
 
 /** Raw Markdown editing lives in the user's own editor, not a second mode here. */
-export function OpenInEditorButton({ artifact }: { artifact: Artifact }) {
+export function OpenInEditorButton({ artifact }: { artifact: ArtifactSummary }) {
   return (
     <button
       type="button"
@@ -11,9 +12,7 @@ export function OpenInEditorButton({ artifact }: { artifact: Artifact }) {
       aria-label={`Open ${artifact.title} in your default editor`}
       title="Open in default editor"
       onClick={() =>
-        void window.electronAPI
-          .openArtifactFile(artifact.filePath)
-          .catch((error: unknown) =>
+        void invoke('shell:open-in-editor', artifact.filePath).catch((error: unknown) =>
             toast.error(error instanceof Error ? error.message : 'Could not open the file'),
           )
       }

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { APP_ROUTES } from '../../../app/routes';
-import { useArtifactsStore } from '../../../store/artifacts';
+import { useArtifacts } from '../../../data/selectors';
 import { cn } from '../../../lib/utils';
 import { selectSidebarProjects } from './sidebarProjectsModel';
 import { SidebarProjectRow } from './SidebarProjectRow';
@@ -10,7 +10,7 @@ import { SidebarProjectsCreate } from './SidebarProjectsCreate';
 const projectsRoute = APP_ROUTES.find((route) => route.id === 'projects');
 
 export function SidebarProjects() {
-  const artifacts = useArtifactsStore((state) => state.artifacts);
+  const artifacts = useArtifacts();
   const { pinned, overflow } = useMemo(() => selectSidebarProjects(artifacts), [artifacts]);
   const [overflowOpen, setOverflowOpen] = useState(false);
 

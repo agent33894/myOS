@@ -3,8 +3,9 @@ import { createPortal } from 'react-dom';
 import { GitCommit, FileCode, ArrowRight } from 'lucide-react';
 import { Skeleton } from '../ui/skeleton';
 import { useAccentColor } from '../../hooks/useAccentColor';
+import { invoke } from '../../data/ipc';
 import CommitDiffModal from './CommitDiffModal';
-import type { CommitSummary } from './types';
+import type { CommitSummary } from '@shared/ipc/contracts';
 
 interface CommitDiffPopoverProps {
   commitHash: string;
@@ -38,15 +39,8 @@ export default function CommitDiffPopover({
     setLoading(true);
     setError(null);
 
-    window.electronAPI
-      .getCommitSummary(projectPath, commitHash)
-      .then((result) => {
-        if (result.success && result.data) {
-          setSummary(result.data);
-        } else {
-          setError(result.error || 'Failed to load summary');
-        }
-      })
+    invoke('git:commit-summary', projectPath, commitHash)
+      .then(setSummary)
       .catch((err) => {
         setError(err instanceof Error ? err.message : 'Failed to load');
         fetchedRef.current = null;

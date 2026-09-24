@@ -1,11 +1,11 @@
-import type { Artifact } from '../types/artifacts';
+import type { ArtifactSummary } from '@shared/types';
 
 interface ArtifactFacets {
   tagFrequency: Record<string, number>;
   projectFrequency: Record<string, number>;
 }
 
-export function deriveArtifactFacets(artifacts: Artifact[]): ArtifactFacets {
+export function deriveArtifactFacets(artifacts: ArtifactSummary[]): ArtifactFacets {
   const facets: ArtifactFacets = {
     tagFrequency: {},
     projectFrequency: {},

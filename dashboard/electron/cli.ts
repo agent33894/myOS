@@ -3,11 +3,11 @@ import { copyFileSync, existsSync, lstatSync, mkdirSync, readFileSync, readlinkS
 import { execFileSync } from 'child_process';
 import { homedir } from 'os';
 import { join } from 'path';
-import { buildSuggestedTitleFromContent, extractHashTags } from '../shared/capture';
-import { selectInPlay, selectNextUp } from '../shared/today';
-import { ArtifactType } from '../shared/types';
-import { createArtifact, readAllArtifactMetadata } from './handlers/file-operations.js';
-import { getVaultPath, initializePaths } from './utils/paths.js';
+import { captureDraft } from '../shared/inbox';
+import { selectToday } from '../shared/today';
+import { ArtifactType, type ArtifactSummary } from '../shared/types';
+import { createArtifact, listArtifacts } from './documents/artifacts';
+import { currentWorkspace, loadWorkspace } from './workspace/root';
 
 /**
  * Terminal entry points. They run against the configured workspace without
@@ -17,8 +17,9 @@ import { getVaultPath, initializePaths } from './utils/paths.js';
 const USAGE = `Usage: myos [command]
 
   myos                          Open myOS
-  myos capture <text>           Save text to Unfiled (reads stdin when no text is given)
-  myos today                    List In Play and Next tasks
+  myos capture <text>           Capture to the Inbox, or as a task when it has a date,
+                                flag, or @project (reads stdin when no text is given)
+  myos today                    List overdue, today, upcoming, and done-today tasks
   myos search <query>           Find notes by title, tag or text
   myos --capture                Open Quick Capture in the running app
   myos --install-desktop-entry  Add myOS to the app launcher, register myos: links
@@ -49,9 +50,7 @@ async function readStdin(): Promise<string> {
   return Buffer.concat(chunks).toString('utf8');
 }
 
-type Listed = Awaited<ReturnType<typeof readAllArtifactMetadata>>[number];
-
-function projectTitles(artifacts: Listed[]): Map<string, string> {
+function projectTitles(artifacts: ArtifactSummary[]): Map<string, string> {
   return new Map(
     artifacts
       .filter((artifact) => artifact.type === ArtifactType.PROJECT)
@@ -59,7 +58,7 @@ function projectTitles(artifacts: Listed[]): Map<string, string> {
   );
 }
 
-function taskLine(task: Listed, projects: Map<string, string>): string {
+function taskLine(task: ArtifactSummary, projects: Map<string, string>): string {
   const detail = [task.due ? `due ${task.due}` : null, task.project ? projects.get(task.project) ?? task.project : null]
     .filter(Boolean)
     .join(' · ');
@@ -72,22 +71,22 @@ async function capture(args: string[]): Promise<number> {
     console.error('Nothing to capture. Usage: myos capture <text>');
     return 1;
   }
-  const artifact = await createArtifact({
-    title: buildSuggestedTitleFromContent(text),
-    type: ArtifactType.INBOX,
-    tags: extractHashTags(text),
-    content: text,
-  });
-  console.log(`Captured to Unfiled: ${artifact.filePath}`);
+  const projects = (await listArtifacts()).filter((artifact) => artifact.type === ArtifactType.PROJECT);
+  const draft = captureDraft(text, projects);
+  const artifact = await createArtifact(draft);
+  console.log(`${draft.type === ArtifactType.TODO ? 'Added task' : 'Captured to Inbox'}: ${artifact.filePath}`);
   return 0;
 }
 
 async function today(): Promise<number> {
-  const artifacts = await readAllArtifactMetadata();
+  const artifacts = await listArtifacts();
   const projects = projectTitles(artifacts);
-  const sections: Array<[string, Listed[]]> = [
-    ['In play', selectInPlay(artifacts)],
-    ['Next', selectNextUp(artifacts)],
+  const { overdue, today, upcoming, doneToday } = selectToday(artifacts);
+  const sections: Array<[string, ArtifactSummary[]]> = [
+    ['Overdue', overdue],
+    ['Today', today],
+    ['Upcoming', upcoming],
+    ['Done today', doneToday],
   ];
   for (const [heading, tasks] of sections) {
     console.log(`${heading} (${tasks.length})`);
@@ -102,16 +101,17 @@ async function search(args: string[]): Promise<number> {
     console.error('Usage: myos search <query>');
     return 1;
   }
-  const matches = (await readAllArtifactMetadata())
+  const root = currentWorkspace() ?? '';
+  const matches = (await listArtifacts())
     .filter((artifact) => {
-      const haystack = [artifact.title, ...(artifact.tags ?? []), artifact.searchContent ?? '']
+      const haystack = [artifact.title, ...artifact.tags, artifact.searchText ?? '']
         .join('\n')
         .toLowerCase();
       return terms.every((term) => haystack.includes(term));
     })
     .sort((a, b) => b.updated.localeCompare(a.updated));
   for (const artifact of matches) {
-    console.log(`${artifact.title}\t${artifact.type}\t${join(getVaultPath(), artifact.filePath)}`);
+    console.log(`${artifact.title}\t${artifact.type}\t${join(root, artifact.filePath)}`);
   }
   return matches.length > 0 ? 0 : 1;
 }
@@ -201,8 +201,8 @@ export async function runCliCommand(command: CliCommand): Promise<number> {
     }
     if (command.name === '--install-desktop-entry') return installDesktopEntry();
 
-    initializePaths();
-    if (!existsSync(getVaultPath())) {
+    loadWorkspace();
+    if (!currentWorkspace()) {
       console.error('No workspace yet. Open myOS once to choose or create one.');
       return 1;
     }

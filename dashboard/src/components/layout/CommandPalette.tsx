@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CommandSurface } from '../ui/CommandSurface';
 import { paletteRoutes } from '../../app/routes';
-import { useArtifactsStore } from '../../store/artifacts';
+import { useArtifacts } from '../../data/selectors';
 import { useCommandPaletteActions } from '../../store/selectors';
 import { toArtifactNavigationUrl } from '../../features/artifact-route/routeContract';
 import { cn } from '../../lib/utils';
@@ -20,7 +20,7 @@ type PaletteResult = {
 
 export default function CommandPalette() {
   const navigate = useNavigate();
-  const artifacts = useArtifactsStore((state) => state.artifacts);
+  const artifacts = useArtifacts();
   const projectLabel = useProjectLabel();
   const { closeCommandPalette } = useCommandPaletteActions();
   const [query, setQuery] = useState('');

@@ -1,51 +1,38 @@
 import { useCallback } from 'react';
+import { toast } from 'sonner';
 import { projectSwatchFor } from '@shared/design-system/tokens';
-import type { Artifact } from '../../types/artifacts';
-import { useArtifactsStore } from '../../store/artifacts';
+import type { ArtifactSummary } from '@shared/types';
+import { patchMany, read, save } from '../../data/gateway';
+import { useDataStore } from '../../data/store';
 import { joinTitleEcho, splitTitleEcho } from '../shell/titleEcho';
-import { projectBaseArtifact, useArtifactEdit } from './projectMutations';
+import { projectBaseArtifact } from './projectMutations';
 
 /**
  * Rename a project without side effects. The swatch is pinned to the old
- * title's deterministic color first, so renaming never shifts the project's
- * ink; artifacts still linked by title are then relinked to the rename-stable
- * project id. Accepts plain Artifacts or ProjectWithStats (resolved to the
- * raw store artifact via projectBaseArtifact).
+ * title's color so the project keeps its ink, and items still linked by the
+ * old title are relinked to the rename-stable project id.
  */
 export function useProjectRename() {
-  const { applyEdit } = useArtifactEdit();
+  const rename = useCallback(async (project: ArtifactSummary, newTitle: string) => {
+    const base = projectBaseArtifact(project.id) ?? project;
+    const title = newTitle.trim();
+    if (!title || title === base.title) return;
+    const oldTitle = base.title;
+    try {
+      const fields = { title, swatch: base.swatch ?? projectSwatchFor(oldTitle).name };
+      // An older page's "# <title>" first line follows the rename.
+      const current = await read(base.filePath);
+      const { body, hadEcho } = splitTitleEcho(current.content, oldTitle);
+      if (hadEcho) await save(base.filePath, { fields: {}, content: joinTitleEcho(body, true, title) }, current.rev);
 
-  const rename = useCallback(
-    async (project: Artifact, newTitle: string) => {
-      const base = projectBaseArtifact(project.id) ?? project;
-      const title = newTitle.trim();
-      if (!title || title === base.title) return;
-
-      const oldTitle = base.title;
-      // The scaffolded "# <title>" body echo must follow the rename, or the
-      // old title lingers as visible Brief content.
-      const { body, hadEcho } = splitTitleEcho(base.content, oldTitle);
-      await applyEdit(
-        base,
-        {
-          title,
-          swatch: base.swatch ?? projectSwatchFor(oldTitle).name,
-          content: joinTitleEcho(body, hadEcho, title),
-        },
-        `Rename project to ${title}`,
-      );
-
-      const linkedByTitle = useArtifactsStore
-        .getState()
-        .artifacts.filter(
-          (artifact) => artifact.id !== base.id && artifact.project === oldTitle,
-        );
-      for (const artifact of linkedByTitle) {
-        await applyEdit(artifact, { project: base.id }, `Relink ${artifact.title}`);
-      }
-    },
-    [applyEdit],
-  );
+      const relinks = Object.values(useDataStore.getState().byPath)
+        .filter((artifact) => artifact.id !== base.id && artifact.project === oldTitle)
+        .map((artifact) => ({ path: artifact.filePath, fields: { project: base.id } }));
+      await patchMany([{ path: base.filePath, fields }, ...relinks], `Rename project to ${title}`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Could not rename the project');
+    }
+  }, []);
 
   return { rename };
 }

@@ -1,6 +1,6 @@
 import { useCallback, useDeferredValue, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { ArtifactType, type Artifact } from '../../types/artifacts';
+import { ArtifactType, type ArtifactSummary } from '@shared/types';
 import {
   buildProjectInkMap,
   buildSections,
@@ -20,7 +20,7 @@ const TYPE_VALUES = new Set<string>(Object.values(ArtifactType));
  * derives sections, chip counts, and masthead counts. The query is deferred so
  * typing never blocks on a full-text pass.
  */
-export function useLibrarySearch(artifacts: Artifact[]) {
+export function useLibrarySearch(artifacts: ArtifactSummary[]) {
   const [params, setParams] = useSearchParams();
 
   const query = params.get('q') ?? '';

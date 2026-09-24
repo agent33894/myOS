@@ -2,9 +2,10 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
-import type { ProjectWithStats } from '../../hooks/useProjects';
-import { useTasksStore } from '../../store/tasks';
-import { Domain } from '../../types/artifacts';
+import type { ProjectWithStats } from '../../data/projects';
+import { parseCapture } from '@shared/inbox';
+import { ArtifactType } from '@shared/types';
+import { create } from '../../data/gateway';
 import { shortDate } from './format';
 
 /**
@@ -13,8 +14,6 @@ import { shortDate } from './format';
  * next week / in N days, and a bare `!` to flag.
  */
 export function ProjectQuickAdd({ project }: { project: ProjectWithStats }) {
-  const createTask = useTasksStore((state) => state.createTask);
-  const parseNaturalLanguage = useTasksStore((state) => state.parseNaturalLanguage);
   const inputRef = useRef<HTMLInputElement>(null);
   const [value, setValue] = useState('');
   const [isPending, setIsPending] = useState(false);
@@ -33,7 +32,7 @@ export function ProjectQuickAdd({ project }: { project: ProjectWithStats }) {
   const hint = useMemo(() => {
     const input = value.trim();
     if (!input) return null;
-    const parsed = parseNaturalLanguage(input);
+    const parsed = parseCapture(input);
     const parts = [
       parsed.due ? `due ${shortDate(parsed.due)}` : null,
       parsed.priority ? `${parsed.priority} priority` : null,
@@ -41,25 +40,27 @@ export function ProjectQuickAdd({ project }: { project: ProjectWithStats }) {
       ...parsed.tags.map((tag) => `#${tag}`),
     ].filter(Boolean);
     return parts.length > 0 ? parts.join(' · ') : null;
-  }, [value, parseNaturalLanguage]);
+  }, [value]);
 
   const submit = async () => {
     const input = value.trim();
     if (!input || isPending) return;
     setIsPending(true);
     try {
-      const parsed = parseNaturalLanguage(input);
-      // Link by project id — stable across renames, matched by both the tasks
-      // store filter and isLinkedToProject.
-      await createTask({
-        title: parsed.title || input,
-        project: project.id,
-        domain: project.domain ?? Domain.WORK,
-        priority: parsed.priority,
-        due: parsed.due,
-        tags: parsed.tags.length > 0 ? parsed.tags : undefined,
-        flagged: parsed.flagged || undefined,
-      });
+      const parsed = parseCapture(input);
+      // Link by project id, which survives renames; the task inherits the project's domain.
+      await create(
+        {
+          type: ArtifactType.TODO,
+          title: parsed.title,
+          project: project.id,
+          priority: parsed.priority,
+          due: parsed.due,
+          tags: parsed.tags,
+          flagged: parsed.flagged || undefined,
+        },
+        `Add “${parsed.title}” to ${project.title}`,
+      );
       setValue('');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Could not add task');

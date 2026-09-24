@@ -1,5 +1,5 @@
-import type { Artifact } from '../../types/artifacts';
-import { dateOnly } from '../../hooks/projectStats';
+import type { ArtifactSummary } from '@shared/types';
+import { dateOnly } from '../../data/projects';
 import { getTypeLabel } from '../../utils/typeIcons';
 
 interface ActivityEntry {
@@ -9,14 +9,14 @@ interface ActivityEntry {
   garnish: string;
   title: string;
   /** Set for task and material entries so the row can open the artifact. */
-  artifact?: Artifact;
+  artifact?: ArtifactSummary;
 }
 
 /** What the ledger needs from ProjectWithStats; kept minimal so tests stay light. */
 interface ActivitySource {
   created?: string;
-  doneTodos: Artifact[];
-  materials: Artifact[];
+  doneTodos: ArtifactSummary[];
+  materials: ArtifactSummary[];
 }
 
 /** Same-day events order: finished work, then materials, then the project's own birth. */

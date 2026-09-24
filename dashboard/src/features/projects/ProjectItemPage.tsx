@@ -1,9 +1,10 @@
-import type { Artifact } from '../../types/artifacts';
-import { ArtifactType, TodoStatus } from '../../types/artifacts';
+import { toast } from 'sonner';
+import { ArtifactType, TodoStatus, type ArtifactSummary } from '@shared/types';
+import { toggleComplete } from '../../data/gateway';
+import { ConflictBanner } from '../living-page/ConflictBanner';
 import { getTypeLabel } from '../../utils/typeIcons';
 import SaveStateIndicator from '../../components/artifacts/SaveStateIndicator';
 import { ChronicleCheckmark } from '../today/ChronicleCheckmark';
-import { localDateStamp } from '../today/todaySelectors';
 import { cn } from '../../lib/utils';
 import { useLivingPageController } from '../living-page/useLivingPageController';
 import LivingPageBody from '../living-page/LivingPageBody';
@@ -23,21 +24,18 @@ export function ProjectItemPage({
   artifact,
   onDeleted,
 }: {
-  artifact: Artifact;
+  artifact: ArtifactSummary;
   onDeleted: () => void;
 }) {
-  const controller = useLivingPageController(artifact);
+  const controller = useLivingPageController(artifact.filePath);
 
   const isTodo = artifact.type === ArtifactType.TODO;
   const isDone = artifact.status === TodoStatus.DONE;
 
-  const toggleDone = () => {
-    const label = isDone ? `Reopen ${artifact.title}` : `Complete ${artifact.title}`;
-    const overrides = isDone
-      ? { status: TodoStatus.PENDING, completedDate: undefined }
-      : { status: TodoStatus.DONE, completedDate: localDateStamp() };
-    void controller.saveNow(overrides, label);
-  };
+  const toggleDone = () =>
+    void toggleComplete(artifact).catch((error: unknown) =>
+      toast.error(error instanceof Error ? error.message : 'Could not update the task'),
+    );
 
   return (
     <article className="chronicle-workbench-page" aria-label={artifact.title}>
@@ -56,8 +54,7 @@ export function ProjectItemPage({
           <ArtifactDeleteMenu
             artifact={artifact}
             disabled={controller.isSaving}
-            onDeleteStart={controller.beginDelete}
-            onDeleteFailure={controller.cancelDelete}
+            onDeleteStart={controller.saveNow}
             onDeleted={onDeleted}
           />
         </div>
@@ -85,6 +82,9 @@ export function ProjectItemPage({
         onChange={controller.onBodyChange}
       />
       <LinkedFrom artifact={artifact} />
+      {controller.conflict ? (
+        <ConflictBanner onLoadTheirs={controller.loadTheirs} onKeepMine={() => void controller.keepMine()} />
+      ) : null}
     </article>
   );
 }

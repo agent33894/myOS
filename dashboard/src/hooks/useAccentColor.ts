@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { projectSwatches, stampColorPair } from '@shared/design-system/tokens';
-import type { Domain, ArtifactType } from '../types/artifacts';
+import type { Domain, ArtifactType } from '@shared/types';
 
 /**
  * The accent is the DS2 stamp — one user-chosen ink, contrast-fitted per theme.

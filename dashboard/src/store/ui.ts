@@ -1,23 +1,4 @@
 import { create } from 'zustand';
-import type { ArtifactType, Domain, TodoPriority } from '../types/artifacts';
-
-/**
- * An unsent quick capture. `null` filing fields mean "untouched" — the
- * capture derives its filing from the text (explicit prefix) or stays Unfiled.
- */
-export interface QuickCaptureDraft {
-  text: string;
-  type: ArtifactType | null;
-  domain: Domain | null;
-  priority: TodoPriority | null;
-}
-
-const EMPTY_QUICK_CAPTURE_DRAFT: QuickCaptureDraft = {
-  text: '',
-  type: null,
-  domain: null,
-  priority: null,
-};
 
 interface UIState {
   isCommandPaletteOpen: boolean;
@@ -25,8 +6,8 @@ interface UIState {
   isKeyboardShortcutsOpen: boolean;
   isZenMode: boolean;
   /** Unsent capture survives Escape/⌘N so a reflexive close never loses a draft. */
-  quickCaptureDraft: QuickCaptureDraft;
-  setQuickCaptureDraft: (draft: QuickCaptureDraft) => void;
+  quickCaptureDraft: string;
+  setQuickCaptureDraft: (draft: string) => void;
   clearQuickCaptureDraft: () => void;
   openCommandPalette: () => void;
   closeCommandPalette: () => void;
@@ -46,9 +27,9 @@ export const useUIStore = create<UIState>((set) => ({
   isQuickCaptureOpen: false,
   isKeyboardShortcutsOpen: false,
   isZenMode: false,
-  quickCaptureDraft: EMPTY_QUICK_CAPTURE_DRAFT,
-  setQuickCaptureDraft: (draft: QuickCaptureDraft) => set({ quickCaptureDraft: draft }),
-  clearQuickCaptureDraft: () => set({ quickCaptureDraft: EMPTY_QUICK_CAPTURE_DRAFT }),
+  quickCaptureDraft: '',
+  setQuickCaptureDraft: (draft: string) => set({ quickCaptureDraft: draft }),
+  clearQuickCaptureDraft: () => set({ quickCaptureDraft: '' }),
   // Overlays are mutually exclusive — opening one closes the others.
   openCommandPalette: () => set({ isCommandPaletteOpen: true, isQuickCaptureOpen: false, isKeyboardShortcutsOpen: false }),
   closeCommandPalette: () => set({ isCommandPaletteOpen: false }),

@@ -1,9 +1,9 @@
 import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getAllowedStatusesForType } from '@shared/spec/artifact-rules';
+import { statusesFor } from '@shared/spec';
 import { projectSwatches } from '@shared/design-system/tokens';
-import type { Artifact } from '../../../types/artifacts';
-import { ArtifactType } from '../../../types/artifacts';
+import type { ArtifactSummary } from '@shared/types';
+import { ArtifactType } from '@shared/types';
 import { cn } from '../../../lib/utils';
 import {
   ContextMenu,
@@ -20,13 +20,13 @@ import {
 import { useArtifactEdit, useProjectStatus } from '../../projects/projectMutations';
 import { nextPinOrder } from './sidebarProjectsModel';
 
-const STATUSES = getAllowedStatusesForType(ArtifactType.PROJECT);
+const STATUSES = statusesFor(ArtifactType.PROJECT);
 const capitalize = (value: string) => value.charAt(0).toUpperCase() + value.slice(1);
 
 interface SidebarProjectMenuProps {
-  project: Artifact;
+  project: ArtifactSummary;
   /** Current sidebar pinned rows — used to append at the end of the pin order. */
-  pinnedRows: Artifact[];
+  pinnedRows: ArtifactSummary[];
   onRename: () => void;
   onDelete: () => void;
   children: ReactNode;

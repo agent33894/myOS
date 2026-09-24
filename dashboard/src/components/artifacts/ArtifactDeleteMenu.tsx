@@ -1,20 +1,18 @@
 import { useState } from 'react';
 import { Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
-import type { Artifact } from '../../types/artifacts';
-import { useArtifactsStore } from '../../store/artifacts';
-import { useTasksStore } from '../../store/tasks';
-import { useUndoRedoStore } from '../../store/undoRedo';
-import { useUndoableArtifact } from '../../hooks/useUndoableArtifact';
+import type { ArtifactSummary } from '@shared/types';
+import { remove as removeArtifact } from '../../data/gateway';
+import { undo } from '../../data/undo';
 import Modal from '../ui/Modal';
 import { Button } from '../ui/button';
 import { primaryModifier } from '../../utils/platform';
 
 interface ArtifactDeleteMenuProps {
-  artifact: Artifact;
+  artifact: ArtifactSummary;
   disabled?: boolean;
-  onDeleteStart?: () => void;
-  onDeleteFailure?: () => void;
+  /** Runs before deleting, e.g. to save pending edits so undo restores them. */
+  onDeleteStart?: () => Promise<void> | void;
   onDeleted?: () => void;
 }
 
@@ -23,40 +21,30 @@ export function ArtifactDeleteMenu({
   artifact,
   disabled = false,
   onDeleteStart,
-  onDeleteFailure,
   onDeleted,
 }: ArtifactDeleteMenuProps) {
-  const removeArtifact = useArtifactsStore((state) => state.removeArtifact);
-  const { undoableDelete } = useUndoableArtifact();
   const [confirming, setConfirming] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const remove = async () => {
-    onDeleteStart?.();
     setIsDeleting(true);
     try {
-      await undoableDelete(artifact, `Delete ${artifact.type}: ${artifact.title}`);
-      removeArtifact(artifact.filePath);
-      useTasksStore.getState().refreshTasks();
+      await onDeleteStart?.();
+      await removeArtifact(artifact.filePath);
       setConfirming(false);
       onDeleted?.();
       toast.success(`Deleted “${artifact.title}”`, {
         action: {
           label: 'Undo',
-          onClick: () => {
-            void useUndoRedoStore.getState().undo().then((success) => {
-              if (!success) {
-                toast.error('Could not restore the artifact');
-                return;
-              }
-              useTasksStore.getState().refreshTasks();
-              toast.success(`Restored “${artifact.title}”`);
-            });
-          },
+          onClick: () =>
+            void undo().then(
+              () => toast.success(`Restored “${artifact.title}”`),
+              (error: unknown) =>
+                toast.error(error instanceof Error ? error.message : 'Could not restore the artifact'),
+            ),
         },
       });
     } catch (error) {
-      onDeleteFailure?.();
       toast.error(error instanceof Error ? error.message : 'Could not delete artifact');
     } finally {
       setIsDeleting(false);

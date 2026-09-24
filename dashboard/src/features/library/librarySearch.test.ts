@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { ArtifactType, type Artifact } from '../../types/artifacts';
+import { ArtifactType, type ArtifactSummary } from '@shared/types';
 import { buildSearchIndex, searchArtifacts } from './librarySearch';
 
 let seq = 0;
-function makeArtifact(overrides: Partial<Artifact>): Artifact {
+function makeArtifact(overrides: Partial<ArtifactSummary>): ArtifactSummary {
   seq += 1;
   return {
     id: `artifact-${seq}`,
-    title: `Artifact ${seq}`,
+    title: `ArtifactSummary ${seq}`,
     type: ArtifactType.MEMO,
     tags: [],
     status: 'active',
@@ -17,13 +17,13 @@ function makeArtifact(overrides: Partial<Artifact>): Artifact {
     updated: '2026-08-01T00:00:00.000Z',
     filePath: `vault/work/memos/artifact-${seq}.md`,
     ...overrides,
-  } as Artifact;
+  } as ArtifactSummary;
 }
 
 describe('searchArtifacts', () => {
   it('ranks title hits above tag hits above body hits', () => {
     const index = buildSearchIndex([
-      makeArtifact({ id: 'body', title: 'Unrelated', searchContent: 'zustand stores everywhere' }),
+      makeArtifact({ id: 'body', title: 'Unrelated', searchText: 'zustand stores everywhere' }),
       makeArtifact({ id: 'title', title: 'Zustand selector pattern' }),
       makeArtifact({ id: 'tag', title: 'State handling', tags: ['zustand'] }),
     ]);
@@ -51,7 +51,7 @@ describe('searchArtifacts', () => {
 
   it('scopes to titles and tags without touching the body', () => {
     const index = buildSearchIndex([
-      makeArtifact({ id: 'body-only', title: 'Weekly note', searchContent: 'tiptap controller' }),
+      makeArtifact({ id: 'body-only', title: 'Weekly note', searchText: 'tiptap controller' }),
       makeArtifact({ id: 'tagged', title: 'Weekly note', tags: ['tiptap'] }),
     ]);
     expect(searchArtifacts(index, 'tiptap', 'titles')).toHaveLength(0);
@@ -61,8 +61,8 @@ describe('searchArtifacts', () => {
   it('returns a trimmed context snippet only for body-only matches', () => {
     const body = `${'lead '.repeat(30)}the zustand adapter boundary ${'tail '.repeat(30)}`;
     const index = buildSearchIndex([
-      makeArtifact({ id: 'body', title: 'Store notes', searchContent: body }),
-      makeArtifact({ id: 'title', title: 'Zustand notes', searchContent: body }),
+      makeArtifact({ id: 'body', title: 'Store notes', searchText: body }),
+      makeArtifact({ id: 'title', title: 'Zustand notes', searchText: body }),
     ]);
     const hits = searchArtifacts(index, 'zustand', 'full');
     const bodyHit = hits.find((hit) => hit.artifact.id === 'body');

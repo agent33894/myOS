@@ -1,4 +1,4 @@
-import type { Artifact } from '../types/artifacts';
+import type { ArtifactSummary } from '@shared/types';
 
 /**
  * Shared drag-and-drop contract for filing artifacts onto sidebar projects.
@@ -13,7 +13,7 @@ interface ArtifactDragPayload {
   title: string;
 }
 
-export function setArtifactDragData(event: React.DragEvent, artifact: Artifact): void {
+export function setArtifactDragData(event: React.DragEvent, artifact: ArtifactSummary): void {
   const payload: ArtifactDragPayload = {
     id: artifact.id,
     filePath: artifact.filePath,

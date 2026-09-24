@@ -1,11 +1,11 @@
 import { useNavigate } from 'react-router-dom';
 import { PanelLeft, PanelRight } from 'lucide-react';
-import type { ProjectWithStats } from '../../hooks/useProjects';
-import type { Artifact } from '../../types/artifacts';
+import type { ProjectWithStats } from '../../data/projects';
+import type { ArtifactSummary } from '@shared/types';
 
 interface ProjectWorkbenchBarProps {
   project: ProjectWithStats;
-  item: Artifact | null;
+  item: ArtifactSummary | null;
   railCollapsed: boolean;
   inspectorCollapsed: boolean;
   onToggleRail: () => void;

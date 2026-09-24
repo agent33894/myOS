@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from 'react';
-import type { Artifact } from '../../types/artifacts';
-import { useArtifactsStore } from '../../store/artifacts';
+import type { ArtifactSummary } from '@shared/types';
+import { useArtifacts } from '../../data/selectors';
 import { deriveArtifactFacets } from '../../utils/artifactFacets';
 import { useArtifactEdit } from './projectMutations';
 
@@ -11,9 +11,9 @@ const MAX_SUGGESTIONS = 8;
  * tag frequency, filtered by the draft — pick from the list or press Enter
  * to coin a new tag (lowercased, hyphenated, deduped).
  */
-export function ProjectInspectorTags({ artifact }: { artifact: Artifact }) {
+export function ProjectInspectorTags({ artifact }: { artifact: ArtifactSummary }) {
   const { applyEdit } = useArtifactEdit();
-  const artifacts = useArtifactsStore((state) => state.artifacts);
+  const artifacts = useArtifacts();
   const [draft, setDraft] = useState('');
   const [focused, setFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);

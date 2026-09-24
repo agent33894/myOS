@@ -1,8 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  deriveProjectPathFromArtifactFilePath,
-  extractCommitHashFromHref,
-} from './commitLinkUtils';
+import { extractCommitHashFromHref } from './commitLinkUtils';
 
 describe('commitLinkUtils', () => {
   describe('extractCommitHashFromHref', () => {
@@ -26,22 +23,4 @@ describe('commitLinkUtils', () => {
     });
   });
 
-  describe('deriveProjectPathFromArtifactFilePath', () => {
-    it('derives POSIX project roots from vault paths', () => {
-      expect(
-        deriveProjectPathFromArtifactFilePath('/Users/jamie/code/myOS/vault/work/development/log.md')
-      ).toBe('/Users/jamie/code/myOS');
-    });
-
-    it('derives Windows-style project roots from vault paths', () => {
-      expect(
-        deriveProjectPathFromArtifactFilePath('C:\\Users\\jamie\\code\\myOS\\vault\\work\\development\\log.md')
-      ).toBe('C:\\Users\\jamie\\code\\myOS');
-    });
-
-    it('returns null when file path is not in a vault tree', () => {
-      expect(deriveProjectPathFromArtifactFilePath('/tmp/log.md')).toBeNull();
-      expect(deriveProjectPathFromArtifactFilePath(undefined)).toBeNull();
-    });
-  });
 });

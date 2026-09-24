@@ -12,7 +12,7 @@ import {
   Sparkles,
   type LucideIcon,
 } from 'lucide-react';
-import { ArtifactType } from '../types/artifacts';
+import { ArtifactType } from '@shared/types';
 
 const TYPE_ICONS: Record<ArtifactType, LucideIcon> = {
   [ArtifactType.TODO]: CheckCircle2,

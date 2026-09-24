@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import type { ProjectWithStats } from '../../hooks/useProjects';
-import type { Artifact } from '../../types/artifacts';
+import type { ProjectWithStats } from '../../data/projects';
+import type { ArtifactSummary } from '@shared/types';
 import { shortDate } from './format';
 import { ProjectActivitySection } from './ProjectActivitySection';
 import { ProjectBrief } from './ProjectBrief';
@@ -10,7 +10,7 @@ import LinkedFrom from '../living-page/LinkedFrom';
 
 interface ProjectOverviewProps {
   project: ProjectWithStats;
-  onOpenItem: (artifact: Artifact) => void;
+  onOpenItem: (artifact: ArtifactSummary) => void;
 }
 
 /**

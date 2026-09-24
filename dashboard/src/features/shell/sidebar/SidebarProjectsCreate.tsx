@@ -5,7 +5,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '../../../components/ui/
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { cn } from '../../../lib/utils';
-import type { Domain } from '../../../types/artifacts';
+import type { Domain } from '@shared/types';
 import { toProjectArtifactUrl } from '../../artifact-route/routeContract';
 import { useCreateProject } from '../../projects/useCreateProject';
 import {

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useProjects, type ProjectWithStats } from '../../hooks/useProjects';
+import { useProjects } from '../../data/selectors';
+import type { ProjectWithStats } from '../../data/projects';
 import { useListNavigation } from '../../hooks/useListNavigation';
 import { groupProjects, isProjectSort, type ProjectSort } from './projectGroups';
 import { ProjectIndex } from './ProjectIndex';
@@ -18,7 +19,7 @@ const noop = () => {};
  * the roster and the artifacts inside a project.
  */
 export default function ProjectsPage() {
-  const { allProjects } = useProjects();
+  const allProjects = useProjects();
   const [params, setParams] = useSearchParams();
 
   const [sort, setSort] = useState<ProjectSort>(() => {

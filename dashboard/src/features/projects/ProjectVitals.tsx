@@ -1,4 +1,4 @@
-import type { ProjectWithStats } from '../../hooks/useProjects';
+import type { ProjectWithStats } from '../../data/projects';
 import { shortDate } from './format';
 
 /**

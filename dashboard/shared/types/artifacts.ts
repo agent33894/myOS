@@ -1,22 +1,20 @@
-/**
- * Core artifact types for the IPC boundary between renderer and main process.
- *
- * ArtifactCreateDraft: What the renderer sends when creating artifacts
- * Artifact: What the backend returns after processing (canonical form)
- */
-
-import {
-  Domain,
-  ArtifactType,
-  TodoPriority,
-  TodoStatus,
-  ArtifactStatus,
-} from './enums';
+import type { ArtifactStatus, ArtifactType, Domain, TodoPriority, TodoStatus } from './enums';
 
 /**
- * Task-specific fields (only apply to type=todo|project)
+ * The frontmatter keys myOS understands. `ARTIFACT_FIELDS` in shared/spec
+ * lists the same keys in on-disk order and owns their parsing.
  */
-interface TaskFields {
+export interface ArtifactFields {
+  id: string;
+  title: string;
+  type: ArtifactType;
+  tags: string[];
+  created: string;
+  updated: string;
+  status: ArtifactStatus | TodoStatus;
+  related: string[];
+  domain?: Domain;
+  project?: string;
   priority?: TodoPriority;
   due?: string;
   parentId?: string;
@@ -26,77 +24,33 @@ interface TaskFields {
   flagged?: boolean;
   completedDate?: string;
   repeatRule?: string;
-}
-
-/**
- * External project linking fields
- */
-interface ExternalProjectFields {
   localPath?: string;
   repoUrl?: string;
   isExternalProject?: boolean;
-}
-
-/**
- * Snippet-specific fields (only apply to type=snippet)
- */
-interface SnippetFields {
-  language?: string; // e.g., typescript, python, bash, etc.
-}
-
-/**
- * Special artifact type fields
- */
-interface SpecialFields {
-  analysisData?: unknown;
-  sources?: string[];
-}
-
-export interface ArtifactAssetManifestEntry {
-  localRelativePath: string;
-  storagePath: string;
-  bucket: string;
-  mimeType?: string;
-  sizeBytes?: number;
-  checksum?: string;
-  uploadedAt?: string;
-}
-
-interface AssetFields {
-  assetManifest?: ArtifactAssetManifestEntry[];
-}
-
-/**
- * Artifact - The complete artifact as returned by the backend.
- * All fields are guaranteed to be set after backend processing.
- */
-export interface Artifact
-  extends TaskFields,
-    ExternalProjectFields,
-    SpecialFields,
-    AssetFields,
-    SnippetFields {
-  id: string;
-  title: string;
-  type: ArtifactType;
-  domain?: Domain;
-  tags: string[];
-  status: ArtifactStatus | TodoStatus;
-  related: string[];
-  content: string;
-  project?: string;
-  created: string;
-  updated: string;
-  filePath: string;
+  language?: string;
   order?: number;
-  /** Sidebar pin — pinned projects render above the overflow disclosure, ordered by `order`. */
   pinned?: boolean;
-  /** Explicit projectSwatches name; overrides the title-hash color so renames keep their ink. */
   swatch?: string;
-  // Transient search index text (not persisted to artifact markdown).
-  searchContent?: string;
 }
 
-/** Minimal create payload; the backend supplies all omitted canonical fields. */
-export type ArtifactCreateDraft = Partial<Artifact> &
-  Pick<Artifact, 'title' | 'type'>;
+/** One Markdown file: known fields, unknown frontmatter, and the body. */
+export interface Artifact extends ArtifactFields {
+  /** Workspace-relative path. */
+  filePath: string;
+  /** File revision, `${mtimeMs}:${size}`, stamped by the main process on every read and write. */
+  rev: string;
+  /** Frontmatter keys myOS does not know, written back unchanged. */
+  extra: Record<string, unknown>;
+  content: string;
+}
+
+/** Listing shape: everything but the body, plus text for full-text search. */
+export type ArtifactSummary = Omit<Artifact, 'content'> & { searchText?: string };
+
+type EditableFields = Omit<ArtifactFields, 'id' | 'type' | 'created' | 'updated'>;
+
+/** Frontmatter changes; `null` (or `undefined`) removes an optional key. */
+export type ArtifactPatch = { [K in keyof EditableFields]?: EditableFields[K] | null };
+
+/** What the renderer sends to create a file; the main process fills the rest. */
+export type ArtifactDraft = ArtifactPatch & { type: ArtifactType; content?: string };

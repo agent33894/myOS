@@ -1,19 +1,3 @@
-export interface CommitSummary {
-  hash: string;
-  message: string;
-  author: string;
-  date: string;
-  files: CommitFileStat[];
-  totalAdditions: number;
-  totalDeletions: number;
-}
-
-export interface CommitFileStat {
-  path: string;
-  additions: number;
-  deletions: number;
-}
-
 export interface DiffFile {
   oldPath: string;
   newPath: string;

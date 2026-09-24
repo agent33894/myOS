@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { FileText, FolderOpen, HardDrive, Sparkles } from 'lucide-react';
 import { Button } from '../ui/button';
 import { useSettingsStore } from '../../store/settings';
+import { chooseWorkspace, createStarterWorkspace } from '../../data/workspace';
 import myosIcon from '../../assets/myos-icon.png';
 
 export function WelcomeScreen() {
@@ -18,7 +19,7 @@ export function WelcomeScreen() {
     setBusyAction('choose');
     setError(null);
     try {
-      complete(await window.electronAPI.chooseVaultFolder());
+      complete(await chooseWorkspace());
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Unable to open that folder.');
     } finally {
@@ -30,7 +31,7 @@ export function WelcomeScreen() {
     setBusyAction('create');
     setError(null);
     try {
-      complete(await window.electronAPI.createDefaultVault());
+      complete(await createStarterWorkspace());
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Unable to create the workspace.');
     } finally {

@@ -1,21 +1,18 @@
 import { toast } from 'sonner';
 import Modal from '@/components/ui/Modal';
 import { Button } from '@/components/ui/button';
-import type { Artifact } from '../../../types/artifacts';
-import { useArtifactsStore } from '../../../store/artifacts';
-import { useUndoableArtifact } from '../../../hooks/useUndoableArtifact';
+import type { ArtifactSummary } from '@shared/types';
+import { remove as removeArtifact } from '../../../data/gateway';
 import { useProjectStatus } from '../../projects/projectMutations';
 
 interface SidebarProjectDeleteDialogProps {
-  project: Artifact;
+  project: ArtifactSummary;
   isOpen: boolean;
   onClose: () => void;
 }
 
 /** Confirm project deletion, offering Archive as the gentler exit. Delete stays ⌘Z-restorable. */
 export function SidebarProjectDeleteDialog({ project, isOpen, onClose }: SidebarProjectDeleteDialogProps) {
-  const removeArtifact = useArtifactsStore((state) => state.removeArtifact);
-  const { undoableDelete } = useUndoableArtifact();
   const { setProjectStatus } = useProjectStatus();
 
   const archive = () => {
@@ -25,8 +22,7 @@ export function SidebarProjectDeleteDialog({ project, isOpen, onClose }: Sidebar
 
   const remove = async () => {
     try {
-      await undoableDelete(project, `Delete project: ${project.title}`);
-      removeArtifact(project.filePath);
+      await removeArtifact(project.filePath, `Delete project: ${project.title}`);
       onClose();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Could not delete project');

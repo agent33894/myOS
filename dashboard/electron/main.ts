@@ -1,12 +1,12 @@
-import { app, BrowserWindow, nativeTheme, shell, protocol } from 'electron';
-import { join, dirname, resolve, relative, isAbsolute } from 'path';
+import { app, BrowserWindow, nativeTheme, net, shell, protocol } from 'electron';
+import { join, dirname, relative, isAbsolute } from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
-import { initializePaths, getVaultPath } from './utils/paths.js';
-import { getStableAppDataPath } from './utils/stable-app-data.js';
-
-import { registerIpcHandlers } from './ipc/register-handlers.js';
-import { cliArgs, parseCliCommand, runCliCommand } from './cli.js';
-import { watchOmarchyAccent } from './utils/omarchy-theme.js';
+import { getStableAppDataPath } from './utils/stable-app-data';
+import { loadWorkspace } from './workspace/root';
+import { resolveInWorkspace } from './workspace/paths';
+import { registerIpc } from './ipc/register';
+import { cliArgs, parseCliCommand, runCliCommand } from './cli';
+import { watchOmarchyAccent } from './utils/omarchy-theme';
 
 // Get the directory containing the main process script
 // In production (packaged): app.getAppPath() returns the asar root
@@ -152,20 +152,14 @@ const openQuickCapture = (): void => {
   mainWindow.show();
   mainWindow.focus();
   const { webContents } = mainWindow;
-  const send = () => webContents.send('quick-capture:open');
+  const send = () => webContents.send('capture:open');
   if (webContents.isLoading()) webContents.once('did-finish-load', send);
   else send();
 };
 
 function isPathWithinDirectory(parentDir: string, targetPath: string): boolean {
-  const normalizedParent = resolve(parentDir);
-  const normalizedTarget = resolve(targetPath);
-  if (normalizedParent === normalizedTarget) {
-    return true;
-  }
-
-  const rel = relative(normalizedParent, normalizedTarget);
-  return rel.length > 0 && !rel.startsWith('..') && !isAbsolute(rel);
+  const rel = relative(parentDir, targetPath);
+  return !rel.startsWith('..') && !isAbsolute(rel);
 }
 
 const createWindow = () => {
@@ -340,8 +334,7 @@ const createWindow = () => {
 app.on('ready', () => {
   if (cliCommand) return;
   app.setAsDefaultProtocolClient(APP_PROTOCOL);
-  // Initialize paths before creating window
-  initializePaths();
+  loadWorkspace();
 
   registerAssetProtocol();
   createWindow();
@@ -352,8 +345,7 @@ app.on('ready', () => {
     openArtifactDeepLink(pendingArtifactDeepLink);
   }
 
-  // Register IPC handlers
-  registerIpcHandlers({ getMainWindow: () => mainWindow });
+  registerIpc(() => mainWindow);
 
   if (process.argv.includes('--capture')) openQuickCapture();
   watchOmarchyAccent((accent) => mainWindow?.webContents.send('system:accent-changed', { accent }));
@@ -370,26 +362,16 @@ app.on('open-url', (event, url) => {
   }
 });
 
+// `myos://assets/...` serves attachments from inside the workspace only.
 function registerAssetProtocol() {
-  protocol.registerFileProtocol('myos', (request, callback) => {
+  protocol.handle(APP_PROTOCOL, (request) => {
     try {
-      const url = request.url.replace(/^myos:\/\//, '');
-      const decoded = decodeURI(url);
-      if (!decoded.startsWith('assets/')) {
-        callback({ error: -6 });
-        return;
-      }
-      const vaultPath = getVaultPath();
-      const filePath = resolve(vaultPath, decoded);
-      const rel = relative(vaultPath, filePath);
-      if (rel.startsWith('..') || isAbsolute(rel)) {
-        callback({ error: -6 });
-        return;
-      }
-      callback({ path: filePath });
-    } catch (error) {
-      console.error('Failed to resolve myOS asset', error);
-      callback({ error: -6 });
+      const { host, pathname } = new URL(request.url);
+      const path = decodeURIComponent(`${host}${pathname}`);
+      if (!path.startsWith('assets/')) return new Response(null, { status: 404 });
+      return net.fetch(pathToFileURL(resolveInWorkspace(path)).toString());
+    } catch {
+      return new Response(null, { status: 404 });
     }
   });
 }

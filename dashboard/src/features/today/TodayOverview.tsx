@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import type { Artifact } from "../../types/artifacts";
+import type { ArtifactSummary } from "@shared/types";
 import { localDateStamp, recordDateStamp, recordKind } from "./todaySelectors";
 import { useProjectLabel } from "../../hooks/useProjectLabel";
 
@@ -8,9 +8,9 @@ export function TodayOverview({
   record,
   onSelect,
 }: {
-  inPlay: Artifact[];
-  record: Artifact[];
-  onSelect: (artifact: Artifact) => void;
+  inPlay: ArtifactSummary[];
+  record: ArtifactSummary[];
+  onSelect: (artifact: ArtifactSummary) => void;
 }) {
   const projectLabel = useProjectLabel();
   const now = new Date();

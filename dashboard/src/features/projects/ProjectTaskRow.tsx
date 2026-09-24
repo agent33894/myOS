@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { format, parse } from 'date-fns';
-import type { Artifact } from '../../types/artifacts';
-import { dateOnly } from '../../hooks/projectStats';
+import type { ArtifactSummary } from '@shared/types';
+import { dateOnly } from '../../data/projects';
 import { ChronicleCheckmark } from '../today/ChronicleCheckmark';
 import { localDateStamp } from '../today/todaySelectors';
 import { Calendar } from '../../components/ui/calendar';
@@ -12,11 +12,11 @@ import { ProjectTaskContextMenu } from './ProjectTaskContextMenu';
 import { useArtifactEdit } from './projectMutations';
 
 interface ProjectTaskRowProps {
-  task: Artifact;
+  task: ArtifactSummary;
   isCompleting: boolean;
   isSelected?: boolean;
-  onComplete: (task: Artifact) => void;
-  onOpen: (task: Artifact) => void;
+  onComplete: (task: ArtifactSummary) => void;
+  onOpen: (task: ArtifactSummary) => void;
 }
 
 /** One open task: completion, metadata, a hover due-date affordance, and a right-click menu. */

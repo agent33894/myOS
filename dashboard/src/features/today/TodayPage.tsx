@@ -1,12 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { useArtifactsStore } from '../../store/artifacts';
-import { useUndoableArtifact } from '../../hooks/useUndoableArtifact';
+import { defer as deferTask, toggleComplete } from '../../data/gateway';
+import { useArtifacts, useToday } from '../../data/selectors';
+import { undo as undoLast } from '../../data/undo';
 import { useListNavigation } from '../../hooks/useListNavigation';
-import { useUndoRedoStore } from '../../store/undoRedo';
-import type { Artifact } from '../../types/artifacts';
-import { TodoStatus } from '../../types/artifacts';
-import { localDateStamp, selectInPlay, selectNextUp, selectRecord } from './todaySelectors';
+import type { ArtifactSummary } from '@shared/types';
+import { localDateStamp, selectRecord } from './todaySelectors';
 import { InPlayList } from './InPlayList';
 import { NowLine } from './NowLine';
 import { RecordList } from './RecordList';
@@ -21,12 +20,12 @@ const ARRIVE_MS = 650;
 const UNDO_WINDOW_MS = 4_000;
 
 interface Ghost {
-  task: Artifact;
+  task: ArtifactSummary;
   index: number;
   list: 'inPlay' | 'nextUp';
 }
 
-function insertGhosts(tasks: Artifact[], ghosts: Ghost[], list: Ghost['list']): Artifact[] {
+function insertGhosts(tasks: ArtifactSummary[], ghosts: Ghost[], list: Ghost['list']): ArtifactSummary[] {
   const own = ghosts.filter((ghost) => ghost.list === list);
   if (own.length === 0) return tasks;
   const merged = [...tasks];
@@ -37,14 +36,18 @@ function insertGhosts(tasks: Artifact[], ghosts: Ghost[], list: Ghost['list']): 
 }
 
 export default function TodayPage() {
-  const artifacts = useArtifactsStore((state) => state.artifacts);
-  const updateStoreArtifact = useArtifactsStore((state) => state.updateArtifact);
-  const reload = useArtifactsStore((state) => state.loadArtifacts);
-  const { undoableUpdate } = useUndoableArtifact();
-  const inPlay = useMemo(() => selectInPlay(artifacts), [artifacts]);
-  const nextUp = useMemo(() => selectNextUp(artifacts), [artifacts]);
+  const artifacts = useArtifacts();
+  const today = useToday();
+  // In Play is exactly what the sidebar counts: overdue, then due today, flagged, or in progress.
+  const inPlay = useMemo(() => [...today.overdue, ...today.today], [today]);
+  const nextUp = today.upcoming;
   const record = useMemo(() => selectRecord(artifacts), [artifacts]);
-  const [selected, setSelected] = useState<Artifact | null>(null);
+  const [selectedPath, setSelectedPath] = useState<string | null>(null);
+  const selected = useMemo(
+    () => artifacts.find((artifact) => artifact.filePath === selectedPath) ?? null,
+    [artifacts, selectedPath],
+  );
+  const setSelected = useCallback((artifact: ArtifactSummary | null) => setSelectedPath(artifact?.filePath ?? null), []);
   // Per-row completion state: id -> completion timestamp. Rows animate and
   // persist independently, so rapid triage never drops a click.
   const [completing, setCompleting] = useState<Map<string, string>>(new Map());
@@ -68,16 +71,8 @@ export default function TodayPage() {
     [],
   );
 
-  // Keep an explicitly selected detail synchronized with file-watcher reloads,
-  // while preserving the day overview as the intentional default state.
-  useEffect(() => {
-    if (!selected) return;
-    const current = artifacts.find((artifact) => artifact.id === selected.id) || null;
-    if (current !== selected) setSelected(current);
-  }, [artifacts, selected]);
-
   const complete = useCallback(
-    async (task: Artifact) => {
+    async (task: ArtifactSummary) => {
       if (completing.has(task.id)) return;
       const completedAt = new Date();
       const timestamp = completedAt.toLocaleTimeString([], {
@@ -90,25 +85,15 @@ export default function TodayPage() {
           ? { task, index: listIndex, list: 'inPlay' }
           : { task, index: Math.max(0, nextUp.findIndex((item) => item.id === task.id)), list: 'nextUp' };
       setCompleting((current) => new Map(current).set(task.id, timestamp));
-      const today = localDateStamp(completedAt);
-      const next: Artifact = {
-        ...task,
-        status: TodoStatus.DONE,
-        completedDate: today,
-        updated: today,
-      };
       try {
-        const persistence = undoableUpdate(task.filePath, task, next, `Complete ${task.title}`);
         const [persisted] = await Promise.all([
-          persistence,
+          toggleComplete(task),
           new Promise<void>((resolve) => window.setTimeout(resolve, COMPLETION_HOLD_MS)),
         ]);
         // The row leaves In Play in the store, but stays rendered as a
         // departing ghost so completion reads as one continuous motion.
         setGhosts((current) => [...current, { ...ghost, task: persisted }]);
         setDepartingIds((current) => new Set(current).add(task.id));
-        updateStoreArtifact(persisted);
-        if (selected?.id === task.id) setSelected(persisted);
         setArriving((current) => new Map(current).set(task.id, timestamp));
         setCompletionTimes((current) => ({ ...current, [task.id]: timestamp }));
         setLastCompleted(task.id);
@@ -145,28 +130,21 @@ export default function TodayPage() {
         toast.error(error instanceof Error ? error.message : 'Could not complete task');
       }
     },
-    [completing, inPlay, nextUp, selected, undoableUpdate, updateStoreArtifact],
+    [completing, inPlay, nextUp],
   );
 
   const defer = useCallback(
-    async (task: Artifact) => {
+    async (task: ArtifactSummary) => {
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
-      const next: Artifact = {
-        ...task,
-        deferDate: localDateStamp(tomorrow),
-        updated: localDateStamp(),
-      };
       try {
-        const persisted = await undoableUpdate(task.filePath, task, next, `Defer ${task.title}`);
-        updateStoreArtifact(persisted);
-        if (selected?.id === task.id) setSelected(persisted);
+        await deferTask(task, localDateStamp(tomorrow));
         toast.success('Deferred until tomorrow');
       } catch (error) {
         toast.error(error instanceof Error ? error.message : 'Could not defer task');
       }
     },
-    [selected, undoableUpdate, updateStoreArtifact],
+    [],
   );
 
   useEffect(() => {
@@ -185,7 +163,7 @@ export default function TodayPage() {
   const displayInPlay = useMemo(() => insertGhosts(inPlay, ghosts, 'inPlay'), [inPlay, ghosts]);
   const displayNextUp = useMemo(() => insertGhosts(nextUp, ghosts, 'nextUp'), [nextUp, ghosts]);
   const navigableItems = useMemo(() => [...inPlay, ...nextUp, ...record], [inPlay, nextUp, record]);
-  const getNavId = useCallback((item: Artifact) => item.id, []);
+  const getNavId = useCallback((item: ArtifactSummary) => item.id, []);
   const clearSelection = useCallback(() => setSelected(null), []);
   useListNavigation({
     items: navigableItems,
@@ -196,18 +174,21 @@ export default function TodayPage() {
   });
 
   const undo = async () => {
-    if (await useUndoRedoStore.getState().undo()) {
-      await reload();
-      if (undoTimer.current) window.clearTimeout(undoTimer.current);
-      setLastCompleted(null);
-      setCompletionTimes((current) => {
-        const next = { ...current };
-        delete next[lastCompleted || ''];
-        return next;
-      });
-      setSelected(null);
-      toast.success('Completion undone');
+    try {
+      await undoLast();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Could not undo');
+      return;
     }
+    if (undoTimer.current) window.clearTimeout(undoTimer.current);
+    setLastCompleted(null);
+    setCompletionTimes((current) => {
+      const next = { ...current };
+      delete next[lastCompleted || ''];
+      return next;
+    });
+    setSelected(null);
+    toast.success('Completion undone');
   };
 
   return (

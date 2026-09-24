@@ -17,12 +17,10 @@ describe('settings persistence', () => {
   it('preserves valid legacy values and boolean false', () => {
     expect(normalizeStoredSettings({
       themeMode: 'dark',
-      showCompletedTasks: true,
-      enableAutoSave: false,
+      hasCompletedOnboarding: false,
     })).toMatchObject({
       themeMode: 'dark',
-      showCompletedTasks: true,
-      enableAutoSave: false,
+      hasCompletedOnboarding: false,
     });
   });
 

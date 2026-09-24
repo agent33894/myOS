@@ -1,74 +1,37 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 import { X } from 'lucide-react';
-import { getDefaultStatusForType } from '@shared/spec';
-import { useArtifacts, useCrudActions } from '../../store/selectors';
-import {
-  ArtifactType,
-  Domain,
-  TodoPriority,
-  type ArtifactStatus,
-  type TodoStatus,
-} from '../../types/artifacts';
-import { promoteInboxItem } from '../../gateways/artifactsGateway';
-import { getCurrentDateString } from '../../utils/dateHelpers';
+import { ArtifactType, TodoPriority } from '@shared/types';
+import { retype } from '../../data/gateway';
+import { useArtifact } from '../../data/selectors';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import Modal from '../ui/Modal';
-import { TypeFilingSelect, DomainFilingSelect, PriorityFilingSelect } from '../capture/FilingSelect';
-import {
-  detectQuickCaptureIntent,
-  resolveCaptureDomain,
-} from '../layout/quickCaptureUtils';
+import { TypeFilingSelect, PriorityFilingSelect } from '../capture/FilingSelect';
 import { stripTitleEcho } from '../../features/shell/titleEcho';
 
 interface RefineModalProps {
   isOpen: boolean;
   onClose: () => void;
-  artifactId: string;
-  onPromoted?: () => void;
+  artifactPath: string;
 }
 
 const FIELD_LABEL = 'font-mono text-3xs uppercase tracking-wider text-muted-foreground';
 
-export default function RefineModal({ isOpen, onClose, artifactId, onPromoted }: RefineModalProps) {
-  const artifacts = useArtifacts();
-  const { addArtifact, removeArtifact } = useCrudActions();
+/** File one Inbox capture as a task, note, or project; the file moves to that type's folder. */
+export default function RefineModal({ isOpen, onClose, artifactPath }: RefineModalProps) {
+  const artifact = useArtifact(artifactPath);
 
-  const artifact = artifacts.find((a) => a.id === artifactId);
-  const detected = useMemo(
-    () => (artifact?.content?.trim() ? detectQuickCaptureIntent(artifact.content) : null),
-    [artifact?.content]
+  // Seeded once: the modal mounts per capture, and later store refreshes must not clobber the form.
+  const [title, setTitle] = useState(artifact?.title ?? '');
+  const [selectedType, setSelectedType] = useState<ArtifactType>(
+    artifact && artifact.type !== ArtifactType.INBOX ? artifact.type : ArtifactType.MEMO,
   );
-
-  const [title, setTitle] = useState('');
-  const [selectedType, setSelectedType] = useState<ArtifactType>(ArtifactType.MEMO);
-  const [selectedDomain, setSelectedDomain] = useState<Domain>(Domain.WORK);
-  const [selectedPriority, setSelectedPriority] = useState<TodoPriority>(TodoPriority.MEDIUM);
-  const [tags, setTags] = useState<string[]>([]);
+  const [selectedPriority, setSelectedPriority] = useState(artifact?.priority ?? TodoPriority.MEDIUM);
+  const [tags, setTags] = useState(artifact?.tags ?? []);
   const [tagInput, setTagInput] = useState('');
-  const [project, setProject] = useState('');
+  const [project, setProject] = useState(artifact?.project ?? '');
   const [isPromoting, setIsPromoting] = useState(false);
-
-  // Seed the form from the capture: detection suggests, the user decides.
-  useEffect(() => {
-    if (!artifact) return;
-    const type =
-      artifact.type !== ArtifactType.INBOX
-        ? artifact.type
-        : detected?.detectedType ?? ArtifactType.MEMO;
-    setTitle(artifact.title || detected?.suggestedTitle || 'Untitled');
-    setSelectedType(type);
-    setSelectedDomain(resolveCaptureDomain(type, artifact.domain ?? null, detected?.detectedDomain ?? null));
-    setSelectedPriority(artifact.priority ?? detected?.detectedPriority ?? TodoPriority.MEDIUM);
-    setTags(artifact.tags?.length ? artifact.tags : detected?.detectedTags ?? []);
-    setProject(artifact.project || '');
-  }, [artifact, detected]);
-
-  const changeType = (type: ArtifactType) => {
-    setSelectedType(type);
-    setSelectedDomain(resolveCaptureDomain(type, selectedDomain, detected?.detectedDomain ?? null));
-  };
 
   const addTag = () => {
     const tag = tagInput.trim().toLowerCase();
@@ -80,29 +43,22 @@ export default function RefineModal({ isOpen, onClose, artifactId, onPromoted }:
 
   const handlePromote = async () => {
     if (!artifact || !title.trim()) return;
-
     setIsPromoting(true);
     try {
-      const promotedArtifact = {
-        ...artifact,
-        title: title.trim(),
-        domain: selectedDomain,
-        type: selectedType,
-        tags,
-        project: project.trim() || undefined,
-        priority: selectedType === ArtifactType.TODO ? selectedPriority : undefined,
-        status: getDefaultStatusForType(selectedType) as ArtifactStatus | TodoStatus,
-        updated: getCurrentDateString(),
-      };
-
-      const persistedArtifact = await promoteInboxItem(artifact.filePath, promotedArtifact);
-      removeArtifact(artifact.filePath);
-      addArtifact(persistedArtifact);
-      toast.success(`Filed to ${selectedDomain} · ${selectedType}`);
-      onPromoted?.();
+      await retype(
+        artifact.filePath,
+        {
+          type: selectedType,
+          title: title.trim(),
+          tags,
+          project: project.trim() || null,
+          priority: selectedType === ArtifactType.TODO ? selectedPriority : null,
+        },
+        `File “${title.trim()}” as ${selectedType}`,
+      );
+      toast.success(`Filed as ${selectedType}`);
       onClose();
     } catch (err) {
-      console.error('Failed to promote inbox item:', err);
       toast.error('Failed to file: ' + (err instanceof Error ? err.message : String(err)));
     } finally {
       setIsPromoting(false);
@@ -113,7 +69,7 @@ export default function RefineModal({ isOpen, onClose, artifactId, onPromoted }:
 
   // Quote the capture's body beyond its title; most quick captures have none,
   // and an empty quote is noise — show nothing instead.
-  const excerpt = stripTitleEcho(artifact.content ?? '', artifact.title ?? '').trim();
+  const excerpt = stripTitleEcho(artifact.searchText ?? '', artifact.title).trim();
 
   return (
     <Modal
@@ -158,8 +114,7 @@ export default function RefineModal({ isOpen, onClose, artifactId, onPromoted }:
       <div className="space-y-1.5">
         <span className={FIELD_LABEL}>Filing</span>
         <div className="flex flex-wrap items-center gap-1.5">
-          <TypeFilingSelect value={selectedType} onChange={changeType} />
-          <DomainFilingSelect type={selectedType} value={selectedDomain} onChange={setSelectedDomain} />
+          <TypeFilingSelect value={selectedType} onChange={setSelectedType} />
           {selectedType === ArtifactType.TODO ? (
             <PriorityFilingSelect value={selectedPriority} onChange={setSelectedPriority} />
           ) : null}

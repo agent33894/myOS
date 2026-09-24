@@ -1,4 +1,4 @@
-import type { Artifact } from '../../types/artifacts';
+import type { ArtifactSummary } from '@shared/types';
 import { cn } from '../../lib/utils';
 import { setArtifactDragData } from '../../lib/artifactDnd';
 import { localDateStamp } from './todaySelectors';
@@ -6,15 +6,15 @@ import { ChronicleCheckmark } from './ChronicleCheckmark';
 import { useProjectLabel } from '../../hooks/useProjectLabel';
 
 interface InPlayListProps {
-  tasks: Artifact[];
+  tasks: ArtifactSummary[];
   selectedId: string | null;
   /** id -> completion timestamp for rows mid-completion (checkmark + stamp). */
   completing: Map<string, string>;
   /** Rows persisted as done but still rendered while they animate out. */
   departingIds: Set<string>;
-  onSelect: (artifact: Artifact) => void;
-  onComplete: (artifact: Artifact) => void;
-  onDefer: (artifact: Artifact) => void;
+  onSelect: (artifact: ArtifactSummary) => void;
+  onComplete: (artifact: ArtifactSummary) => void;
+  onDefer: (artifact: ArtifactSummary) => void;
   heading?: string;
   headingId?: string;
   emptyText?: string | null;

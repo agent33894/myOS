@@ -1,14 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import type { Artifact } from '../types/artifacts';
-import { ArtifactStatus, ArtifactType } from '../types/artifacts';
+import type { ArtifactSummary } from '@shared/types';
+import { ArtifactStatus, ArtifactType } from '@shared/types';
 import { findLinkedArtifact } from './artifactLinks';
 
-function artifact(id: string, filePath: string): Artifact {
+function artifact(id: string, filePath: string): ArtifactSummary {
   return {
     id,
     filePath,
     title: id,
-    content: '',
+    rev: '1:1',
+    extra: {},
     type: ArtifactType.MEMO,
     tags: [],
     created: '2026-08-14',

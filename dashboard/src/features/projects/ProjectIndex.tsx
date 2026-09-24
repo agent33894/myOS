@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import type { ProjectWithStats } from '../../hooks/useProjects';
+import type { ProjectWithStats } from '../../data/projects';
 import { useListNavigation } from '../../hooks/useListNavigation';
 import type { ProjectGroups, ProjectSort } from './projectGroups';
 import { ProjectCreateRow } from './ProjectCreateRow';

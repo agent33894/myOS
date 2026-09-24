@@ -4,7 +4,7 @@
     "electron/main.ts",
     "electron/preload.ts",
     "public/theme-init.js",
-    "src/utils/gray-matter-engines.js"
+    "scripts/*.{js,mjs,ts}"
   ],
   "project": [
     "src/**/*.{ts,tsx,js,jsx}",
@@ -17,5 +17,6 @@
     "@fontsource/literata",
     "electron-builder",
     "non.geist"
-  ]
+  ],
+  "ignoreExportsUsedInFile": true
 }

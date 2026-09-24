@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { addDays, format } from 'date-fns';
-import type { Artifact, TodoPriority } from '../../types/artifacts';
+import type { ArtifactPatch, ArtifactSummary, TodoPriority } from '@shared/types';
 import {
   ContextMenu,
   ContextMenuContent,
@@ -22,8 +22,8 @@ const PRIORITIES = [
 ];
 
 interface ProjectTaskContextMenuProps {
-  task: Artifact;
-  applyEdit: (base: Artifact, changes: Partial<Artifact>, description: string) => Promise<void>;
+  task: ArtifactSummary;
+  applyEdit: (base: ArtifactSummary, changes: ArtifactPatch, description: string) => Promise<void>;
   onPickDate: () => void;
   children: ReactNode;
 }

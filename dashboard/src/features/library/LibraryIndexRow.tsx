@@ -1,4 +1,4 @@
-import type { Artifact } from '../../types/artifacts';
+import type { ArtifactSummary } from '@shared/types';
 import { cn } from '../../lib/utils';
 import { setArtifactDragData } from '../../lib/artifactDnd';
 import type { LibrarySort } from './libraryIndex';
@@ -8,7 +8,7 @@ const MAX_ROW_TAGS = 3;
 const DATE_ONLY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
 /** Status ink for the mono meta column, per the Chronicle status→variant map. */
-function statusClass(status: Artifact['status']): string {
+function statusClass(status: ArtifactSummary['status']): string {
   if (status === 'done') return 'ed-text-success';
   if (status === 'cancelled') return 'ed-text-error';
   if (status === 'active' || status === 'in-progress') return 'accent-text';
@@ -16,14 +16,14 @@ function statusClass(status: Artifact['status']): string {
 }
 
 interface LibraryIndexRowProps {
-  artifact: Artifact;
+  artifact: ArtifactSummary;
   /** Body-match excerpt from full-text search, when the title itself didn't hit. */
   context?: string;
   dateField: LibrarySort;
   showType?: boolean;
   isHighlighted: boolean;
   projectInk?: string;
-  onOpen: (artifact: Artifact) => void;
+  onOpen: (artifact: ArtifactSummary) => void;
 }
 
 /** One boxless index row: serif title, tag chips, project dot, mono meta. */

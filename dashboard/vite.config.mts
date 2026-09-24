@@ -1,8 +1,6 @@
 import { createLogger, defineConfig, loadEnv } from 'vite';
-import type { Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import electron from 'vite-plugin-electron';
-import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -15,20 +13,6 @@ logger.warnOnce = (msg, options) => {
   if (msg.includes('postcss.parse')) return;
   originalWarnOnce(msg, options);
 };
-
-// Replace gray-matter's engines.js to remove eval (security + bundler warning)
-const safeEnginesPath = path.resolve(__dirname, './src/utils/gray-matter-engines.js');
-function grayMatterSafeEngines(): Plugin {
-  return {
-    name: 'gray-matter-safe-engines',
-    enforce: 'pre',
-    load(id) {
-      if (id.includes('gray-matter') && id.endsWith('engines.js')) {
-        return readFileSync(safeEnginesPath, 'utf-8');
-      }
-    },
-  };
-}
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, __dirname, '');
@@ -50,7 +34,6 @@ export default defineConfig(({ mode }) => {
             options.startup();
           },
           vite: {
-            plugins: [grayMatterSafeEngines()],
             build: {
               outDir: 'dist-electron',
               rollupOptions: {
@@ -71,7 +54,6 @@ export default defineConfig(({ mode }) => {
           },
         },
       ]),
-      grayMatterSafeEngines(),
     ],
     resolve: {
       alias: {
@@ -86,11 +68,9 @@ export default defineConfig(({ mode }) => {
     build: {
       rollupOptions: {
         output: {
+          // Shiki is left to Rollup on purpose: its languages and themes are
+          // separate dynamic imports, and grouping them made one 9 MB chunk.
           manualChunks: (id) => {
-            // Group shiki into a separate chunk (no React dependency)
-            if (id.includes('shiki')) {
-              return 'shiki';
-            }
             if (id.includes('mermaid')) {
               return 'mermaid';
             }
@@ -105,10 +85,6 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       port: 5173,
-    },
-    optimizeDeps: {
-      include: ['gray-matter'],
-      // Don't exclude shiki/langs - let Vite handle dynamic imports properly
     },
   };
 });

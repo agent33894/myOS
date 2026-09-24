@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { Artifact } from '../../../types/artifacts';
-import { ArtifactType } from '../../../types/artifacts';
+import type { ArtifactSummary } from '@shared/types';
+import { ArtifactType } from '@shared/types';
 import {
   nextPinOrder,
   reorderWrites,
@@ -8,7 +8,7 @@ import {
   selectSidebarProjects,
 } from './sidebarProjectsModel';
 
-const project = (overrides: Omit<Partial<Artifact>, 'status'> & { status?: string }): Artifact =>
+const project = (overrides: Omit<Partial<ArtifactSummary>, 'status'> & { status?: string }): ArtifactSummary =>
   ({
     id: overrides.id ?? 'p',
     title: overrides.title ?? 'Project',
@@ -21,7 +21,7 @@ const project = (overrides: Omit<Partial<Artifact>, 'status'> & { status?: strin
     updated: '2026-01-01',
     filePath: `work/projects/${overrides.id ?? 'p'}.md`,
     ...overrides,
-  }) as Artifact;
+  }) as ArtifactSummary;
 
 describe('selectOpenProjects', () => {
   it('excludes every closed status, matching the Projects page', () => {

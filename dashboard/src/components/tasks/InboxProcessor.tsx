@@ -1,81 +1,29 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import {
-  Calendar as CalendarIcon,
-  Check,
-  ChevronLeft,
-  ChevronRight,
-  Flag,
-  Folder,
-  Inbox,
-  Tag,
-  Trash2,
-  X,
-} from 'lucide-react';
-import { format, parse } from 'date-fns';
+import { ChevronLeft, ChevronRight, Check, Folder, Inbox, Tag, Trash2, X } from 'lucide-react';
 import { toast } from 'sonner';
-import { getDefaultStatusForType } from '@shared/spec';
-import type { InboxQueueEntry } from '../../types/tasks';
-import {
-  ArtifactType,
-  Domain,
-  TodoPriority,
-  type ArtifactStatus,
-  type TodoStatus,
-} from '../../types/artifacts';
-import { promoteInboxItem } from '../../gateways/artifactsGateway';
-import {
-  useArtifacts,
-  useCrudActions,
-  useTaskCrudActions,
-} from '../../store/selectors';
-import {
-  detectQuickCaptureIntent,
-  resolveCaptureDomain,
-} from '../layout/quickCaptureUtils';
+import { ArtifactType, TodoPriority, type ArtifactSummary } from '@shared/types';
+import { read, remove, retype, save } from '../../data/gateway';
+import { useArtifacts } from '../../data/selectors';
 import { stripTitleEcho } from '../../features/shell/titleEcho';
-import { getCurrentDateString } from '../../utils/dateHelpers';
 import { cn } from '../../lib/utils';
-import { Calendar } from '../ui/calendar';
 import { Button } from '../ui/button';
 import { CommandSurface } from '../ui/CommandSurface';
 import { Input } from '../ui/input';
-import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../ui/select';
-import {
-  DomainFilingSelect,
-  PriorityFilingSelect,
-  TypeFilingSelect,
-} from '../capture/FilingSelect';
+import { PriorityFilingSelect, TypeFilingSelect } from '../capture/FilingSelect';
 import { deriveArtifactFacets } from '../../utils/artifactFacets';
 
 interface InboxProcessorProps {
-  entries: InboxQueueEntry[];
+  entries: ArtifactSummary[];
   onClose: () => void;
 }
 
 const FIELD_LABEL =
   'font-mono text-3xs uppercase tracking-wider text-muted-foreground';
 
-function entryId(entry: InboxQueueEntry): string {
-  return entry.kind === 'task' ? entry.task.id : entry.artifact.id;
-}
-
-function entryTitle(entry: InboxQueueEntry): string {
-  return entry.kind === 'task' ? entry.task.title : entry.artifact.title;
-}
-
 export default function InboxProcessor({
   entries,
   onClose,
 }: InboxProcessorProps) {
-  const { updateTask, deleteTask } = useTaskCrudActions();
-  const { addArtifact, removeArtifact } = useCrudActions();
   const artifacts = useArtifacts();
   const facets = useMemo(() => deriveArtifactFacets(artifacts), [artifacts]);
   // Keep the review session stable even as filing removes items from the live store.
@@ -85,84 +33,28 @@ export default function InboxProcessor({
   const [processing, setProcessing] = useState(false);
 
   const currentEntry = queue[currentIndex];
-  const currentCapture =
-    currentEntry?.kind === 'artifact' ? currentEntry.artifact : null;
   const reviewedCount = initialTotal.current - queue.length;
-  const progress =
-    initialTotal.current > 0 ? (reviewedCount / initialTotal.current) * 100 : 0;
+  const progress = initialTotal.current > 0 ? (reviewedCount / initialTotal.current) * 100 : 0;
   const canNavigate = queue.length > 1;
-
-  const detected = useMemo(
-    () =>
-      currentCapture?.content?.trim()
-        ? detectQuickCaptureIntent(currentCapture.content)
-        : null,
-    [currentCapture?.content],
-  );
 
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
-  const [dueDate, setDueDate] = useState('');
-  const [deferDate, setDeferDate] = useState('');
-  const [priority, setPriority] = useState<TodoPriority | ''>('');
+  const [priority, setPriority] = useState<TodoPriority>(TodoPriority.MEDIUM);
   const [project, setProject] = useState('');
-  const [flagged, setFlagged] = useState(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [selectedType, setSelectedType] = useState<ArtifactType>(
-    ArtifactType.MEMO,
-  );
-  const [selectedDomain, setSelectedDomain] = useState<Domain>(Domain.WORK);
+  const [selectedType, setSelectedType] = useState<ArtifactType>(ArtifactType.MEMO);
   const [tagInput, setTagInput] = useState('');
 
   useEffect(() => {
     if (!currentEntry) return;
-    setTitle(entryTitle(currentEntry));
-    setBody(
-      currentEntry.kind === 'task'
-        ? currentEntry.task.content?.trim() || ''
-        : stripTitleEcho(
-            currentEntry.artifact.content ?? '',
-            currentEntry.artifact.title ?? '',
-          ).trim(),
-    );
-    setProject(
-      currentEntry.kind === 'task'
-        ? currentEntry.task.project || ''
-        : currentEntry.artifact.project || '',
-    );
-    setSelectedTags(
-      currentEntry.kind === 'task'
-        ? currentEntry.task.tags
-        : currentEntry.artifact.tags,
-    );
+    setTitle(currentEntry.title);
+    setBody(stripTitleEcho(currentEntry.searchText ?? '', currentEntry.title).trim());
+    setProject(currentEntry.project || '');
+    setSelectedTags(currentEntry.tags);
     setTagInput('');
-
-    if (currentEntry.kind === 'task') {
-      setDueDate(currentEntry.task.due || '');
-      setDeferDate(currentEntry.task.deferDate || '');
-      setPriority(currentEntry.task.priority || '');
-      setFlagged(Boolean(currentEntry.task.flagged));
-      return;
-    }
-
-    const type = detected?.detectedType ?? ArtifactType.MEMO;
-    setSelectedType(type);
-    setSelectedDomain(
-      resolveCaptureDomain(
-        type,
-        currentEntry.artifact.domain ?? null,
-        detected?.detectedDomain ?? null,
-      ),
-    );
-    setPriority(
-      currentEntry.artifact.priority ??
-        detected?.detectedPriority ??
-        TodoPriority.MEDIUM,
-    );
-    setFlagged(false);
-    setDueDate('');
-    setDeferDate('');
-  }, [currentEntry, detected]);
+    setSelectedType(ArtifactType.MEMO);
+    setPriority(currentEntry.priority ?? TodoPriority.MEDIUM);
+  }, [currentEntry]);
 
   const move = useCallback(
     (direction: -1 | 1) => {
@@ -176,12 +68,11 @@ export default function InboxProcessor({
 
   const removeCurrentFromSession = useCallback(() => {
     if (!currentEntry) return;
-    const id = entryId(currentEntry);
     if (queue.length === 1) {
       onClose();
       return;
     }
-    setQueue((items) => items.filter((item) => entryId(item) !== id));
+    setQueue((items) => items.filter((item) => item.filePath !== currentEntry.filePath));
     setCurrentIndex((index) => Math.min(index, queue.length - 2));
   }, [currentEntry, onClose, queue.length]);
 
@@ -196,82 +87,42 @@ export default function InboxProcessor({
     if (!currentEntry || !title.trim()) return;
     setProcessing(true);
     try {
-      if (currentEntry.kind === 'task') {
-        await updateTask(currentEntry.task.id, {
-          title: title.trim(),
-          content: body.trim(),
-          due: dueDate || undefined,
-          deferDate: deferDate || undefined,
-          priority: priority || undefined,
-          project: project.trim() || undefined,
-          flagged,
-          tags: selectedTags,
-        });
-      } else {
-        const promotedArtifact = {
-          ...currentEntry.artifact,
-          title: title.trim(),
-          content: body.trim(),
-          domain: selectedDomain,
+      const filed = await retype(
+        currentEntry.filePath,
+        {
           type: selectedType,
+          title: title.trim(),
           tags: selectedTags,
-          project: project.trim() || undefined,
-          priority:
-            selectedType === ArtifactType.TODO
-              ? priority || TodoPriority.MEDIUM
-              : undefined,
-          status: getDefaultStatusForType(selectedType) as
-            ArtifactStatus | TodoStatus,
-          updated: getCurrentDateString(),
-        };
-        const persisted = await promoteInboxItem(
-          currentEntry.artifact.filePath,
-          promotedArtifact,
-        );
-        removeArtifact(currentEntry.artifact.filePath);
-        addArtifact(persisted);
+          project: project.trim() || null,
+          priority: selectedType === ArtifactType.TODO ? priority : null,
+        },
+        `File “${title.trim()}” as ${selectedType}`,
+      );
+      const original = stripTitleEcho(currentEntry.searchText ?? '', currentEntry.title).trim();
+      if (body.trim() !== original) {
+        const current = await read(filed.filePath);
+        await save(filed.filePath, { fields: {}, content: body.trim() }, current.rev);
       }
       removeCurrentFromSession();
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : 'Could not save this item',
-      );
+      toast.error(error instanceof Error ? error.message : 'Could not save this item');
     } finally {
       setProcessing(false);
     }
-  }, [
-    addArtifact,
-    currentEntry,
-    body,
-    deferDate,
-    dueDate,
-    flagged,
-    priority,
-    project,
-    removeArtifact,
-    removeCurrentFromSession,
-    selectedDomain,
-    selectedTags,
-    selectedType,
-    title,
-    updateTask,
-  ]);
+  }, [body, currentEntry, priority, project, removeCurrentFromSession, selectedTags, selectedType, title]);
 
   const handleDelete = useCallback(async () => {
-    if (!currentEntry || !confirm(`Delete “${entryTitle(currentEntry)}”?`))
-      return;
+    if (!currentEntry || !confirm(`Delete “${currentEntry.title}”?`)) return;
     setProcessing(true);
     try {
-      await deleteTask(entryId(currentEntry));
+      await remove(currentEntry.filePath);
       removeCurrentFromSession();
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : 'Could not delete this item',
-      );
+      toast.error(error instanceof Error ? error.message : 'Could not delete this item');
     } finally {
       setProcessing(false);
     }
-  }, [currentEntry, deleteTask, removeCurrentFromSession]);
+  }, [currentEntry, removeCurrentFromSession]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -355,12 +206,8 @@ export default function InboxProcessor({
       <div className="flex-1 space-y-6 overflow-y-auto p-6">
         <div className="flex items-center gap-2">
           <span className="inline-flex items-center gap-1.5 rounded-sm border border-border px-2 py-1 font-mono text-3xs uppercase tracking-wider text-muted-foreground">
-            {currentEntry.kind === 'task' ? (
-              <Check className="h-3 w-3" />
-            ) : (
-              <Inbox className="h-3 w-3" />
-            )}
-            {currentEntry.kind === 'task' ? 'Task' : 'Capture'}
+            <Inbox className="h-3 w-3" />
+            Capture
           </span>
           <span className="text-xs text-muted-foreground">
             Item {currentIndex + 1} of {queue.length} remaining
@@ -387,86 +234,15 @@ export default function InboxProcessor({
           />
         </div>
 
-        {currentEntry.kind === 'artifact' ? (
-          <div className="space-y-1.5">
-            <span className={FIELD_LABEL}>File as</span>
-            <div className="flex flex-wrap items-center gap-1.5">
-              <TypeFilingSelect
-                value={selectedType}
-                onChange={(type) => {
-                  setSelectedType(type);
-                  setSelectedDomain(
-                    resolveCaptureDomain(
-                      type,
-                      selectedDomain,
-                      detected?.detectedDomain ?? null,
-                    ),
-                  );
-                }}
-              />
-              <DomainFilingSelect
-                type={selectedType}
-                value={selectedDomain}
-                onChange={setSelectedDomain}
-              />
-              {selectedType === ArtifactType.TODO ? (
-                <PriorityFilingSelect
-                  value={priority || TodoPriority.MEDIUM}
-                  onChange={setPriority}
-                />
-              ) : null}
-            </div>
+        <div className="space-y-1.5">
+          <span className={FIELD_LABEL}>File as</span>
+          <div className="flex flex-wrap items-center gap-1.5">
+            <TypeFilingSelect value={selectedType} onChange={setSelectedType} />
+            {selectedType === ArtifactType.TODO ? (
+              <PriorityFilingSelect value={priority} onChange={setPriority} />
+            ) : null}
           </div>
-        ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <DateField label="Due date" value={dueDate} onChange={setDueDate} />
-            <DateField
-              label="Defer until"
-              value={deferDate}
-              onChange={setDeferDate}
-            />
-            <div className="space-y-1.5">
-              <label className={FIELD_LABEL}>Priority</label>
-              <Select
-                value={priority || '__none__'}
-                onValueChange={(value) =>
-                  setPriority(
-                    value === '__none__' ? '' : (value as TodoPriority),
-                  )
-                }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="None" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__none__">None</SelectItem>
-                  {Object.values(TodoPriority).map((value) => (
-                    <SelectItem
-                      key={value}
-                      value={value}
-                      className="capitalize"
-                    >
-                      {value}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1.5">
-              <span className={FIELD_LABEL}>Focus</span>
-              <Button
-                type="button"
-                variant={flagged ? 'accent' : 'outline'}
-                className="w-full justify-start"
-                onClick={() => setFlagged((value) => !value)}
-                aria-pressed={flagged}
-              >
-                <Flag className="mr-2 h-4 w-4" />
-                {flagged ? 'Flagged' : 'Flag this task'}
-              </Button>
-            </div>
-          </div>
-        )}
+        </div>
 
         <div className="space-y-1.5">
           <label
@@ -582,59 +358,10 @@ export default function InboxProcessor({
             disabled={processing || !title.trim()}
           >
             <Check className="mr-2 h-4 w-4" />
-            {queue.length === 1
-              ? 'Save & Finish'
-              : currentEntry.kind === 'artifact'
-                ? 'File & Continue'
-                : 'Save & Continue'}
+            {queue.length === 1 ? 'Save & Finish' : 'File & Continue'}
           </Button>
         </div>
       </div>
     </CommandSurface>
-  );
-}
-
-function DateField({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-}) {
-  return (
-    <div className="space-y-1.5">
-      <span className={cn(FIELD_LABEL, 'flex items-center gap-1.5')}>
-        <CalendarIcon className="h-3 w-3" />
-        {label}
-      </span>
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full justify-start font-normal"
-          >
-            <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />
-            {value
-              ? format(parse(value, 'yyyy-MM-dd', new Date()), 'MMM d, yyyy')
-              : 'Choose date'}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
-          <Calendar
-            mode="single"
-            selected={
-              value ? parse(value, 'yyyy-MM-dd', new Date()) : undefined
-            }
-            onSelect={(date) =>
-              onChange(date ? format(date, 'yyyy-MM-dd') : '')
-            }
-            initialFocus
-          />
-        </PopoverContent>
-      </Popover>
-    </div>
   );
 }

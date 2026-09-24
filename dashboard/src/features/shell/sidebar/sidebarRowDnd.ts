@@ -1,12 +1,10 @@
 import { useState, type DragEvent } from 'react';
 import { toast } from 'sonner';
-import type { Artifact } from '../../../types/artifacts';
-import { ArtifactType } from '../../../types/artifacts';
-import { useArtifactsStore } from '../../../store/artifacts';
-import { useUndoableArtifact } from '../../../hooks/useUndoableArtifact';
+import type { ArtifactSummary } from '@shared/types';
+import { ArtifactType } from '@shared/types';
+import { patchMany } from '../../../data/gateway';
 import { dragHasArtifact, readArtifactDragData } from '../../../lib/artifactDnd';
-import { useArtifactEdit } from '../../projects/projectMutations';
-import { localDateStamp } from '../../today/todaySelectors';
+import { projectBaseArtifact, useArtifactEdit } from '../../projects/projectMutations';
 import { reorderWrites } from './sidebarProjectsModel';
 
 /** Pinned-row reorder drags carry the source project id under this private mime. */
@@ -18,9 +16,8 @@ const PROJECT_REORDER_MIME = 'application/x-myos-project-reorder';
  * under this project by rename-stable id. The reorder mime never lights the
  * artifact drop-target treatment.
  */
-export function useSidebarRowDnd(project: Artifact, pinnedRows: Artifact[]) {
+export function useSidebarRowDnd(project: ArtifactSummary, pinnedRows: ArtifactSummary[]) {
   const { applyEdit } = useArtifactEdit();
-  const { undoableBulkUpdate } = useUndoableArtifact();
   const [isDragging, setIsDragging] = useState(false);
   const [isDropTarget, setIsDropTarget] = useState(false);
   const canReorder = project.pinned === true;
@@ -28,16 +25,12 @@ export function useSidebarRowDnd(project: Artifact, pinnedRows: Artifact[]) {
   const applyReorder = async (fromId: string) => {
     const writes = reorderWrites(pinnedRows, fromId, project.id);
     if (writes.length === 0) return;
-    const stamp = localDateStamp();
-    const { artifacts, updateArtifact } = useArtifactsStore.getState();
-    const updates = writes.flatMap(({ id, order }) => {
-      const base = artifacts.find((artifact) => artifact.id === id);
-      if (!base) return [];
-      return [{ filePath: base.filePath, previousArtifact: base, newArtifact: { ...base, order, updated: stamp } }];
+    const changes = writes.flatMap(({ id, order }) => {
+      const base = projectBaseArtifact(id);
+      return base ? [{ path: base.filePath, fields: { order } }] : [];
     });
     try {
-      const persisted = await undoableBulkUpdate(updates, 'Reorder pinned projects');
-      persisted.forEach(updateArtifact);
+      await patchMany(changes, 'Reorder pinned projects');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Could not reorder projects');
     }
@@ -46,7 +39,7 @@ export function useSidebarRowDnd(project: Artifact, pinnedRows: Artifact[]) {
   const fileArtifact = (event: DragEvent) => {
     const payload = readArtifactDragData(event);
     if (!payload) return;
-    const base = useArtifactsStore.getState().artifacts.find((a) => a.id === payload.id);
+    const base = projectBaseArtifact(payload.id);
     if (!base || base.id === project.id || base.project === project.id) return;
     // Projects don't nest — a `project:` link on a project artifact is junk data.
     if (base.type === ArtifactType.PROJECT) return;

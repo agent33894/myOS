@@ -1,18 +1,18 @@
-import type { Artifact } from '../../../types/artifacts';
-import { ArtifactType } from '../../../types/artifacts';
-import { PROJECT_CLOSED_STATUSES } from '../../../hooks/projectStats';
+import type { ArtifactSummary } from '@shared/types';
+import { ArtifactType } from '@shared/types';
+import { PROJECT_CLOSED_STATUSES } from '../../../data/projects';
 
 /** Legacy sidebar showed the first 8 projects; kept as the zero-pinned fallback. */
 const FALLBACK_COUNT = 8;
 
 interface SidebarProjectsView {
-  pinned: Artifact[];
-  overflow: Artifact[];
+  pinned: ArtifactSummary[];
+  overflow: ArtifactSummary[];
   /** True when nothing is pinned and `pinned` is the legacy first-N fallback. */
   usingFallback: boolean;
 }
 
-export function selectOpenProjects(artifacts: Artifact[]): Artifact[] {
+export function selectOpenProjects(artifacts: ArtifactSummary[]): ArtifactSummary[] {
   return artifacts.filter(
     (artifact) =>
       artifact.type === ArtifactType.PROJECT &&
@@ -20,14 +20,14 @@ export function selectOpenProjects(artifacts: Artifact[]): Artifact[] {
   );
 }
 
-const byOrderThenTitle = (a: Artifact, b: Artifact) =>
+const byOrderThenTitle = (a: ArtifactSummary, b: ArtifactSummary) =>
   (a.order ?? Number.POSITIVE_INFINITY) - (b.order ?? Number.POSITIVE_INFINITY) ||
   a.title.localeCompare(b.title);
 
-const byUpdatedDesc = (a: Artifact, b: Artifact) =>
+const byUpdatedDesc = (a: ArtifactSummary, b: ArtifactSummary) =>
   (b.updated ?? '').localeCompare(a.updated ?? '');
 
-export function selectSidebarProjects(artifacts: Artifact[]): SidebarProjectsView {
+export function selectSidebarProjects(artifacts: ArtifactSummary[]): SidebarProjectsView {
   const open = selectOpenProjects(artifacts);
   const pinned = open.filter((artifact) => artifact.pinned === true).sort(byOrderThenTitle);
   if (pinned.length === 0) {
@@ -45,7 +45,7 @@ export function selectSidebarProjects(artifacts: Artifact[]): SidebarProjectsVie
   };
 }
 
-export function nextPinOrder(pinned: Artifact[]): number {
+export function nextPinOrder(pinned: ArtifactSummary[]): number {
   return pinned.reduce((max, artifact) => Math.max(max, artifact.order ?? 0), 0) + 1;
 }
 
@@ -55,7 +55,7 @@ interface OrderWrite {
 }
 
 /** Moves `fromId` to `toId`'s slot and returns only the rows whose order changed. */
-export function reorderWrites(pinned: Artifact[], fromId: string, toId: string): OrderWrite[] {
+export function reorderWrites(pinned: ArtifactSummary[], fromId: string, toId: string): OrderWrite[] {
   if (fromId === toId) return [];
   const ids = pinned.map((artifact) => artifact.id);
   const from = ids.indexOf(fromId);

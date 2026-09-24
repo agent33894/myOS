@@ -1,18 +1,19 @@
 import type { ComponentType } from 'react';
-import { ChevronDown, Inbox } from 'lucide-react';
-import { getArtifactSpec } from '@shared/spec';
-import { ArtifactType, Domain, TodoPriority } from '../../types/artifacts';
+import { ChevronDown } from 'lucide-react';
+import { ARTIFACT_TYPES } from '@shared/spec';
+import { ArtifactType, TodoPriority } from '@shared/types';
 import { getTypeIcon } from '../../utils/typeIcons';
-import { CAPTURE_TYPE_OPTIONS } from '../layout/quickCaptureUtils';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
-  DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
+
+/** Types an Inbox capture can become. */
+const FILING_TYPES = [ArtifactType.TODO, ArtifactType.MEMO, ArtifactType.PROJECT];
 
 interface FilingOption<T extends string> {
   value: T;
@@ -76,103 +77,23 @@ function FilingSelect<T extends string>({
   );
 }
 
-function typeDirGarnish(type: ArtifactType): string | undefined {
-  const storage = getArtifactSpec(type).storageRule;
-  const dir = storage.fixedDir ?? storage.typeDir;
-  return dir ? `${dir}/` : undefined;
-}
-
-const UNFILED_VALUE = ArtifactType.INBOX;
-
-/**
- * Destination chip. With `allowUnfiled`, Unfiled leads the menu and is the
- * default; without it (Refine), only real types are offered.
- */
-export function TypeFilingSelect({
-  value,
-  onChange,
-  allowUnfiled = false,
-}: {
-  value: ArtifactType;
-  onChange: (type: ArtifactType) => void;
-  allowUnfiled?: boolean;
-}) {
-  const typeOptions = CAPTURE_TYPE_OPTIONS.map((type) => ({
+/** Destination chip for filing an Inbox capture. */
+export function TypeFilingSelect({ value, onChange }: { value: ArtifactType; onChange: (type: ArtifactType) => void }) {
+  const options = FILING_TYPES.map((type) => ({
     value: type,
     label: type,
     icon: getTypeIcon(type),
-    garnish: typeDirGarnish(type),
+    garnish: `${ARTIFACT_TYPES[type].dir}/`,
   }));
-  const isUnfiled = value === UNFILED_VALUE;
-  const ChipIcon = isUnfiled ? Inbox : getTypeIcon(value);
-
-  if (!allowUnfiled) {
-    return (
-      <FilingSelect
-        ariaLabel="Artifact type"
-        value={value}
-        options={typeOptions}
-        onChange={onChange}
-        filled
-        icon={ChipIcon}
-      />
-    );
-  }
-
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <button
-          type="button"
-          className={`chronicle-filing-chip ${FOCUS_RING}`}
-          data-filled={!isUnfiled || undefined}
-          aria-label="Capture destination"
-        >
-          <ChipIcon className="chronicle-filing-chip-icon" />
-          <span className="capitalize">{isUnfiled ? 'Unfiled' : value}</span>
-          <ChevronDown className="chronicle-filing-chip-chevron" aria-hidden />
-        </button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="min-w-[190px]">
-        <DropdownMenuRadioGroup
-          value={value}
-          onValueChange={(next) => onChange(next as ArtifactType)}
-        >
-          <DropdownMenuRadioItem value={UNFILED_VALUE}>
-            <Inbox className="h-3 w-3 text-muted-foreground" />
-            <span>Unfiled</span>
-            <DropdownMenuShortcut>inbox/</DropdownMenuShortcut>
-          </DropdownMenuRadioItem>
-          <DropdownMenuSeparator />
-          {typeOptions.map((option) => {
-            const OptionIcon = option.icon;
-            return (
-              <DropdownMenuRadioItem key={option.value} value={option.value}>
-                <OptionIcon className="h-3 w-3 text-muted-foreground" />
-                <span className="capitalize">{option.label}</span>
-                {option.garnish ? <DropdownMenuShortcut>{option.garnish}</DropdownMenuShortcut> : null}
-              </DropdownMenuRadioItem>
-            );
-          })}
-        </DropdownMenuRadioGroup>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-}
-
-export function DomainFilingSelect({
-  type,
-  value,
-  onChange,
-}: {
-  type: ArtifactType;
-  value: Domain;
-  onChange: (domain: Domain) => void;
-}) {
-  const allowed = getArtifactSpec(type).allowedDomains as Domain[];
-  const options = allowed.map((domain) => ({ value: domain, label: domain }));
-  return (
-    <FilingSelect ariaLabel="Domain" value={value} options={options} onChange={onChange} filled />
+    <FilingSelect
+      ariaLabel="Artifact type"
+      value={value}
+      options={options}
+      onChange={onChange}
+      filled
+      icon={getTypeIcon(value)}
+    />
   );
 }
 

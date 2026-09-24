@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
-import { useArtifactsStore } from '../../store/artifacts';
+import { useArtifacts, useDataStatus } from '../../data/selectors';
 import { isTypingTarget, useListNavigation } from '../../hooks/useListNavigation';
-import { ArtifactType, type Artifact } from '../../types/artifacts';
+import { ArtifactType, type ArtifactSummary } from '@shared/types';
 import { toProjectArtifactUrl } from '../artifact-route/routeContract';
 import { ArtifactDetail } from '../shell/ArtifactDetail';
 import { LibraryMasthead } from './LibraryMasthead';
@@ -18,8 +18,8 @@ import { useLibrarySearch } from './useLibrarySearch';
  * Projects never open as bare Markdown here: they route to their workbench.
  */
 export default function LibraryPage() {
-  const artifacts = useArtifactsStore((state) => state.artifacts);
-  const isLoading = useArtifactsStore((state) => state.isLoading);
+  const artifacts = useArtifacts();
+  const isLoading = useDataStatus() === 'loading';
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
   const openPath = params.get('artifact');
@@ -32,7 +32,7 @@ export default function LibraryPage() {
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const openArtifact = useCallback(
-    (artifact: Artifact) => {
+    (artifact: ArtifactSummary) => {
       if (artifact.type === ArtifactType.PROJECT) {
         navigate(toProjectArtifactUrl(artifact.id));
         return;
@@ -94,7 +94,7 @@ export default function LibraryPage() {
           <ArtifactDetail artifact={openArtifactItem} onDeleted={closeArtifact} />
         ) : (
           <div className="chronicle-detail-empty">
-            <p>{isLoading ? 'Opening…' : 'Artifact not found.'}</p>
+            <p>{isLoading ? 'Opening…' : 'ArtifactSummary not found.'}</p>
           </div>
         )}
       </div>

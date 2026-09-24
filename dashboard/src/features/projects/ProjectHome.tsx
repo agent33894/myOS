@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { projectSwatchFor } from '@shared/design-system/tokens';
-import type { ProjectWithStats } from '../../hooks/useProjects';
-import type { Artifact } from '../../types/artifacts';
+import type { ProjectWithStats } from '../../data/projects';
+import type { ArtifactSummary } from '@shared/types';
 import { cn } from '../../lib/utils';
 import { toArtifactNavigationUrl } from '../artifact-route/routeContract';
 import { ProjectInspector } from './ProjectInspector';
@@ -84,7 +84,7 @@ export function ProjectHome({ project, itemPath, onSelectItem, onCloseItem }: Pr
   // artifact from another corner of the vault) opens in the Library pane, or
   // in its own workbench when it is another project.
   const openArtifact = useCallback(
-    (artifact: Artifact) => {
+    (artifact: ArtifactSummary) => {
       setNarrowPanel(null);
       if (resolveWorkbenchItem(project, artifact.filePath)) {
         onSelectItem(artifact.filePath);

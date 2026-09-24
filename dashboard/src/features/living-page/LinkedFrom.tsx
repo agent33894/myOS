@@ -1,15 +1,15 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { Artifact } from '../../types/artifacts';
-import { useArtifactsStore } from '../../store/artifacts';
+import type { ArtifactSummary } from '@shared/types';
+import { useArtifacts } from '../../data/selectors';
 import { findBacklinks } from '../../utils/artifactLinks';
 import { getTypeLabel } from '../../utils/typeIcons';
 import { toArtifactNavigationUrl } from '../artifact-route/routeContract';
 
 /** Everything that points here — `[[wiki links]]` and `related` entries. */
-export default function LinkedFrom({ artifact }: { artifact: Artifact }) {
+export default function LinkedFrom({ artifact }: { artifact: ArtifactSummary }) {
   const navigate = useNavigate();
-  const artifacts = useArtifactsStore((state) => state.artifacts);
+  const artifacts = useArtifacts();
   const backlinks = useMemo(() => findBacklinks(artifact, artifacts), [artifact, artifacts]);
   if (backlinks.length === 0) return null;
 

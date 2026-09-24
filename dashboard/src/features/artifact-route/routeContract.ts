@@ -1,4 +1,4 @@
-import { ArtifactType } from '../../types/artifacts';
+import { ArtifactType } from '@shared/types';
 
 /**
  * The canonical open-an-artifact destination: Library with the artifact

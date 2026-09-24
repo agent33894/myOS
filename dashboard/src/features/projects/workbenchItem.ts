@@ -1,9 +1,9 @@
-import type { Artifact } from '../../types/artifacts';
+import type { ArtifactSummary } from '@shared/types';
 
 interface WorkbenchLists {
-  openTodos: Artifact[];
-  doneTodos: Artifact[];
-  materials: Artifact[];
+  openTodos: ArtifactSummary[];
+  doneTodos: ArtifactSummary[];
+  materials: ArtifactSummary[];
 }
 
 /**
@@ -15,7 +15,7 @@ interface WorkbenchLists {
 export function resolveWorkbenchItem(
   lists: WorkbenchLists,
   itemPath: string | null | undefined,
-): Artifact | null {
+): ArtifactSummary | null {
   if (!itemPath) return null;
   const pools = [lists.openTodos, lists.doneTodos, lists.materials];
   for (const pool of pools) {

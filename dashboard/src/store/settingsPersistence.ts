@@ -4,19 +4,15 @@ export type ThemeMode = 'system' | 'light' | 'dark';
 
 export interface StoredSettings {
   themeMode: ThemeMode;
-  showCompletedTasks: boolean;
   /** A Pantone accent id, `system` to follow the desktop theme, or a custom `#rrggbb`. */
   accent: string;
-  enableAutoSave: boolean;
   hasCompletedOnboarding: boolean;
 }
 
 const STORAGE_KEY = 'myos-settings';
 const DEFAULT_SETTINGS: StoredSettings = {
   themeMode: 'system',
-  showCompletedTasks: false,
   accent: DEFAULT_ACCENT_ID,
-  enableAutoSave: true,
   hasCompletedOnboarding: false,
 };
 
@@ -42,15 +38,9 @@ export function normalizeStoredSettings(value: unknown): StoredSettings {
     themeMode: isOneOf(parsed.themeMode, ['system', 'light', 'dark'])
       ? parsed.themeMode
       : defaults.themeMode,
-    showCompletedTasks: typeof parsed.showCompletedTasks === 'boolean'
-      ? parsed.showCompletedTasks
-      : defaults.showCompletedTasks,
     // Legacy `followSystemAccent` is intentionally dropped: its default was on
     // for everyone, so it never expressed a choice.
     accent: isAccentChoice(parsed.accent) ? parsed.accent.toLowerCase() : defaults.accent,
-    enableAutoSave: typeof parsed.enableAutoSave === 'boolean'
-      ? parsed.enableAutoSave
-      : defaults.enableAutoSave,
     hasCompletedOnboarding: typeof parsed.hasCompletedOnboarding === 'boolean'
       ? parsed.hasCompletedOnboarding
       : defaults.hasCompletedOnboarding,
@@ -80,9 +70,7 @@ export function saveSettings(settings: StoredSettings): void {
 export function getStorableSettings(state: StoredSettings): StoredSettings {
   return {
     themeMode: state.themeMode,
-    showCompletedTasks: state.showCompletedTasks,
     accent: state.accent,
-    enableAutoSave: state.enableAutoSave,
     hasCompletedOnboarding: state.hasCompletedOnboarding,
   };
 }
