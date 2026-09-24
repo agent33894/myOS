@@ -120,7 +120,7 @@ try {
     return state?.welcome && state?.preload;
   });
 
-  await evaluate('document.querySelector(".myos-welcome-actions button:last-child").click()');
+  await evaluate(`document.querySelector('[data-testid="onboarding-start-fresh"]').click()`);
   const workspacePath = await until('default workspace', async () => {
     const state = await evaluate('(async () => ({welcome: !!document.querySelector("#welcome-title"), path: (await window.electronAPI.invoke("workspace:current")).value}))()');
     return !state.welcome && state.path?.endsWith('/Documents/myOS') ? state.path : null;
@@ -128,7 +128,7 @@ try {
   if (!workspacePath.startsWith(home + '/')) {
     throw new Error(`Default workspace escaped temporary home: ${workspacePath}`);
   }
-  await stat(join(workspacePath, 'Welcome to myOS.md'));
+  await stat(join(workspacePath, 'work/memos/welcome-to-myos.md'));
 
   await evaluate(`(() => {
     window.__myosSmokeEvents = [];

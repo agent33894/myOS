@@ -168,7 +168,8 @@ const createWindow = () => {
     ? join(app.getAppPath(), 'dist-electron', 'preload.js')
     : join(electronDir, 'preload.js');
 
-  const windowBackgroundColor = () => (nativeTheme.shouldUseDarkColors ? '#1B1A16' : '#F7F4EE');
+  // The canvas token (src/styles/tokens.css), so the first frame matches the app.
+  const windowBackgroundColor = () => (nativeTheme.shouldUseDarkColors ? '#171716' : '#FCFBF9');
 
   mainWindow = new BrowserWindow({
     width: 1400,
@@ -190,8 +191,10 @@ const createWindow = () => {
     // Linux is frameless: tiling window managers own min/max, and the
     // renderer draws its own close control so the toolbar stays one surface.
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'hidden',
+    // Centers the traffic lights in the 40px title strip the sidebar and page share.
+    ...(process.platform === 'darwin' ? { trafficLightPosition: { x: 16, y: 14 } } : {}),
     ...(process.platform === 'win32'
-      ? { titleBarOverlay: { color: windowBackgroundColor(), height: 52 } }
+      ? { titleBarOverlay: { color: windowBackgroundColor(), height: 40 } }
       : {}),
     backgroundColor: windowBackgroundColor(),
   });
@@ -203,7 +206,7 @@ const createWindow = () => {
   const syncWindowBackground = () => {
     mainWindow?.setBackgroundColor(windowBackgroundColor());
     if (process.platform === 'win32') {
-      mainWindow?.setTitleBarOverlay({ color: windowBackgroundColor(), height: 52 });
+      mainWindow?.setTitleBarOverlay({ color: windowBackgroundColor(), height: 40 });
     }
   };
   nativeTheme.on('updated', syncWindowBackground);
