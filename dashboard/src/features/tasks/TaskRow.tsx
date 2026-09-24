@@ -51,9 +51,9 @@ function moveFocus(from: HTMLElement, step: 1 | -1) {
 }
 
 /**
- * One task: a round checkbox, the title, and a quiet line of details. Hover
- * or focus reveals date, flag, and more in a reserved trailing slot, so the
- * title never shifts. Keyboard: Space/x complete · ⏎ open · d date · f flag · ⌫ delete · ↑↓ move.
+ * One task: a round checkbox, the title (with its flag beside it), and a quiet
+ * line of details. Hover or focus reveals date, flag, and more in a reserved
+ * trailing slot, so the title never shifts. Keyboard: Space/x complete · ⏎ open · d date · f flag · ⌫ delete · ↑↓ move.
  */
 export function TaskRow({ task, hideDueOn, hideProject = false }: TaskRowProps) {
   const navigate = useNavigate();
@@ -193,13 +193,16 @@ export function TaskRow({ task, hideDueOn, hideProject = false }: TaskRowProps) 
             className="-my-0.5"
           />
           <div className="min-w-0 flex-1 cursor-default" onClick={open}>
-            <p
-              className={cn(
-                'truncate text-base text-text transition-colors duration-base',
-                checked && 'text-text-tertiary line-through',
-              )}
-            >
-              {task.title}
+            <p className="flex min-w-0 items-center gap-1.5">
+              <span
+                className={cn(
+                  'truncate text-base text-text transition-colors duration-base',
+                  checked && 'text-text-tertiary line-through',
+                )}
+              >
+                {task.title}
+              </span>
+              {task.flagged && !checked ? <Icon icon={Flag} size="sm" aria-label="Flagged" className="text-warning" /> : null}
             </p>
             {details.length > 0 ? (
               <div className="mt-0.5 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-sm text-text-tertiary">
@@ -226,7 +229,7 @@ export function TaskRow({ task, hideDueOn, hideProject = false }: TaskRowProps) 
               size="sm"
               tabIndex={-1}
               onClick={toggleFlag}
-              className={task.flagged ? 'text-warning hover:text-warning' : hoverOnly}
+              className={cn(hoverOnly, task.flagged && 'text-warning hover:text-warning')}
             />
             <Menu>
               <MenuTrigger asChild>

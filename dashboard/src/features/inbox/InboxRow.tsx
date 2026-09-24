@@ -68,13 +68,13 @@ export function InboxRow({ item }: { item: ArtifactSummary }) {
             event.preventDefault();
             action();
           }}
-          className="group/row flex items-center gap-3 rounded-md py-2 pl-3 pr-1 outline-none transition-colors duration-fast hover:bg-text/5 focus-visible:bg-text/5 focus-visible:ring-2 focus-visible:ring-focus data-[state=open]:bg-text/5"
+          className="group/row flex items-start gap-3 rounded-md py-2 pl-2 pr-1 outline-none transition-colors duration-fast hover:bg-text/5 focus-visible:bg-text/5 focus-visible:ring-2 focus-visible:ring-focus data-[state=open]:bg-text/5"
         >
           <div className="min-w-0 flex-1 cursor-default" onClick={open}>
             <p className="truncate text-base text-text">{item.title}</p>
             {preview ? <p className="mt-0.5 truncate text-sm text-text-tertiary">{preview}</p> : null}
           </div>
-          <div className="relative flex shrink-0 items-center">
+          <div className="relative -my-1 flex shrink-0 items-center">
             <span className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-xs text-text-tertiary transition-opacity duration-fast group-hover/row:opacity-0 group-focus-within/row:opacity-0 group-data-[state=open]/row:opacity-0">
               {relativeTime(createdAt(item))}
             </span>

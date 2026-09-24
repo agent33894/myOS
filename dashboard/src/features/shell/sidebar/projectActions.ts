@@ -4,7 +4,7 @@ import { ArtifactStatus, ArtifactType, type ArtifactPatch, type ArtifactSummary 
 import { PROJECT_CLOSED_STATUSES } from '@shared/spec';
 import { moveToProject, patch, patchMany, remove } from '../../../data/gateway';
 import { useDataStore } from '../../../data/store';
-import { undo } from '../../../data/undo';
+import { toastWithUndo } from '../../tasks/actions';
 
 const byOrderThenTitle = (a: ArtifactSummary, b: ArtifactSummary) =>
   (a.order ?? Number.POSITIVE_INFINITY) - (b.order ?? Number.POSITIVE_INFINITY) || a.title.localeCompare(b.title);
@@ -18,9 +18,6 @@ export function sidebarProjects(artifacts: readonly ArtifactSummary[]): Artifact
   const rest = open.filter((project) => project.pinned !== true).sort((a, b) => a.title.localeCompare(b.title));
   return [...pinned, ...rest];
 }
-
-const withUndo = (message: string) =>
-  toast(message, { action: { label: 'Undo', onClick: () => void undo() } });
 
 async function attempt(action: () => Promise<unknown>, failure: string): Promise<boolean> {
   try {
@@ -65,12 +62,12 @@ export function togglePin(project: ArtifactSummary) {
 }
 
 export async function archiveProject(project: ArtifactSummary) {
-  if (await edit(project, { status: ArtifactStatus.ARCHIVED }, `Archive “${project.title}”`)) withUndo(`Archived “${project.title}”`);
+  if (await edit(project, { status: ArtifactStatus.ARCHIVED }, `Archive “${project.title}”`)) toastWithUndo(`Archived “${project.title}”`);
 }
 
 export async function deleteProject(project: ArtifactSummary) {
   const done = await attempt(() => remove(project.filePath, `Delete “${project.title}”`), 'Could not delete the project');
-  if (done) withUndo(`Deleted “${project.title}”`);
+  if (done) toastWithUndo(`Deleted “${project.title}”`);
   return done;
 }
 
@@ -79,5 +76,5 @@ export async function moveIntoProject(itemId: string, project: ArtifactSummary) 
   const item = Object.values(useDataStore.getState().byPath).find((candidate) => candidate.id === itemId);
   if (!item || item.type === ArtifactType.PROJECT || item.project === project.id) return;
   const done = await attempt(() => moveToProject(item, project.id), 'Could not move it');
-  if (done) withUndo(`Moved to “${project.title}”`);
+  if (done) toastWithUndo(`Moved to “${project.title}”`);
 }
