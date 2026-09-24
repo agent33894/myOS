@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { projectSwatchFor } from '@shared/design-system/tokens';
+import { projectSwatchFor } from '@shared/design-system/accents';
 import type { ProjectWithStats } from '../../hooks/useProjects';
 import type { Artifact } from '../../types/artifacts';
 import { cn } from '../../lib/utils';

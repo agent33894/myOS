@@ -1,12 +1,15 @@
-import { DEFAULT_ACCENT_ID, isHexColor, pantoneAccentById, SYSTEM_ACCENT } from '@shared/design-system/accents';
+import { accentById, DEFAULT_ACCENT_ID, isHexColor, SYSTEM_ACCENT } from '@shared/design-system/accents';
 
 export type ThemeMode = 'system' | 'light' | 'dark';
+export type ReadingFont = 'sans' | 'serif';
 
 export interface StoredSettings {
   themeMode: ThemeMode;
   showCompletedTasks: boolean;
-  /** A Pantone accent id, `system` to follow the desktop theme, or a custom `#rrggbb`. */
+  /** A curated accent id, `system` to follow the desktop theme, or a custom `#rrggbb`. */
   accent: string;
+  /** Face for the document body: Inter or Literata. */
+  readingFont: ReadingFont;
   enableAutoSave: boolean;
   hasCompletedOnboarding: boolean;
 }
@@ -16,13 +19,14 @@ const DEFAULT_SETTINGS: StoredSettings = {
   themeMode: 'system',
   showCompletedTasks: false,
   accent: DEFAULT_ACCENT_ID,
+  readingFont: 'sans',
   enableAutoSave: true,
   hasCompletedOnboarding: false,
 };
 
 export function isAccentChoice(value: unknown): value is string {
   if (typeof value !== 'string') return false;
-  return value === SYSTEM_ACCENT || isHexColor(value) || pantoneAccentById(value) !== undefined;
+  return value === SYSTEM_ACCENT || isHexColor(value) || accentById(value) !== undefined;
 }
 
 function isOneOf<T extends string>(value: unknown, options: readonly T[]): value is T {
@@ -48,6 +52,7 @@ export function normalizeStoredSettings(value: unknown): StoredSettings {
     // Legacy `followSystemAccent` is intentionally dropped: its default was on
     // for everyone, so it never expressed a choice.
     accent: isAccentChoice(parsed.accent) ? parsed.accent.toLowerCase() : defaults.accent,
+    readingFont: isOneOf(parsed.readingFont, ['sans', 'serif']) ? parsed.readingFont : defaults.readingFont,
     enableAutoSave: typeof parsed.enableAutoSave === 'boolean'
       ? parsed.enableAutoSave
       : defaults.enableAutoSave,
@@ -82,6 +87,7 @@ export function getStorableSettings(state: StoredSettings): StoredSettings {
     themeMode: state.themeMode,
     showCompletedTasks: state.showCompletedTasks,
     accent: state.accent,
+    readingFont: state.readingFont,
     enableAutoSave: state.enableAutoSave,
     hasCompletedOnboarding: state.hasCompletedOnboarding,
   };

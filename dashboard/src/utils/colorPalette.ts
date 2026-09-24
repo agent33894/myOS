@@ -5,6 +5,12 @@
  * for use in charts and visualizations.
  */
 
+/** '#5b5bd6' → '91, 91, 214' */
+export function hexToRgbString(hex: string): string {
+  const value = Number.parseInt(hex.slice(1), 16);
+  return `${(value >> 16) & 255}, ${(value >> 8) & 255}, ${value & 255}`;
+}
+
 
 /**
  * Calculate relative luminance of a color per WCAG 2.1 formula
@@ -151,7 +157,7 @@ function normalizeHue(h: number): number {
 }
 
 /**
- * Keep chart colors aligned to Chronicle by staying in a narrow range
+ * Keep chart colors cohesive by staying in a narrow range
  * around the current accent hue and progressively desaturating.
  */
 interface EditorialSwatchTemplate {

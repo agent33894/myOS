@@ -1,55 +1,18 @@
-/* =========================
-   myOS Dashboard Styles
-   =========================
-   Modular CSS architecture themed by Chronicle (DS2) variables in light and dark.
+/*
+ * myOS stylesheet entry. Order is the cascade:
+ *   fonts → Tailwind → tokens → base → editor prose → motion → legacy.
+ * Toasts are styled in src/ui/Toaster.tsx; components use Tailwind utilities.
+ */
 
-   ⚠️ CRITICAL: Import order defines the CSS cascade.
-   DO NOT reorder imports without understanding specificity implications.
-   Later imports override earlier ones when specificity is equal.
-
-   Import order (intentional):
-   1. Fonts       - Must load before any text renders
-   2. Tailwind    - Base layer, component defaults, utility classes
-   3. Base        - Resets and typography foundations
-   4. Theme       - CSS variables (must exist before components reference them)
-   5. Components  - Prose, TipTap editor styles
-   6. Animations  - Keyframes and animation classes
-   7. Features    - Feature-specific styles (zen-mode, research)
-   8. Utilities   - Override utilities (accent colors, window drag)
-
-   When adding new files:
-   - Put foundational styles early (variables, resets)
-   - Put override utilities last
-   - Test that existing styles still work after changes
-*/
-
-/* 1. Fonts */
-@import './base/_fonts.css';
-
-/* 2. Tailwind */
-@import './base/_tailwind.css';
-
-/* 3. Base */
-@import './base/_reset.css';
-@import './base/_typography.css';
-
-/* 4. Theme compatibility utilities, then generated Chronicle tokens */
-@import './themes/_variables.css';
-@import './themes/ds2.generated.css';
-
-/* 5. Components */
+@import './fonts.css';
+@import './tailwind.css';
+@import './tokens.css';
+@import './base.css';
 @import './components/_prose.css';
 @import './components/_tiptap.css';
-@import './components/_sonner.css';
+@import './motion.css';
 
-/* 6. Menus retain their accessibility transitions; Chronicle motion lives in
-   the feature stylesheet so it shares one reduced-motion gate. */
-@import './animations/_menu.css';
-
-/* 7. Features */
+/* TEMPORARY: Chronicle screens until they are rebuilt on src/ui. */
+@import './legacy.css';
 @import './features/_zen-mode.css';
 @import './features/_chronicle.css';
-
-/* 8. Utilities */
-@import './utilities/_accent.css';
-@import './utilities/_window-drag.css';

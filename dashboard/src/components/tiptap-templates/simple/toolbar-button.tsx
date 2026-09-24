@@ -1,6 +1,5 @@
 import { Editor } from '@tiptap/react';
 import { cn } from '../../../lib/utils';
-import { useAccentColor } from '../../../hooks/useAccentColor';
 import { Button } from '../../ui/button'
 
 interface ToolbarButtonProps {
@@ -21,8 +20,6 @@ export function ToolbarButton({
   children,
   className,
 }: ToolbarButtonProps) {
-  const { accentText } = useAccentColor();
-
   return (
     <Button
       type="button"
@@ -37,7 +34,7 @@ export function ToolbarButton({
         className
       )}
     >
-      <span className={cn('h-4 w-4', isActive && accentText)}>
+      <span className={cn('h-4 w-4', isActive && 'text-accent-text')}>
         {children}
       </span>
     </Button>

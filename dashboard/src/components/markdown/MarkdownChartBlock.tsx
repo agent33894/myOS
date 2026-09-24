@@ -19,8 +19,8 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { useAccentColor } from '../../hooks/useAccentColor';
-import { generateEditorialChartScale } from '../../utils/colorPalette';
+import { useAccent } from '../../hooks/useAccent';
+import { generateEditorialChartScale, hexToRgbString } from '../../utils/colorPalette';
 import type {
   MarkdownCartesianChartSpec,
   MarkdownPieChartSpec,
@@ -290,7 +290,7 @@ function CartesianChart({
         dataKey={spec.xKey}
         tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))', fontWeight: 500 }}
         tickLine={false}
-        axisLine={{ stroke: 'hsl(var(--border))', opacity: 0.8 }}
+        axisLine={{ stroke: 'var(--border)', opacity: 0.8 }}
         tickMargin={8}
         padding={{ left: 8, right: 8 }}
         tickFormatter={(value) =>
@@ -686,7 +686,7 @@ function PieChartView({
                       <Cell
                         key={`pie-cell-${index}`}
                         fill={fill}
-                        stroke={isHovered ? 'hsl(var(--border))' : 'transparent'}
+                        stroke={isHovered ? 'var(--border)' : 'transparent'}
                         strokeWidth={isHovered ? 1.5 : 0}
                         style={{
                           opacity: isHovered ? 1 : 0.92,
@@ -735,19 +735,18 @@ function PieChartView({
 }
 
 function MarkdownChartBlock({ raw }: MarkdownChartBlockProps) {
-  const { pantoneColor, isDark } = useAccentColor();
-  const accentColor = pantoneColor.hex;
+  const { hex: accentColor, isDark } = useAccent();
   const [isNarrativeExpanded, setIsNarrativeExpanded] = useState(false);
   const [suppressNarrativeReveal, setSuppressNarrativeReveal] = useState(false);
   const parsed = useMemo(() => parseMarkdownChartBlock(raw), [raw]);
 
   const palette = useMemo(() => {
     return generateEditorialChartScale(
-      pantoneColor?.rgb || '99, 102, 241',
+      hexToRgbString(accentColor),
       72,
       isDark
     );
-  }, [pantoneColor?.rgb, isDark]);
+  }, [accentColor, isDark]);
   const interpretation = useMemo(
     () => (parsed.ok ? buildChartInterpretation(parsed.spec) : null),
     [parsed]

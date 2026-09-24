@@ -4,6 +4,7 @@ import {
   getStorableSettings,
   loadSettings,
   saveSettings,
+  type ReadingFont,
   type StoredSettings,
   type ThemeMode,
 } from './settingsPersistence';
@@ -15,6 +16,7 @@ interface SettingsState extends StoredSettings {
   setShowCompletedTasks: (show: boolean) => void;
   setAccent: (accent: string) => void;
   setAccentPreview: (accent: string | null) => void;
+  setReadingFont: (font: ReadingFont) => void;
   setEnableAutoSave: (enable: boolean) => void;
   setHasCompletedOnboarding: (value: boolean) => void;
   resetAllSettings: () => void;
@@ -38,6 +40,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
       persist({ accent });
     },
     setAccentPreview: (accentPreview) => set({ accentPreview }),
+    setReadingFont: (readingFont) => persist({ readingFont }),
     setEnableAutoSave: (enableAutoSave) => persist({ enableAutoSave }),
     setHasCompletedOnboarding: (hasCompletedOnboarding) => persist({ hasCompletedOnboarding }),
     resetAllSettings: () => {

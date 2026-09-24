@@ -1,0 +1,14 @@
+/* Bundled faces only: the app never fetches fonts at runtime. */
+
+/* Interface and content */
+@import '@fontsource-variable/inter/wght.css';
+@import '@fontsource-variable/inter/wght-italic.css';
+
+/* Optional serif reading face (Appearance → Reading font) */
+@import '@fontsource/literata/latin-400.css';
+@import '@fontsource/literata/latin-400-italic.css';
+@import '@fontsource/literata/latin-500.css';
+@import '@fontsource/literata/latin-600.css';
+
+/* Code and keyboard hints */
+@import 'non.geist/mono';

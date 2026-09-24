@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { projectSwatchFor } from '@shared/design-system/tokens';
+import { projectSwatchFor } from '@shared/design-system/accents';
 import type { Artifact } from '../../types/artifacts';
 import { useArtifactsStore } from '../../store/artifacts';
 import { joinTitleEcho, splitTitleEcho } from '../shell/titleEcho';

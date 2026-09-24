@@ -1,7 +1,7 @@
 import { useMemo, type CSSProperties } from 'react';
 import { useShikiHighlighter } from '../../contexts/ShikiContext';
-import { useAccentColor } from '../../hooks/useAccentColor';
-import { rgbStringToHsl } from '../../utils/colorPalette';
+import { useAccent } from '../../hooks/useAccent';
+import { hexToRgbString, rgbStringToHsl } from '../../utils/colorPalette';
 import type { DiffHunk } from './types';
 
 interface DiffCodeBlockProps {
@@ -12,14 +12,14 @@ interface DiffCodeBlockProps {
 
 export default function DiffCodeBlock({ hunks, language, viewMode }: DiffCodeBlockProps) {
   const { highlighter } = useShikiHighlighter();
-  const { pantoneColor } = useAccentColor();
+  const { hex: accentHex } = useAccent();
 
   const supportedLang = useMemo(() => {
     if (!highlighter) return 'text';
     const lang = language.toLowerCase();
     return highlighter.getLoadedLanguages().includes(lang) ? lang : 'text';
   }, [highlighter, language]);
-  const theme = useMemo(() => buildDiffTheme(pantoneColor.rgb), [pantoneColor.rgb]);
+  const theme = useMemo(() => buildDiffTheme(hexToRgbString(accentHex)), [accentHex]);
 
   if (viewMode === 'side-by-side') {
     return <SideBySideView hunks={hunks} highlighter={highlighter} lang={supportedLang} theme={theme} />;

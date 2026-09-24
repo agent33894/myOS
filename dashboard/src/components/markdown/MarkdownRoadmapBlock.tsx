@@ -10,7 +10,7 @@ import {
   startOfMonth,
 } from 'date-fns';
 import { AlertTriangle, Circle, Flag, Sparkles, UserRound } from 'lucide-react';
-import { useAccentColor } from '../../hooks/useAccentColor';
+import { useAccent } from '../../hooks/useAccent';
 import { getContrastTextColor } from '../../utils/colorPalette';
 import {
   parseMarkdownRoadmapBlock,
@@ -173,9 +173,8 @@ function RoadmapErrorFallback({ message, raw, accentColor }: { message: string; 
 }
 
 function MarkdownRoadmapBlock({ raw }: MarkdownRoadmapBlockProps) {
-  const { pantoneColor } = useAccentColor();
-  const accentRgb = pantoneColor?.rgb || '99, 102, 241';
-  const accentHex = pantoneColor.hex;
+  const { hex: accentHex } = useAccent();
+  const accentRgb = hexToRgbString(accentHex) ?? '91, 91, 214';
   const parsed = parseMarkdownRoadmapBlock(raw);
   if (!parsed.ok) {
     return <RoadmapErrorFallback message={parsed.error.message} raw={parsed.raw} accentColor={accentHex} />;

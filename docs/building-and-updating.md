@@ -18,8 +18,6 @@ npm test
 npm run audit:imports
 npm run audit:ipc
 npm run audit:dead-code
-npm run design-system:check
-npm run audit:design-tokens
 ```
 
 ## Packaging

@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAllowedStatusesForType } from '@shared/spec/artifact-rules';
-import { projectSwatches } from '@shared/design-system/tokens';
+import { projectSwatches } from '@shared/design-system/accents';
 import type { Artifact } from '../../../types/artifacts';
 import { ArtifactType } from '../../../types/artifacts';
 import { cn } from '../../../lib/utils';
