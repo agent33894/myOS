@@ -192,11 +192,23 @@ const createWindow = () => {
       allowRunningInsecureContent: false,
       webviewTag: false,
     },
-    ...(process.platform === 'darwin' ? { titleBarStyle: 'hiddenInset' as const } : {}),
+    titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'hidden',
+    ...(process.platform !== 'darwin'
+      ? { titleBarOverlay: { color: windowBackgroundColor(), height: 52 } }
+      : {}),
     backgroundColor: windowBackgroundColor(),
   });
 
-  const syncWindowBackground = () => mainWindow?.setBackgroundColor(windowBackgroundColor());
+  // The app toolbar is the title bar. Keep native controls, but remove
+  // Electron's default File/Edit/View menu strip on Windows and Linux.
+  if (process.platform !== 'darwin') mainWindow.setMenu(null);
+
+  const syncWindowBackground = () => {
+    mainWindow?.setBackgroundColor(windowBackgroundColor());
+    if (process.platform !== 'darwin') {
+      mainWindow?.setTitleBarOverlay({ color: windowBackgroundColor(), height: 52 });
+    }
+  };
   nativeTheme.on('updated', syncWindowBackground);
 
   // Load the app

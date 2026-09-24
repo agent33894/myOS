@@ -13,7 +13,7 @@ import { useNotificationGenerator } from '../hooks/useNotificationGenerator';
 import { useModalStates, useCommandPaletteActions, useQuickCaptureActions } from '../store/selectors';
 import { useUIStore } from '../store/ui';
 import { getRoute } from './routes';
-import { hasPrimaryModifier, primaryModifier } from '../utils/platform';
+import { hasPrimaryModifier, isMac, primaryModifier } from '../utils/platform';
 
 const SIDEBAR_WIDTH_KEY = 'chronicle-sidebar-width';
 const SIDEBAR_COLLAPSED_KEY = 'chronicle-sidebar-collapsed';
@@ -85,7 +85,7 @@ export default function AppShell() {
 
   return (
     <div
-      className={isRail ? 'chronicle-app is-sidebar-collapsed' : 'chronicle-app'}
+      className={`chronicle-app${isRail ? ' is-sidebar-collapsed' : ''}${isMac ? ' is-mac' : ''}`}
       style={{ '--sidebar-width': `${sidebarWidth}px` } as React.CSSProperties}
     >
       {isCommandPaletteOpen ? <CommandPalette /> : null}

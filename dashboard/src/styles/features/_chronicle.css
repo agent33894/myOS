@@ -93,7 +93,7 @@ select:focus-visible {
 }
 /* Collapsed rail: the toolbar inherits the traffic lights (hiddenInset ends
    ~x=72); indent the leading edge clear of them. */
-.chronicle-app.is-sidebar-collapsed .chronicle-toolbar {
+.chronicle-app.is-mac.is-sidebar-collapsed .chronicle-toolbar {
   padding-left: 36px;
 }
 
@@ -104,8 +104,18 @@ select:focus-visible {
   background: var(--ds2-paper-inset);
 }
 .chronicle-traffic-spacer {
+  display: flex;
   height: 48px;
   flex: 0 0 auto;
+  padding-inline: 16px;
+  align-items: center;
+}
+.chronicle-window-brand {
+  color: var(--ds2-ink-secondary);
+  font-family: var(--font-mono);
+  font-size: var(--type-garnish);
+  font-weight: 600;
+  letter-spacing: 0.13em;
 }
 
 /* The Daybook masthead: today's page heading — serif day, mono garnish. */
@@ -652,7 +662,7 @@ select:focus-visible {
   display: flex;
   height: 52px;
   flex: 0 0 52px;
-  padding: 0 14px 0 16px;
+  padding: 0 max(14px, calc(100vw - env(titlebar-area-x, 0px) - env(titlebar-area-width, 100vw) + 12px)) 0 16px;
   align-items: center;
   justify-content: space-between;
   border-bottom: 0.5px solid var(--rule-standard);
@@ -3177,7 +3187,7 @@ button.chronicle-activity-title:hover {
    sidebar to its collapsed icon rail; the toolbar tightens to match. */
 @media (max-width: 900px) {
   .chronicle-toolbar {
-    padding-inline: 10px;
+    padding-left: 10px;
   }
   .chronicle-search-button {
     min-width: 0;
@@ -3191,6 +3201,9 @@ button.chronicle-activity-title:hover {
 }
 
 @media (max-width: 700px) {
+  .chronicle-search-button {
+    display: none;
+  }
   .chronicle-split {
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: minmax(120px, 45%) minmax(0, 1fr);

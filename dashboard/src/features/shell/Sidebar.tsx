@@ -50,7 +50,9 @@ export function Sidebar({ collapsed, onToggleCollapsed }: SidebarProps) {
 
   return (
     <aside className="chronicle-sidebar">
-      {isMac ? <div className="chronicle-traffic-spacer window-drag-region" aria-hidden="true" /> : null}
+      <div className="chronicle-traffic-spacer window-drag-region" aria-hidden="true">
+        {!isMac && !collapsed ? <span className="chronicle-window-brand">myOS</span> : null}
+      </div>
       <SidebarMasthead />
       <div className="chronicle-sidebar-scroll custom-scrollbar">
         <nav aria-label="Primary" className="chronicle-nav-group">
