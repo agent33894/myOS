@@ -63,8 +63,9 @@ const NORMALIZE: Record<FieldKind, (value: unknown) => unknown> = {
   },
   strings: (value) => {
     if (typeof value === 'string') return [value];
-    if (!Array.isArray(value)) return undefined;
-    return value.map(toText).filter((item): item is string => typeof item === 'string' && item.trim().length > 0);
+    const items = Array.isArray(value) ? value.map(toText) : [];
+    // Anything else (`related: [[Note]]` parses as a nested list) stays raw rather than losing items.
+    return Array.isArray(value) && items.every((item) => typeof item === 'string') ? items : undefined;
   },
   date: toDate,
   number: (value) => (typeof value === 'number' && Number.isFinite(value) ? value : undefined),
@@ -94,11 +95,16 @@ export function readFields(data: Record<string, unknown>): {
   return { fields, extra };
 }
 
-/** Frontmatter in canonical order: known fields, then extras. */
+/**
+ * Frontmatter in canonical order: known fields, then extras. A known key
+ * that is also in `extra` held a value myOS couldn't use, and is written back
+ * as it was until something sets that field.
+ */
 export function writeFields(artifact: ArtifactFields & { extra: Record<string, unknown> }): Record<string, unknown> {
   const data: Record<string, unknown> = {};
   for (const key of FIELD_NAMES) {
-    if (artifact[key] !== undefined) data[key] = artifact[key];
+    const value = key in artifact.extra ? artifact.extra[key] : artifact[key];
+    if (value !== undefined) data[key] = value;
   }
   for (const [key, value] of Object.entries(artifact.extra)) {
     if (!(key in data) && value !== undefined) data[key] = value;

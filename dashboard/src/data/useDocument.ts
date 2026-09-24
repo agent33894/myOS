@@ -76,10 +76,14 @@ export function useDocument(path: string | null) {
       if (!theirs && useDataStore.getState().byPath[session.path]?.rev === session.base.rev) return;
       const disk = theirs ?? (await read(session.path));
       if (disk.rev === session.base.rev) return;
-      if (!session.draft) session.base = versionOf(disk);
-      // Only frontmatter moved (a status toggle, another app's tag edit): our body edits still apply.
-      else if (disk.content === session.base.content) session.base = { ...versionOf(disk), title: session.base.title };
-      else session.conflict = { theirs: disk };
+      if (session.draft && disk.content !== session.base.content) {
+        session.conflict = { theirs: disk };
+      } else {
+        // Only frontmatter moved (a status toggle, a rename elsewhere): local body edits still
+        // apply, and a title the user hasn't touched follows the file.
+        if (session.draft?.title === session.base.title) session.draft = { ...session.draft, title: disk.title };
+        session.base = versionOf(disk);
+      }
       update(session);
     },
     [update],
@@ -94,7 +98,8 @@ export function useDocument(path: string | null) {
       let rebased = false;
       try {
         const title = draft.title.trim();
-        const saved = await save(session.path, { fields: title ? { title } : {}, content: draft.content }, base.rev);
+        const fields = title && title !== base.title ? { title } : {};
+        const saved = await save(session.path, { fields, content: draft.content }, base.rev);
         session.base = versionOf(saved);
         if (session.draft === draft) session.draft = null;
         session.lastSaved = new Date();
@@ -177,8 +182,10 @@ export function useDocument(path: string | null) {
   const keepMine = useCallback(() => {
     const session = sessionRef.current;
     if (!session.conflict || !session.base) return Promise.resolve();
-    session.draft ??= { title: session.base.title, content: session.base.content };
-    session.base = versionOf(session.conflict.theirs);
+    const { theirs } = session.conflict;
+    const mine = session.draft ?? session.base;
+    session.draft = { title: mine.title === session.base.title ? theirs.title : mine.title, content: mine.content };
+    session.base = versionOf(theirs);
     session.conflict = null;
     return flush(session);
   }, [flush]);

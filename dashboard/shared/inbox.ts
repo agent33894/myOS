@@ -29,19 +29,21 @@ export interface ParsedCapture {
 
 const WEEKDAYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 
+const nextWeekday = (match: RegExpMatchArray, now: Date) => {
+  const target = WEEKDAYS.indexOf(match[1].slice(0, 3).toLowerCase());
+  return addDays(now, ((target - now.getDay() + 6) % 7) + 1);
+};
+
+// Date words count only as whole words ("today's news" is not a date).
+// Weekdays mean their next occurrence, never today; the short forms ("sun",
+// "sat", "wed") are ordinary words too, so they only count at the end.
 const DATE_PATTERNS: Array<[RegExp, (match: RegExpMatchArray, now: Date) => Date]> = [
-  [/\btoday\b/i, (_, now) => now],
-  [/\btomorrow\b/i, (_, now) => addDays(now, 1)],
-  [/\bnext week\b/i, (_, now) => addDays(now, 7)],
-  [/\bin (\d{1,3}) days?\b/i, (match, now) => addDays(now, Number(match[1]))],
-  // Weekdays mean their next occurrence, never today.
-  [
-    /\b(sun(?:day)?|mon(?:day)?|tue(?:s|sday)?|wed(?:nesday)?|thu(?:rs?|rsday)?|fri(?:day)?|sat(?:urday)?)\b/i,
-    (match, now) => {
-      const target = WEEKDAYS.indexOf(match[1].slice(0, 3).toLowerCase());
-      return addDays(now, ((target - now.getDay() + 6) % 7) + 1);
-    },
-  ],
+  [/\s(today)(?=\s)/i, (_, now) => now],
+  [/\s(tomorrow)(?=\s)/i, (_, now) => addDays(now, 1)],
+  [/\s(next week)(?=\s)/i, (_, now) => addDays(now, 7)],
+  [/\sin (\d{1,3}) days?(?=\s)/i, (match, now) => addDays(now, Number(match[1]))],
+  [/\s(sunday|monday|tuesday|wednesday|thursday|friday|saturday)(?=\s)/i, nextWeekday],
+  [/\s(sun|mon|tues?|wed|thu|thurs?|fri|sat)\s*$/i, nextWeekday],
 ];
 
 const TAG = /\s#([\w-]+)(?=\s)/g;

@@ -65,6 +65,10 @@ describe('parseCapture', () => {
     expect(parseCapture(text, now).due).toBe(due);
   });
 
+  it.each(['Buy sun cream', "Read today's news", 'Sat with Joe about the plan'])('keeps "%s" undated', (text) => {
+    expect(parseCapture(text, now)).toMatchObject({ title: text, due: undefined, kind: 'capture' });
+  });
+
   it('keeps plain thoughts as Inbox captures with the rest as the body', () => {
     expect(parseCapture('Mail from ana@example.com about the sundae bar\nsecond line', now)).toEqual({
       title: 'Mail from ana@example.com about the sundae bar',

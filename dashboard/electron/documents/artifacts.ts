@@ -17,8 +17,16 @@ import { DomainError, isMissingFile } from '../errors';
 import { resolveInWorkspace, scanMarkdown, toWorkspacePath } from '../workspace/paths';
 import { parseDocument, replaceFrontmatter, revOf, serializeDocument } from './markdown';
 
+/** Documents are Markdown files outside dot-folders; nothing here may touch `.git/` or other files. */
+function resolveDocument(path: string): string {
+  if (!/\.md$/i.test(path) || /(^|[\\/])(\.|node_modules[\\/])/.test(path)) {
+    throw new DomainError('INVALID', `${path} is not a workspace Markdown file.`);
+  }
+  return resolveInWorkspace(path);
+}
+
 async function load(path: string): Promise<{ absolute: string; artifact: Artifact; raw: string }> {
-  const absolute = resolveInWorkspace(path);
+  const absolute = resolveDocument(path);
   try {
     const [raw, stats] = await Promise.all([readFile(absolute, 'utf-8'), stat(absolute)]);
     return { absolute, artifact: parseDocument(raw, toWorkspacePath(absolute), stats), raw };
@@ -36,7 +44,7 @@ function assertRev(artifact: Artifact, expectRev?: string) {
 
 /** Write `text` and return what a fresh read would see. `wx` refuses to replace an existing file. */
 async function write(path: string, text: string, flag: 'w' | 'wx'): Promise<Artifact> {
-  const absolute = resolveInWorkspace(path);
+  const absolute = resolveDocument(path);
   await mkdir(dirname(absolute), { recursive: true });
   try {
     await writeFile(absolute, text, { encoding: 'utf-8', flag });
@@ -52,6 +60,7 @@ const REQUIRED = new Set(['title', 'tags', 'status', 'related']);
 
 function applyPatch(artifact: Artifact, patch: ArtifactPatch): Artifact {
   const next: Artifact = { ...artifact, extra: { ...artifact.extra }, updated: new Date().toISOString() };
+  delete next.extra.updated;
   const fields = next as unknown as Record<string, unknown>;
   for (const [key, value] of Object.entries(patch)) {
     if (!isFieldName(key) || IMMUTABLE.has(key)) throw new DomainError('INVALID', `${key} cannot be changed here.`);
@@ -171,9 +180,11 @@ export async function retypeArtifact(path: string, change: ArtifactRetype, expec
   const { absolute, artifact, raw } = await load(path);
   assertRev(artifact, expectRev);
   const nextDomain = domainFor(type, domain ?? artifact.domain ?? (await projectDomain(patch.project ?? artifact.project)));
+  const { type: _type, domain: _domain, status: _status, ...extra } = artifact.extra;
   const next = applyPatch(
     {
       ...artifact,
+      extra,
       type,
       domain: nextDomain,
       status: isStatusAllowed(type, artifact.status) ? artifact.status : defaultStatusFor(type),
@@ -188,7 +199,7 @@ export async function retypeArtifact(path: string, change: ArtifactRetype, expec
   try {
     await unlink(absolute);
   } catch (error) {
-    await unlink(resolveInWorkspace(moved.filePath));
+    await unlink(resolveDocument(moved.filePath));
     throw error;
   }
   return moved;

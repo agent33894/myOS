@@ -82,6 +82,17 @@ describe('writes', () => {
     expect(patched.extra.reviewer).toBe('Sam');
   });
 
+  it('writes back values it cannot use exactly as they were', async () => {
+    await put('notes/book.md', '\uFEFF---\ntype: book\ndomain: hobby\nrelated: [[Some Note]]\ncreated: 1700000000\n---\nBody\n');
+    const patched = await patchArtifact('notes/book.md', { tags: ['reading'] });
+    expect(patched).toMatchObject({ type: 'memo', tags: ['reading'], content: 'Body' });
+    const text = readFileSync(join(root, 'notes/book.md'), 'utf8');
+    for (const line of ['type: book', 'domain: hobby', 'related:\n  - - Some Note', 'created: 1700000000']) {
+      expect(text).toContain(`\n${line}\n`);
+    }
+    expect(text.endsWith('---\nBody\n')).toBe(true);
+  });
+
   it('restores a deleted file byte for byte at the same path', async () => {
     const handWritten = '---\ntitle: Loose note   # a comment\ntags: [a, b]\n---\n\nBody\n';
     await put('notes/loose.md', handWritten);

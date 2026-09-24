@@ -79,13 +79,15 @@ async function patchAll(changes: FieldChange[], checkRev: boolean): Promise<Arti
   return results;
 }
 
+/** The current values of the keys `fields` is about to change; `null` for keys that are absent. */
+function valuesBefore(path: string, fields: object): ArtifactPatch {
+  const before = useDataStore.getState().byPath[path] as unknown as Record<string, unknown> | undefined;
+  return Object.fromEntries(Object.keys(fields).map((key) => [key, before?.[key] ?? null]));
+}
+
 /** Frontmatter-only changes to several files, undone as one step by writing the previous values back. */
 export async function patchMany(changes: FieldChange[], label: string): Promise<Artifact[]> {
-  const { byPath } = useDataStore.getState();
-  const previous = changes.map(({ path, fields }) => {
-    const before = byPath[path] as unknown as Record<string, unknown> | undefined;
-    return { path, fields: Object.fromEntries(Object.keys(fields).map((key) => [key, before?.[key] ?? null])) };
-  });
+  const previous = changes.map(({ path, fields }) => ({ path, fields: valuesBefore(path, fields) }));
   const results = await patchAll(changes, false);
   record({ label, undo: () => patchAll(previous, true), redo: () => patchAll(changes, true) });
   return results;
@@ -95,22 +97,25 @@ export async function patchMany(changes: FieldChange[], label: string): Promise<
 export const patch = (path: string, fields: ArtifactPatch, label: string) =>
   patchMany([{ path, fields }], label).then(([artifact]) => artifact);
 
-/** Change a file's type (moving it to that type's folder); undo puts the original back exactly. */
+/**
+ * Change a file's type, moving it to that type's folder. Undo retypes it back
+ * with the previous values, so edits made since then survive.
+ */
 export async function retype(path: string, change: ArtifactRetype, label: string): Promise<Artifact> {
-  const original = await invoke('artifacts:read', path);
-  const moved = await retypeFile(path, change, original.rev);
-  let current = moved;
+  const { type, ...fields } = change;
+  const before = useDataStore.getState().byPath[path];
+  const previous = { ...valuesBefore(path, { ...fields, domain: null, status: null }), type: before?.type ?? type };
+  let current = await retypeFile(path, change);
   record({
     label,
     undo: async () => {
-      await deleteFile(current.filePath);
-      await restoreFile(original);
+      current = await retypeFile(current.filePath, previous, currentRev(current.filePath));
     },
     redo: async () => {
-      current = await retypeFile(path, change, currentRev(path));
+      current = await retypeFile(current.filePath, change, currentRev(current.filePath));
     },
   });
-  return moved;
+  return current;
 }
 
 /** Delete a file; undo restores it at the same path with the same frontmatter and body. */

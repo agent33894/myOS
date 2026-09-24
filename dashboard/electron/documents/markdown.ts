@@ -10,7 +10,11 @@ const FRONTMATTER = /^---\r?\n(?:([\s\S]*?)\r?\n)?---[ \t]*(?:\r?\n|$)/;
 
 export const revOf = (stats: Pick<Stats, 'mtimeMs' | 'size'>) => `${stats.mtimeMs}:${stats.size}`;
 
-function splitFrontmatter(text: string, filePath: string): { data: Record<string, unknown>; body: string } {
+// Some Windows editors start files with a byte-order mark.
+const withoutBom = (text: string) => text.replace(/^\uFEFF/, '');
+
+function splitFrontmatter(raw: string, filePath: string): { data: Record<string, unknown>; body: string } {
+  const text = withoutBom(raw);
   const match = FRONTMATTER.exec(text);
   if (!match) return { data: {}, body: text };
   let data: unknown;
@@ -44,7 +48,11 @@ export function parseDocument(text: string, filePath: string, stats: FileStats):
   const { data, body } = splitFrontmatter(text, filePath);
   const { fields, extra } = readFields(data);
   const known = fields as Partial<ArtifactFields>;
-  const type = isArtifactType(known.type) ? known.type : typeFromPath(filePath);
+  const namedType = known.type?.toLowerCase();
+  const type = isArtifactType(namedType) ? namedType : typeFromPath(filePath);
+  // A type or domain myOS doesn't know (`type: book`) is written back as it was.
+  if (known.type !== undefined && !isArtifactType(namedType)) extra.type = data.type;
+  if (known.domain !== undefined && !isDomain(known.domain)) extra.domain = data.domain;
   const content = body.trim();
   const born = stats.birthtime.getTime() ? stats.birthtime : stats.mtime;
   const pathDomain = filePath.split('/')[0];
@@ -78,5 +86,5 @@ export function serializeDocument(artifact: Serializable & Pick<Artifact, 'conte
 
 /** New frontmatter over the file's body, byte for byte. */
 export function replaceFrontmatter(text: string, artifact: Serializable): string {
-  return frontmatterBlock(artifact) + text.replace(FRONTMATTER, '');
+  return frontmatterBlock(artifact) + withoutBom(text).replace(FRONTMATTER, '');
 }
