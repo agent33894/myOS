@@ -32,7 +32,7 @@ function TaskProperties({ task }: { task: ArtifactSummary }) {
   const deferred = dayOf(task.deferDate);
   return (
     <>
-      <span className="inline-flex h-7 items-center gap-1 pr-2 text-sm text-text-secondary">
+      <span className="inline-flex h-7 items-center gap-1 pl-1 pr-2 text-sm text-text-secondary">
         <Checkbox
           checked={done}
           onCheckedChange={() => void completeTask(task)}

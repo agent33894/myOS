@@ -1,0 +1,27 @@
+import type { ReactNode, Ref } from 'react';
+
+interface PageTopBarProps {
+  /** The way back: Back, a breadcrumb. */
+  leading?: ReactNode;
+  /** Where the editor docks its find bar, just before the trailing controls. */
+  findSlot: Ref<HTMLDivElement>;
+  /** Save state and the ⋯ menu. */
+  children: ReactNode;
+}
+
+/**
+ * The bar above a page's title. It stays pinned while the page scrolls, so the
+ * way back, find in page, and the ⋯ menu are always in reach and never cover
+ * the writing.
+ */
+export function PageTopBar({ leading, findSlot, children }: PageTopBarProps) {
+  return (
+    <div className="sticky top-0 z-sticky flex h-14 items-center gap-1 bg-canvas pt-4">
+      {leading}
+      <div className="ml-auto flex items-center gap-2">
+        <div ref={findSlot} className="contents" />
+        {children}
+      </div>
+    </div>
+  );
+}

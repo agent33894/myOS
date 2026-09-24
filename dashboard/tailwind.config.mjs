@@ -129,6 +129,11 @@ export default {
     },
   },
   plugins: [
-    ({ addUtilities }) => addUtilities({ '.field-sizing-content': { 'field-sizing': 'content' } }),
+    ({ addUtilities }) =>
+      addUtilities({
+        '.field-sizing-content': { 'field-sizing': 'content' },
+        // Reserve the scrollbar's room on both sides so a centered column never shifts when content starts to scroll.
+        '.scrollbar-stable': { 'scrollbar-gutter': 'stable both-edges' },
+      }),
   ],
 };

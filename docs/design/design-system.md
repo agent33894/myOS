@@ -99,7 +99,7 @@ Overlays scale from 0.98 and fade in from their origin. Nothing loops forever. A
 Every control comes from `dashboard/src/ui/`. Lint forbids raw `<button>`, `<input>`, `<textarea>`, and `<select>` outside that folder.
 
 - **Primitives:** `Button` (primary · secondary · ghost · danger, in sizes sm · md, plus an `icon` form), `IconButton` (requires a label and shows a tooltip), `Input`, `Textarea`, `Field` (label, hint, and error, wired up automatically), `Select`, `Menu` (dropdown and context), `Popover`, `Tooltip`, `Dialog` (owns focus, Escape, and layering), `Kbd`, `Checkbox` (the task circle), `Switch`, `SegmentedControl`, `DatePicker`.
-- **Patterns:** `EmptyState` (glyph, one warm sentence, one action), `ErrorState`, `LoadingState`, `ListRow`, `SectionHeader`, `Pill` (tags and properties), `PropertyRow`.
+- **Patterns:** `PageLayout` (the shared scrolling canvas and centered column, so every page's title and rows line up), `PageHeader`, `EmptyState` (glyph, one warm sentence, one action), `ErrorState`, `LoadingState`, `ListRow`, `SectionHeader`, `Pill` (tags and properties), `PropertyRow`.
 
 ## Voice
 

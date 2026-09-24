@@ -2,6 +2,7 @@
 // properties, and saving; the editor owns the body.
 import { useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react';
 import type { EditorView } from '@tiptap/pm/view';
+import { createPortal } from 'react-dom';
 import { EditorContent, useEditor } from '@tiptap/react';
 import type { ArtifactType } from '@shared/types';
 import { hasPrimaryModifier } from '../lib/platform';
@@ -21,12 +22,21 @@ export interface EditorProps {
   placeholder?: string;
   /** Put the caret in the body once the document is loaded and empty. */
   autoFocusWhenEmpty?: boolean;
+  /** Where the find bar docks: the page's pinned top bar (null until it mounts). */
+  findSlot: HTMLElement | null;
 }
 
 const isTyping = (element: Element | null) =>
   element instanceof HTMLElement && (element.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(element.tagName));
 
-export function Editor({ value, onChange, artifact, placeholder = 'Start writing, or press / for blocks', autoFocusWhenEmpty }: EditorProps) {
+export function Editor({
+  value,
+  onChange,
+  artifact,
+  placeholder = 'Start writing, or press / for blocks',
+  autoFocusWhenEmpty,
+  findSlot,
+}: EditorProps) {
   const [slashKeys] = useState<{ current: ((event: KeyboardEvent) => boolean) | null }>({ current: null });
   const [initialContent] = useState(value);
   const [linkOpen, setLinkOpen] = useState(false);
@@ -88,6 +98,10 @@ export function Editor({ value, onChange, artifact, placeholder = 'Start writing
     return () => window.clearTimeout(timer);
   }, [editor, artifact.id, autoFocusWhenEmpty, value === '']);
 
+  const findBar = find ? (
+    <FindBar key={find.opened} editor={editor} initialQuery={find.query} onClose={() => setFind(null)} />
+  ) : null;
+
   // Clicking the empty space below the last block continues writing at the end.
   const continueAtEnd = (event: ReactMouseEvent<HTMLDivElement>) => {
     if (event.target !== event.currentTarget || !editor.isEditable) return;
@@ -97,11 +111,7 @@ export function Editor({ value, onChange, artifact, placeholder = 'Start writing
 
   return (
     <div className="relative flex flex-col">
-      {find ? (
-        <div className="sticky top-2 z-sticky flex h-0 items-start justify-end overflow-visible">
-          <FindBar key={find.opened} editor={editor} initialQuery={find.query} onClose={() => setFind(null)} />
-        </div>
-      ) : null}
+      {findBar && findSlot ? createPortal(findBar, findSlot) : null}
       <EditorContent editor={editor} className="flex-1 cursor-text" onMouseDown={continueAtEnd} />
       <BubbleToolbar editor={editor} linkRequest={{ open: linkOpen, setOpen: setLinkOpen }} />
       <SlashMenu editor={editor} keyHandler={slashKeys} onAttachFile={attachFile} />

@@ -18,6 +18,7 @@ import {
   MenuContent,
   MenuItem,
   MenuTrigger,
+  PageLayout,
   Property,
   PropertyRow,
   SectionHeader,
@@ -28,6 +29,7 @@ import { documentBody } from '../page/documentBody';
 import { ConflictBanner } from '../page/ConflictBanner';
 import { kindLabel } from '../../lib/itemKinds';
 import { PageMenu } from '../page/PageMenu';
+import { PageTopBar } from '../page/PageTopBar';
 import { SaveState } from '../page/SaveState';
 import { TagEditor } from '../page/TagEditor';
 import { useNewParam } from '../page/useNewParam';
@@ -140,102 +142,104 @@ export function ProjectHome({ project }: { project: ProjectWithStats }) {
   const doc = useDocument(project.filePath);
   const isNew = useNewParam(project.filePath);
   const [showDone, setShowDone] = useState(false);
+  const [findSlot, setFindSlot] = useState<HTMLDivElement | null>(null);
   const body = documentBody(doc);
   const notes = project.materials.filter((item) => item.type !== ArtifactType.INBOX);
   const tasks = showDone ? [...project.openTodos, ...project.doneTodos] : project.openTodos;
   const newNote = () => void createNote({ project: project.id }).then((url) => url && navigate(url));
 
   return (
-    <div className="h-full overflow-y-auto bg-canvas">
-      <div className="mx-auto flex max-w-3xl flex-col px-6 pb-24 pt-4">
-        <div className="flex h-10 items-center gap-1">
+    <PageLayout document>
+      <PageTopBar
+        leading={
           <Button variant="ghost" size="sm" leadingIcon={ArrowLeft} onClick={() => navigate(paths.projects)}>
             Projects
           </Button>
-          <div className="ml-auto flex items-center gap-2">
-            <SaveState saving={doc.saving} dirty={doc.dirty} saved={doc.lastSaved !== null} />
-            <PageMenu item={project} flush={doc.saveNow} onDeleted={() => navigate(paths.projects)} />
-          </div>
+        }
+        findSlot={setFindSlot}
+      >
+        <SaveState saving={doc.saving} dirty={doc.dirty} saved={doc.lastSaved !== null} />
+        <PageMenu item={project} flush={doc.saveNow} onDeleted={() => navigate(paths.projects)} />
+      </PageTopBar>
+
+      {doc.conflict ? (
+        <div className="mt-4">
+          <ConflictBanner onLoadTheirs={doc.loadTheirs} onKeepMine={() => void doc.keepMine()} />
         </div>
+      ) : null}
 
-        {doc.conflict ? (
-          <div className="mt-4">
-            <ConflictBanner onLoadTheirs={doc.loadTheirs} onKeepMine={() => void doc.keepMine()} />
-          </div>
-        ) : null}
-
-        <div className="mt-8 flex items-center gap-3">
-          <ProjectDot color={projectColor(project)} className="size-4" />
-          <ProjectTitle project={project} autoFocus={isNew} />
-        </div>
-        <div className="mt-3">
-          <ProjectProperties project={project} />
-        </div>
-
-        <div className="mt-6">
-          {doc.content !== null ? (
-            <Editor
-              value={body.value}
-              onChange={body.onChange}
-              artifact={{ id: project.id, filePath: project.filePath, type: project.type }}
-              placeholder="What is this project about?"
-            />
-          ) : (
-            <LoadingState rows={2} />
-          )}
-        </div>
-
-        <section aria-label="Tasks" className="-mx-2 mt-10">
-          <SectionHeader
-            title="Tasks"
-            count={project.openTodos.length}
-            className="px-2"
-            action={
-              project.doneTodos.length > 0 ? (
-                <Button variant="ghost" size="sm" leadingIcon={showDone ? EyeOff : Eye} onClick={() => setShowDone((shown) => !shown)}>
-                  {showDone ? 'Hide completed' : `Show completed (${project.doneTodos.length})`}
-                </Button>
-              ) : null
-            }
-          />
-          <div role="list" className="flex flex-col">
-            {tasks.map((task) => (
-              <div role="listitem" key={task.filePath}>
-                <TaskRow task={task} hideProject />
-              </div>
-            ))}
-          </div>
-          <AddTask project={project.id} />
-        </section>
-
-        <section aria-label="Notes" className="-mx-2 mt-10">
-          <SectionHeader
-            title="Notes"
-            count={notes.length}
-            className="px-2"
-            action={
-              <Button variant="ghost" size="sm" leadingIcon={Plus} onClick={newNote}>
-                New note
-              </Button>
-            }
-          />
-          {notes.length === 0 ? (
-            <p className="px-2 py-2 text-sm text-text-tertiary">Meeting notes, ideas, and references for this project live here.</p>
-          ) : (
-            notes.map((note) => (
-              <ListRow
-                key={note.filePath}
-                onActivate={() => navigate(toNoteUrl(note.filePath))}
-                leading={<Icon icon={FileText} className="text-text-tertiary" />}
-                meta={[kindLabel(note.type), relativeTime(note.updated)].filter(Boolean).join(' · ')}
-                className="px-2"
-              >
-                {note.title}
-              </ListRow>
-            ))
-          )}
-        </section>
+      <div className="mt-8 flex items-center gap-3">
+        <ProjectDot color={projectColor(project)} className="size-4" />
+        <ProjectTitle project={project} autoFocus={isNew} />
       </div>
-    </div>
+      <div className="mt-3">
+        <ProjectProperties project={project} />
+      </div>
+
+      <div className="mt-6">
+        {doc.content !== null ? (
+          <Editor
+            value={body.value}
+            onChange={body.onChange}
+            artifact={{ id: project.id, filePath: project.filePath, type: project.type }}
+            findSlot={findSlot}
+            placeholder="What is this project about?"
+          />
+        ) : (
+          <LoadingState rows={2} />
+        )}
+      </div>
+
+      <section aria-label="Tasks" className="-mx-2 mt-8">
+        <SectionHeader
+          title="Tasks"
+          count={project.openTodos.length}
+          className="px-2"
+          action={
+            project.doneTodos.length > 0 ? (
+              <Button variant="ghost" size="sm" leadingIcon={showDone ? EyeOff : Eye} onClick={() => setShowDone((shown) => !shown)}>
+                {showDone ? 'Hide completed' : `Show completed (${project.doneTodos.length})`}
+              </Button>
+            ) : null
+          }
+        />
+        <div role="list" className="flex flex-col">
+          {tasks.map((task) => (
+            <div role="listitem" key={task.filePath}>
+              <TaskRow task={task} hideProject />
+            </div>
+          ))}
+        </div>
+        <AddTask project={project.id} />
+      </section>
+
+      <section aria-label="Notes" className="-mx-2 mt-10">
+        <SectionHeader
+          title="Notes"
+          count={notes.length}
+          className="px-2"
+          action={
+            <Button variant="ghost" size="sm" leadingIcon={Plus} onClick={newNote}>
+              New note
+            </Button>
+          }
+        />
+        {notes.length === 0 ? (
+          <p className="px-2 py-2 text-sm text-text-tertiary">Meeting notes, ideas, and references for this project live here.</p>
+        ) : (
+          notes.map((note) => (
+            <ListRow
+              key={note.filePath}
+              onActivate={() => navigate(toNoteUrl(note.filePath))}
+              leading={<Icon icon={FileText} className="text-text-tertiary" />}
+              meta={[kindLabel(note.type), relativeTime(note.updated)].filter(Boolean).join(' · ')}
+              className="px-2"
+            >
+              {note.title}
+            </ListRow>
+          ))
+        )}
+      </section>
+    </PageLayout>
   );
 }

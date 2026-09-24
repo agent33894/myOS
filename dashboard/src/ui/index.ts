@@ -48,6 +48,7 @@ export { ErrorState } from './patterns/ErrorState';
 export { ListRow } from './patterns/ListRow';
 export { LoadingState } from './patterns/LoadingState';
 export { PageHeader } from './patterns/PageHeader';
+export { PageLayout } from './patterns/PageLayout';
 export { Property, PropertyRow } from './patterns/PropertyRow';
 export { SectionHeader } from './patterns/SectionHeader';
 export { Toolbar } from './patterns/Toolbar';
