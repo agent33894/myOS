@@ -154,8 +154,12 @@ export default function NotesPage() {
             <div className="grid h-full place-items-center">
               <EmptyState
                 icon={FileText}
-                title="Pick a note"
-                description={`Or press ${formatShortcut('mod+shift+n')} to start a new one.`}
+                title={notes.length > 0 ? 'Pick a note' : 'Write your first note.'}
+                description={
+                  notes.length > 0
+                    ? `Or press ${formatShortcut('mod+shift+n')} to start a new one.`
+                    : `Ideas, meeting notes, a plan for the weekend. Press ${formatShortcut('mod+shift+n')} anytime.`
+                }
                 action={
                   <Button variant="primary" leadingIcon={Plus} onClick={newNote}>
                     New note

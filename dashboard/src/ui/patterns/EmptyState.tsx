@@ -26,8 +26,8 @@ export function EmptyState({ icon, title, description, action, tone = 'accent', 
       >
         <Icon icon={icon} size="lg" />
       </span>
-      <h2 className="text-md font-semibold text-text">{title}</h2>
-      {description ? <p className="max-w-xs text-base text-text-secondary">{description}</p> : null}
+      <h2 className="text-balance text-md font-semibold text-text">{title}</h2>
+      {description ? <p className="max-w-sm text-balance text-base text-text-secondary">{description}</p> : null}
       {action ? <div className="mt-2">{action}</div> : null}
     </div>
   );

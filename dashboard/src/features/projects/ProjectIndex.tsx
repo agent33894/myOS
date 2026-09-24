@@ -39,9 +39,12 @@ export function ProjectIndex() {
         title="Projects"
         subtitle={groups.active.length ? `${groups.active.length} active` : undefined}
         actions={
-          <Button variant="primary" leadingIcon={Plus} onClick={newProject}>
-            New project
-          </Button>
+          // With no projects yet, the empty state carries the one New project button.
+          projects.length > 0 ? (
+            <Button variant="primary" leadingIcon={Plus} onClick={newProject}>
+              New project
+            </Button>
+          ) : null
         }
         className="px-2"
       />
