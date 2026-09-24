@@ -163,20 +163,18 @@ function installDesktopEntry(): number {
     rmSync(legacyEntry);
   }
 
-  // Put `myos` on PATH for portable installs (native packages already ship
-  // /usr/bin/myos); never replace a real file the user put there.
+  // User-local installs should expose their own command even when an older
+  // system package also provides /usr/bin/myos. Never replace a real file.
   const binDirectory = join(homedir(), '.local', 'bin');
   const command = join(binDirectory, 'myos');
   let linkedCommand = false;
-  if (!existsSync('/usr/bin/myos')) {
-    mkdirSync(binDirectory, { recursive: true });
-    const isOurLink =
-      existsSync(command) && lstatSync(command).isSymbolicLink() && /myos/i.test(readlinkSync(command));
-    if (!existsSync(command) || isOurLink) {
-      rmSync(command, { force: true });
-      symlinkSync(executable, command);
-      linkedCommand = true;
-    }
+  mkdirSync(binDirectory, { recursive: true });
+  const isOurLink =
+    existsSync(command) && lstatSync(command).isSymbolicLink() && /myos/i.test(readlinkSync(command));
+  if (!existsSync(command) || isOurLink) {
+    rmSync(command, { force: true });
+    symlinkSync(executable, command);
+    linkedCommand = true;
   }
 
   for (const [tool, args] of [

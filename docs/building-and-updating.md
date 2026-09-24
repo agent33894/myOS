@@ -38,7 +38,17 @@ Linux x64 AppImage and tar.gz (on Linux):
 npm run build:linux
 ```
 
-Arch/Omarchy package (needs `makepkg`, which every Arch install has; no FUSE needed to run it):
+For a local Linux build, install the packaged app without sudo or FUSE:
+
+```bash
+npm run install:local
+```
+
+This builds only the unpacked app and installs it to `~/Applications/myOS`, registers `~/.local/share/applications/myos.desktop`, and links `~/.local/bin/myos`. It skips AppImage and tar.gz compression. Repeating the command replaces the previous local build after verifying the copied app. To install an already built `release/linux-unpacked` without rebuilding, use `npm run install:local:built`.
+
+If an older system package provides `/usr/bin/myos` and that directory precedes `~/.local/bin` on your `PATH`, invoke `~/.local/bin/myos` explicitly or put `~/.local/bin` first on `PATH`. The desktop launcher uses the local build directly.
+
+Arch/Omarchy system package (needs `makepkg` and administrator access):
 
 ```bash
 npm run build:arch
@@ -55,7 +65,7 @@ npm run smoke:linux
 
 ### Installing on Omarchy
 
-Prefer the Arch package above. To use the AppImage instead, install the [`fuse2` package](https://archlinux.org/packages/extra/x86_64/fuse2/) (stock Omarchy reports a missing `libfuse.so.2` without it), keep the AppImage at a stable path, and let it register itself:
+For local development, use `npm run install:local` above. To use a downloaded AppImage instead, install the [`fuse2` package](https://archlinux.org/packages/extra/x86_64/fuse2/) (stock Omarchy reports a missing `libfuse.so.2` without it), keep the AppImage at a stable path, and let it register itself:
 
 ```bash
 sudo pacman -S fuse2
@@ -65,7 +75,7 @@ chmod +x ~/Applications/myOS.AppImage
 ~/Applications/myOS.AppImage --install-desktop-entry
 ```
 
-`--install-desktop-entry` writes `~/.local/share/applications/myos.desktop` (icon, `myos:` links, and a Quick Capture action), makes it the `myos:` handler, and links `~/.local/bin/myos` to the AppImage. It replaces the `com.myos.markdown.desktop` entry that earlier docs asked you to create. Use either the Arch package or the AppImage, not both. To update the AppImage, close myOS, replace the file at the same path, and reopen it. The selected workspace and preferences stay where they are.
+`--install-desktop-entry` writes `~/.local/share/applications/myos.desktop` (icon, `myos:` links, and a Quick Capture action), makes it the `myos:` handler, and links `~/.local/bin/myos` to the launched build. It replaces the `com.myos.markdown.desktop` entry that earlier docs asked you to create. Keep one user launcher active at a time; the latest local or AppImage registration wins. To update the AppImage, close myOS, replace the file at the same path, and reopen it. The selected workspace and preferences stay where they are.
 
 The window's Wayland `app_id` and X11 class are both `myos`, so Hyprland rules match `class:^(myos)$`. The layout adapts to Omarchy tiling down to 360×360: below 900px the sidebar becomes an icon rail, list and detail stack below 700px, and project panels become drawers (toggle with `[` and `]`).
 
@@ -105,13 +115,14 @@ node scripts/package-macos.mjs --arch=x64 --installer
 Copy the built app into a clean destination; do not merge app bundles.
 
 ```bash
-ditto "release/mac-arm64/myOS.app" "/Applications/myOS.app"
-codesign --verify --deep --strict "/Applications/myOS.app"
-defaults read "/Applications/myOS.app/Contents/Info.plist" CFBundleIdentifier
-defaults read "/Applications/myOS.app/Contents/Info.plist" CFBundleShortVersionString
+mkdir -p "$HOME/Applications"
+ditto "release/mac-arm64/myOS.app" "$HOME/Applications/myOS.app"
+codesign --verify --deep --strict "$HOME/Applications/myOS.app"
+defaults read "$HOME/Applications/myOS.app/Contents/Info.plist" CFBundleIdentifier
+defaults read "$HOME/Applications/myOS.app/Contents/Info.plist" CFBundleShortVersionString
 shasum -a 256 \
   "release/mac-arm64/myOS.app/Contents/Resources/app.asar" \
-  "/Applications/myOS.app/Contents/Resources/app.asar"
+  "$HOME/Applications/myOS.app/Contents/Resources/app.asar"
 ```
 
 The bundle identifier must be `com.myos.markdown`, the version must match `package.json`, and the two `app.asar` hashes must match.

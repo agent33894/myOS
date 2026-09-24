@@ -21,7 +21,7 @@ No account is required. myOS has no hosted sync service, telemetry, advertising,
 
 ## Install
 
-Download the latest release from [GitHub Releases](https://github.com/agent33894/myOS/releases). On macOS, use the `.dmg` or `.zip` and drag **myOS** to Applications. On Linux x64, download the `.AppImage`, make it executable, launch it, and run it once with `--install-desktop-entry` to add it to your launcher. A `.tar.gz` archive is also available. On Arch/Omarchy, `npm run build:arch` builds a native package that doesn't need FUSE. See [building and updating](docs/building-and-updating.md) for Omarchy integration, the `myos` terminal commands, and a Quick Capture keybinding.
+Download the latest release from [GitHub Releases](https://github.com/agent33894/myOS/releases). On macOS, use the `.dmg` or `.zip` and drag **myOS** to Applications. On Linux x64, download the `.AppImage`, make it executable, launch it, and run it once with `--install-desktop-entry` to add it to your launcher. A `.tar.gz` archive is also available. For a local Linux source build, `npm run install:local` builds and installs myOS in your home directory without sudo or FUSE. See [building and updating](docs/building-and-updating.md) for Omarchy integration, the `myos` terminal commands, and a Quick Capture keybinding.
 
 The first launch asks you to choose a Markdown folder. Selecting a folder never uploads or relocates it. If you are starting fresh, myOS can create a small example workspace for you.
 
@@ -76,9 +76,10 @@ Build an Apple Silicon installer:
 npm run build:installer
 ```
 
-On Linux x64, build an AppImage and tar.gz, or a native Arch/Omarchy package:
+On Linux x64, build and install locally without sudo, or build distribution artifacts:
 
 ```bash
+npm run install:local
 npm run build:linux
 npm run build:arch
 ```

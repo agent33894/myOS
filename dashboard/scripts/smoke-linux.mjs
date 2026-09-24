@@ -191,10 +191,8 @@ try {
     if (!desktopEntry.includes(line)) throw new Error(`Desktop entry is missing ${line}:\n${desktopEntry}`);
   }
   await stat(join(data, 'icons', 'hicolor', '512x512', 'apps', 'myos.png'));
-  // A native package already provides /usr/bin/myos, so the installer skips the link.
-  const hasSystemCommand = await stat('/usr/bin/myos').then(() => true, () => false);
   const commandLink = join(home, '.local', 'bin', 'myos');
-  if (!hasSystemCommand && (!(await lstat(commandLink)).isSymbolicLink() || (await readlink(commandLink)) !== executable)) {
+  if (!(await lstat(commandLink)).isSymbolicLink() || (await readlink(commandLink)) !== executable) {
     throw new Error('myos was not linked into ~/.local/bin');
   }
 

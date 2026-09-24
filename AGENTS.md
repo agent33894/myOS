@@ -12,6 +12,7 @@ myOS is a macOS and Linux Electron application for managing local Markdown files
 - Follow Chronicle Mac v3 in `docs/design/chronicle-design-system.md`; use semantic design tokens and keep light/dark behavior aligned.
 - Do not introduce cloud synchronization, a required account, analytics, or a bundled AI provider.
 - Do not commit personal workspace content. Git tracks only `.gitkeep` placeholders under `vault/`.
+- Install local builds into user-owned application directories. On Linux, use `npm run install:local` from `dashboard/`; do not require sudo or a system package for local development installs.
 
 ## Verification
 
