@@ -20,6 +20,7 @@ interface SegmentedControlProps<T extends string> {
 
 /**
  * A compact single choice among 2–5 equal-width options, with a sliding thumb.
+ * Without a width it sizes every option to the longest label, so none truncates.
  * Keyboard: arrow keys move and select (radio group semantics).
  */
 export function SegmentedControl<T extends string>({

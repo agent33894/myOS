@@ -53,12 +53,12 @@
     outline-offset: 2px;
   }
 
-  /* Thin, themed scrollbars with a constant gutter so content never shifts. */
-  * {
-    scrollbar-width: thin;
-    scrollbar-color: var(--border-strong) transparent;
-  }
-
+  /*
+   * Minimal themed scrollbars: a slim rounded thumb, no track, no arrow
+   * buttons. The standard scrollbar-width/scrollbar-color properties are left
+   * unset on purpose: Chromium ignores every ::-webkit-scrollbar rule once
+   * they are set and falls back to native bars with arrows.
+   */
   ::-webkit-scrollbar {
     width: 10px;
     height: 10px;
@@ -67,6 +67,10 @@
   ::-webkit-scrollbar-track,
   ::-webkit-scrollbar-corner {
     background: transparent;
+  }
+
+  ::-webkit-scrollbar-button {
+    display: none;
   }
 
   ::-webkit-scrollbar-thumb {

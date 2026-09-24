@@ -19,7 +19,6 @@ export function AppearanceSettings() {
           control={
             <SegmentedControl
               aria-label="Appearance"
-              className="w-80"
               value={themeMode}
               onValueChange={setThemeMode}
               options={[
@@ -42,7 +41,6 @@ export function AppearanceSettings() {
           control={
             <SegmentedControl
               aria-label="Reading font"
-              className="w-48"
               value={readingFont}
               onValueChange={setReadingFont}
               options={[
