@@ -18,8 +18,8 @@ import {
 } from '../../ui';
 import { Page } from '../page/Page';
 import { useNarrowWindow } from '../page/useNarrowWindow';
+import { useCreate } from '../shell/useCreate';
 import { useProjectRefs } from '../tasks/projectRefs';
-import { createNote } from './createNote';
 import { NoteRow } from './NoteRow';
 import { searchNotes, type NoteSort } from './noteSearch';
 
@@ -47,7 +47,7 @@ export default function NotesPage() {
   const results = useMemo(() => searchNotes(notes, query, sort), [notes, query, sort]);
 
   const open = (notePath: string, replace = false) => navigate(toNoteUrl(notePath), { replace });
-  const newNote = () => void createNote().then((url) => url && navigate(url));
+  const { newNote } = useCreate();
 
   const step = (from: number, by: number) => {
     const next = results[Math.min(Math.max(from + by, 0), results.length - 1)];

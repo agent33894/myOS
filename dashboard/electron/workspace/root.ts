@@ -1,7 +1,8 @@
 import { app } from 'electron';
-import { existsSync, mkdirSync, readFileSync, realpathSync, statSync, writeFileSync } from 'fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, realpathSync, statSync, writeFileSync } from 'fs';
 import { join, resolve } from 'path';
 import { DomainError } from '../errors';
+import { writeStarterContent } from './starter';
 import { ensureStableAppDataPath, getLegacyAppDataPaths, getStableAppDataPath } from '../utils/stable-app-data';
 
 /**
@@ -75,35 +76,13 @@ export function selectWorkspace(path: string): string {
   return resolved;
 }
 
-const STARTER_DIRECTORIES = [
-  'inbox',
-  'work/memos',
-  'work/projects',
-  'work/todos',
-  'personal/memos',
-  'personal/projects',
-  'personal/todos',
-  'research/topics',
-  'creative/writing',
-];
-
-/** Create (or reuse) `~/Documents/myOS` with a welcome note and select it. */
+/** Create (or reuse) `~/Documents/myOS` and select it. A new or empty folder gets the starter content. */
 export function createStarterWorkspace(): string {
   const documents = app.getPath('documents');
   // Electron falls back to HOME when XDG_DOCUMENTS_DIR does not exist yet.
   const parent = process.platform === 'linux' && documents === app.getPath('home') ? join(documents, 'Documents') : documents;
   const target = join(parent, 'myOS');
-  for (const directory of STARTER_DIRECTORIES) mkdirSync(join(target, directory), { recursive: true });
-
-  const welcome = join(target, 'Welcome to myOS.md');
-  if (!existsSync(welcome)) {
-    const today = new Date().toISOString().slice(0, 10);
-    const modifier = process.platform === 'darwin' ? 'Command' : 'Ctrl';
-    writeFileSync(
-      welcome,
-      `---\nid: welcome-to-myos\ntitle: Welcome to myOS\ndomain: personal\ntype: memo\ntags: [getting-started, myos]\ncreated: ${today}\nupdated: ${today}\nstatus: active\nrelated: []\n---\n\n# Welcome to myOS\n\nmyOS keeps your work in ordinary Markdown files on this computer.\n\n## Start here\n\n- Press ${modifier}-N to capture a thought or task.\n- Use Today for active work and Library for everything else.\n- Create project notes to group related tasks and context.\n- Change the workspace folder at any time in Settings.\n\nYou own this folder. Back it up, sync it with a provider you trust, or put it in Git. myOS itself never uploads it.\n`,
-      'utf8',
-    );
-  }
+  mkdirSync(target, { recursive: true });
+  if (readdirSync(target).every((name) => name.startsWith('.'))) writeStarterContent(target);
   return selectWorkspace(target);
 }

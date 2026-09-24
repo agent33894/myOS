@@ -1,123 +1,60 @@
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useSyncExternalStore } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
-import { Feather, Search, X } from 'lucide-react';
-import { Sidebar } from '../features/shell/Sidebar';
-import { PaneDivider } from '../components/ui/PaneDivider';
-import CommandPalette from '../components/layout/CommandPalette';
-import QuickCapture from '../components/layout/QuickCapture';
-import KeyboardShortcutsModal from '../components/layout/KeyboardShortcutsModal';
+import QuickCapture from '../features/capture/QuickCapture';
 import { useArtifactSync } from '../data/store';
-import { invoke, subscribe } from '../data/ipc';
+import { subscribe } from '../data/ipc';
 import { useUndoShortcuts } from '../data/undo';
-import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
-import { useNotificationGenerator } from '../hooks/useNotificationGenerator';
-import { useModalStates, useCommandPaletteActions, useQuickCaptureActions } from '../store/selectors';
+import { CommandPalette } from '../features/palette/CommandPalette';
+import { KeyboardShortcutsDialog } from '../features/shell/KeyboardShortcutsDialog';
+import { useNavigationMemory } from '../features/shell/navigationMemory';
+import { Sidebar } from '../features/shell/sidebar/Sidebar';
+import { useGlobalShortcuts } from '../features/shell/useGlobalShortcuts';
+import { WindowStrip } from '../features/shell/WindowStrip';
 import { useUIStore } from '../store/ui';
-import { getRoute } from './routes';
-import { hasPrimaryModifier, isLinux, isMac, primaryModifier } from '../utils/platform';
+import { ErrorBoundary } from '../components/ErrorBoundary';
+import { LoadingState } from '../ui';
+import { useDueReminder } from './useDueReminder';
 
-const SIDEBAR_WIDTH_KEY = 'chronicle-sidebar-width';
-const SIDEBAR_COLLAPSED_KEY = 'chronicle-sidebar-collapsed';
-
-const NARROW_WINDOW_QUERY = '(max-width: 900px)';
+// Tiled windows (Omarchy halves, thirds, quarters) get the icon rail without
+// touching the saved preference for wide windows.
+const NARROW = '(max-width: 900px)';
+const subscribeNarrow = (listener: () => void) => {
+  const media = window.matchMedia(NARROW);
+  media.addEventListener('change', listener);
+  return () => media.removeEventListener('change', listener);
+};
 
 export default function AppShell() {
-  const location = useLocation();
-  const route = getRoute(location.pathname);
-  const [sidebarWidth, setSidebarWidth] = useState(() => Number(localStorage.getItem(SIDEBAR_WIDTH_KEY)) || 212);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(
-    () => localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === '1',
-  );
-  // Tiled windows (Omarchy halves, thirds, quarters) get the icon rail without
-  // touching the saved preference for wide windows.
-  const [isNarrowWindow, setIsNarrowWindow] = useState(() => window.matchMedia(NARROW_WINDOW_QUERY).matches);
-  const isRail = sidebarCollapsed || isNarrowWindow;
-  const { isCommandPaletteOpen, isQuickCaptureOpen, isKeyboardShortcutsOpen } = useModalStates();
-  const { openCommandPalette } = useCommandPaletteActions();
-  const { openQuickCapture } = useQuickCaptureActions();
+  const { pathname } = useLocation();
+  const narrow = useSyncExternalStore(subscribeNarrow, () => window.matchMedia(NARROW).matches);
+  const collapsed = useUIStore((state) => state.sidebarCollapsed);
+  const isQuickCaptureOpen = useUIStore((state) => state.isQuickCaptureOpen);
 
-  useEffect(() => {
-    const media = window.matchMedia(NARROW_WINDOW_QUERY);
-    const sync = () => setIsNarrowWindow(media.matches);
-    media.addEventListener('change', sync);
-    return () => media.removeEventListener('change', sync);
-  }, []);
-  useEffect(() => { localStorage.setItem(SIDEBAR_WIDTH_KEY, String(sidebarWidth)); }, [sidebarWidth]);
-  useEffect(() => {
-    localStorage.setItem(SIDEBAR_COLLAPSED_KEY, sidebarCollapsed ? '1' : '0');
-  }, [sidebarCollapsed]);
-
-  // Collapse the sidebar to the icon rail the narrow window already uses.
-  useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === '\\' && hasPrimaryModifier(event) && !event.altKey) {
-        event.preventDefault();
-        setSidebarCollapsed((prev) => !prev);
-      }
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, []);
-
-  // Escape always dismisses overlays, even when focus is outside the modal input.
-  const anyOverlayOpen = isCommandPaletteOpen || isQuickCaptureOpen || isKeyboardShortcutsOpen;
-  useEffect(() => {
-    if (!anyOverlayOpen) return;
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== 'Escape') return;
-      // A popover/menu inside the overlay owns this Escape — it closes itself.
-      const target = event.target as HTMLElement | null;
-      if (target?.closest('[data-radix-popper-content-wrapper]')) return;
-      const { closeCommandPalette, closeQuickCapture, closeKeyboardShortcuts } = useUIStore.getState();
-      closeCommandPalette();
-      closeQuickCapture();
-      closeKeyboardShortcuts();
-    };
-    document.addEventListener('keydown', onKeyDown);
-    return () => document.removeEventListener('keydown', onKeyDown);
-  }, [anyOverlayOpen]);
   // `myos --capture` (e.g. from a Hyprland keybinding) opens Quick Capture here.
   useEffect(() => subscribe('capture:open', () => useUIStore.getState().openQuickCapture()), []);
   useArtifactSync();
   useUndoShortcuts();
-  useKeyboardShortcuts();
-  useNotificationGenerator();
+  useGlobalShortcuts();
+  useNavigationMemory();
+  useDueReminder();
 
   return (
-    <div
-      className={`chronicle-app${isRail ? ' is-sidebar-collapsed' : ''}${isMac ? ' is-mac' : ''}`}
-      style={{ '--sidebar-width': `${sidebarWidth}px` } as React.CSSProperties}
-    >
-      {isCommandPaletteOpen ? <CommandPalette /> : null}
-      {isQuickCaptureOpen ? <QuickCapture /> : null}
-      {isKeyboardShortcutsOpen ? <KeyboardShortcutsModal /> : null}
-      <Sidebar
-        collapsed={isRail}
-        onToggleCollapsed={() => setSidebarCollapsed((prev) => !prev)}
-      />
-      <PaneDivider label="Resize sidebar" value={sidebarWidth} min={184} max={300} onChange={setSidebarWidth} />
-      <section className="chronicle-workspace">
-        <header className="chronicle-toolbar window-drag-region">
-          <strong>{route?.label ?? 'Not found'}</strong>
-          <div className="chronicle-toolbar-actions no-drag">
-            <button className="chronicle-search-button active:scale-[0.99]" onClick={openCommandPalette}><Search className="h-4 w-4" /> Search or command… <kbd>{primaryModifier}K</kbd></button>
-            <button className="chronicle-capture-button active:scale-[0.96]" onClick={openQuickCapture} aria-label="Quick capture"><Feather className="h-4 w-4" /></button>
-            {isLinux ? (
-              <button
-                className="chronicle-window-close"
-                onClick={() => void invoke('window:close')}
-                aria-label="Close window"
-                title="Close window"
-              >
-                <X className="h-4 w-4" strokeWidth={1.5} />
-              </button>
-            ) : null}
-          </div>
-        </header>
-        <main id="main-content-area" className="chronicle-main">
-          <Suspense fallback={<div className="chronicle-loading" data-testid="route-loading">Loading…</div>}><Outlet /></Suspense>
+    <div className="flex h-full w-full bg-canvas text-text">
+      <Sidebar rail={collapsed || narrow} narrow={narrow} />
+      <div className="flex min-w-0 flex-1 flex-col bg-canvas">
+        <WindowStrip closable />
+        <main id="main-content-area" className="relative min-h-0 flex-1 overflow-hidden">
+          {/* A page that fails shows its error in place; the sidebar keeps working. */}
+          <ErrorBoundary resetKey={pathname}>
+            <Suspense fallback={<LoadingState variant="spinner" className="h-full items-center" />}>
+              <Outlet />
+            </Suspense>
+          </ErrorBoundary>
         </main>
-      </section>
+      </div>
+      <CommandPalette />
+      <KeyboardShortcutsDialog />
+      {isQuickCaptureOpen ? <QuickCapture /> : null}
     </div>
   );
 }

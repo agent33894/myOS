@@ -1,11 +1,11 @@
-import { Suspense } from 'react';
-import { HashRouter, Link, Navigate, Route, Routes } from 'react-router-dom';
+import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ShikiProvider } from './contexts/ShikiContext';
 import { ThemeController } from './app/ThemeController';
 import AppShell from './app/AppShell';
+import { NotFound } from './app/NotFound';
 import { APP_ROUTES, LEGACY_REDIRECTS } from './app/routes';
-import { WelcomeScreen } from './components/onboarding/WelcomeScreen';
+import { Welcome } from './features/onboarding/Welcome';
 import { useSettingsStore } from './store/settings';
 import { Toaster, TooltipProvider } from './ui';
 
@@ -13,38 +13,36 @@ export default function App() {
   const hasCompletedOnboarding = useSettingsStore((state) => state.hasCompletedOnboarding);
 
   return (
-    <ErrorBoundary>
+    <ErrorBoundary variant="screen">
       <ShikiProvider>
         <TooltipProvider>
           <ThemeController />
-          <a href="#main-content-area" className="chronicle-skip-link">Skip to main content</a>
+          <a
+            href="#main-content-area"
+            className="sr-only rounded-md bg-overlay px-3 py-2 text-base text-text shadow-overlay focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-toast"
+          >
+            Skip to content
+          </a>
           <Toaster />
-          {hasCompletedOnboarding ? <HashRouter>
-            <Routes>
-              <Route element={<AppShell />}>
-                {APP_ROUTES.map((route) => {
-                  const Component = route.component;
-                  return <Route key={route.id} path={route.path} element={<Suspense fallback={<div className="chronicle-loading">Loading…</div>}><Component /></Suspense>} />;
-                })}
-                {LEGACY_REDIRECTS.map(({ from, to }) => <Route key={from} path={from} element={<Navigate replace to={to} />} />)}
-              <Route path="*" element={<NotFound />} />
-              </Route>
-            </Routes>
-          </HashRouter> : <WelcomeScreen />}
+          {hasCompletedOnboarding ? (
+            <HashRouter>
+              <Routes>
+                <Route element={<AppShell />}>
+                  {APP_ROUTES.map(({ id, path, component: Page }) => (
+                    <Route key={id} path={path} element={<Page />} />
+                  ))}
+                  {LEGACY_REDIRECTS.map(({ from, to }) => (
+                    <Route key={from} path={from} element={<Navigate replace to={to} />} />
+                  ))}
+                  <Route path="*" element={<NotFound />} />
+                </Route>
+              </Routes>
+            </HashRouter>
+          ) : (
+            <Welcome />
+          )}
         </TooltipProvider>
       </ShikiProvider>
     </ErrorBoundary>
-  );
-}
-
-function NotFound() {
-  return (
-    <div className="chronicle-detail-empty">
-      <strong>Not found</strong>
-      <p>This route is not part of myOS.</p>
-      <p>
-        <Link to="/" className="chronicle-heading-action">Go to Today</Link>
-      </p>
-    </div>
   );
 }

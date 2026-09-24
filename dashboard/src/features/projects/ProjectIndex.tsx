@@ -1,13 +1,9 @@
 import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { ChevronDown, ChevronRight, FolderKanban, Plus } from 'lucide-react';
-import { toast } from 'sonner';
-import { ArtifactType } from '@shared/types';
-import { toProjectUrl } from '../../app/navigation';
-import { create } from '../../data/gateway';
 import type { ProjectWithStats } from '../../data/projects';
 import { useDataStatus, useProjects } from '../../data/selectors';
-import { Button, EmptyState, Input, LoadingState, PageHeader, SectionHeader } from '../../ui';
+import { Button, EmptyState, LoadingState, PageHeader, SectionHeader } from '../../ui';
+import { useCreate } from '../shell/useCreate';
 import { ProjectCard } from './ProjectCard';
 import { projectGroup, type ProjectGroup } from './projectStatus';
 
@@ -24,51 +20,11 @@ function CardGrid({ projects }: { projects: ProjectWithStats[] }) {
   );
 }
 
-function NewProject({ onDone }: { onDone: () => void }) {
-  const navigate = useNavigate();
-  const [title, setTitle] = useState('');
-  const submit = async () => {
-    const name = title.trim();
-    if (!name) return onDone();
-    try {
-      const project = await create({ type: ArtifactType.PROJECT, title: name }, `Create project “${name}”`);
-      navigate(toProjectUrl(project.id));
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Could not create the project');
-    }
-  };
-  return (
-    <div className="mx-2 flex items-center gap-2 rounded-lg bg-raised p-3 shadow-raised animate-scale-in">
-      <Input
-        autoFocus
-        value={title}
-        onChange={(event) => setTitle(event.target.value)}
-        onKeyDown={(event) => {
-          if (event.key === 'Enter') void submit();
-          if (event.key === 'Escape') {
-            event.stopPropagation();
-            onDone();
-          }
-        }}
-        placeholder="Name your project"
-        aria-label="Project name"
-        className="flex-1"
-      />
-      <Button variant="ghost" onClick={onDone}>
-        Cancel
-      </Button>
-      <Button variant="primary" onClick={() => void submit()} disabled={!title.trim()}>
-        Create
-      </Button>
-    </div>
-  );
-}
-
 /** Every project as a card: active first, then someday, with finished ones folded away. */
 export function ProjectIndex() {
   const projects = useProjects();
   const status = useDataStatus();
-  const [creating, setCreating] = useState(false);
+  const { newProject } = useCreate();
   const [showClosed, setShowClosed] = useState(false);
 
   const groups = useMemo(() => {
@@ -84,23 +40,21 @@ export function ProjectIndex() {
           title="Projects"
           subtitle={groups.active.length ? `${groups.active.length} active` : undefined}
           actions={
-            <Button variant="primary" leadingIcon={Plus} onClick={() => setCreating(true)}>
+            <Button variant="primary" leadingIcon={Plus} onClick={newProject}>
               New project
             </Button>
           }
           className="px-2"
         />
-        {creating ? <NewProject onDone={() => setCreating(false)} /> : null}
-
         {status !== 'ready' ? (
           <LoadingState rows={4} />
-        ) : projects.length === 0 && !creating ? (
+        ) : projects.length === 0 ? (
           <EmptyState
             icon={FolderKanban}
             title="No projects yet."
             description="A project gathers the tasks and notes for one goal."
             action={
-              <Button variant="primary" leadingIcon={Plus} onClick={() => setCreating(true)}>
+              <Button variant="primary" leadingIcon={Plus} onClick={newProject}>
                 New project
               </Button>
             }

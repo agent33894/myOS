@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Inbox, ListChecks } from 'lucide-react';
 import { useDataStatus, useInbox } from '../../data/selectors';
 import { Button, EmptyState, LoadingState, PageHeader, formatShortcut } from '../../ui';
@@ -9,12 +9,15 @@ import { SortInbox } from './SortInbox';
 export default function InboxPage() {
   const inbox = useInbox();
   const status = useDataStatus();
-  const [sorting, setSorting] = useState(false);
+  const [params, setParams] = useSearchParams();
+  // `?sort=1` (Sort inbox from the palette, or the button here) is the sorting flow.
+  const sorting = params.get('sort') === '1';
+  const setSorting = (on: boolean) => setParams(on ? { sort: '1' } : {}, { replace: !on });
 
   if (sorting) {
     return (
       <div className="h-full overflow-y-auto bg-canvas">
-        <SortInbox onExit={() => setSorting(false)} />
+        {status === 'ready' ? <SortInbox onExit={() => setSorting(false)} /> : <LoadingState className="p-12" />}
       </div>
     );
   }
