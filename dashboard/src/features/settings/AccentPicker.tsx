@@ -1,7 +1,7 @@
 import { useRef, type KeyboardEvent } from 'react';
 import { Check, Monitor, Plus } from 'lucide-react';
 import { ACCENTS, isHexColor, resolveAccent, SYSTEM_ACCENT } from '@shared/design-system/accents';
-import { useSystemAccent } from '../../hooks/useSystemAccent';
+import { useSystemAccent } from '../../app/useSystemAccent';
 import { useSettingsStore } from '../../store/settings';
 import { Button, Icon, Tooltip, cn } from '../../ui';
 

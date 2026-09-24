@@ -12,7 +12,7 @@ function subscribeToColorScheme(listener: () => void) {
 }
 
 /** Whether the dark theme is active, from Appearance settings and the OS. */
-export function useIsDark(): boolean {
+function useIsDark(): boolean {
   const mode = useSettingsStore((state) => state.themeMode);
   const systemDark = useSyncExternalStore(subscribeToColorScheme, () => darkQuery().matches);
   return mode === 'dark' || (mode === 'system' && systemDark);

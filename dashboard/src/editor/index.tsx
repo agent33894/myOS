@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEven
 import type { EditorView } from '@tiptap/pm/view';
 import { EditorContent, useEditor } from '@tiptap/react';
 import type { ArtifactType } from '@shared/types';
-import { hasPrimaryModifier } from '../utils/platform';
+import { hasPrimaryModifier } from '../lib/platform';
 import { BubbleToolbar } from './bubble/BubbleToolbar';
 import { createExtensions } from './extensions';
 import { FindBar } from './find/FindBar';

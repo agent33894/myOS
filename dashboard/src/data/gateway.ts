@@ -1,6 +1,7 @@
 import { formatLocalDate } from '@shared/date';
 import type { ArtifactRetype, ArtifactSave } from '@shared/ipc/contracts';
-import { captureDraft } from '@shared/inbox';
+import { captureDraft, parseCapture } from '@shared/inbox';
+import { PROJECT_CLOSED_STATUSES } from '@shared/spec';
 import { ArtifactType, TodoStatus, type Artifact, type ArtifactDraft, type ArtifactPatch, type ArtifactSummary } from '@shared/types';
 import { invoke } from './ipc';
 import { applyArtifact, dropArtifact, useDataStore } from './store';
@@ -51,8 +52,10 @@ export async function create(draft: ArtifactDraft, label = `Create “${draft.ti
 
 /** Quick Capture: a task when the text carries a date, flag, priority, or @project; otherwise an Inbox item. */
 export function capture(text: string): Promise<Artifact> {
-  const projects = Object.values(useDataStore.getState().byPath).filter((item) => item.type === ArtifactType.PROJECT);
-  const draft = captureDraft(text, projects);
+  const projects = Object.values(useDataStore.getState().byPath).filter(
+    (item) => item.type === ArtifactType.PROJECT && !PROJECT_CLOSED_STATUSES.has(item.status),
+  );
+  const draft = captureDraft(parseCapture(text, projects));
   return create(draft, `Capture “${draft.title}”`);
 }
 

@@ -19,7 +19,7 @@ import {
 } from 'recharts';
 import { format, isValid, parseISO } from 'date-fns';
 import { projectSwatches } from '@shared/design-system/accents';
-import { useAccent } from '../../../hooks/useAccent';
+import { useAccent } from '../../../app/useAccent';
 import { formatNumber, formatTick } from '../format';
 import { DEFAULT_HEIGHT, type CartesianChart, type Chart, type PieChart as PieSpec } from './model';
 import { niceTicks, valueRange } from './scale';

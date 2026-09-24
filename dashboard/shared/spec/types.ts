@@ -38,16 +38,15 @@ export const ARTIFACT_TYPES: Readonly<Record<ArtifactType, TypeSpec>> = {
 const TYPES = Object.keys(ARTIFACT_TYPES) as ArtifactType[];
 const DOMAINS = Object.values(Domain);
 
+/** Terminal project statuses; 'completed' is a legacy alias found in older folders. */
+export const PROJECT_CLOSED_STATUSES: ReadonlySet<string> = new Set(['done', 'cancelled', 'archived', 'completed']);
+
 export function isArtifactType(value: unknown): value is ArtifactType {
   return typeof value === 'string' && (TYPES as string[]).includes(value);
 }
 
 export function isDomain(value: unknown): value is Domain {
   return typeof value === 'string' && (DOMAINS as string[]).includes(value);
-}
-
-export function statusesFor(type: ArtifactType): readonly Status[] {
-  return ARTIFACT_TYPES[type].statuses;
 }
 
 export function defaultStatusFor(type: ArtifactType): Status {

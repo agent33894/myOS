@@ -1,5 +1,5 @@
 import { ArtifactStatus } from '@shared/types';
-import { PROJECT_CLOSED_STATUSES } from '../../data/projects';
+import { PROJECT_CLOSED_STATUSES } from '@shared/spec';
 
 /** The project statuses people choose between, in plain words. `draft` reads as Someday. */
 export const PROJECT_STATUSES = [

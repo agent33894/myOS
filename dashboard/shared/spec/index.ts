@@ -7,6 +7,6 @@ export {
   isArtifactType,
   isDomain,
   isStatusAllowed,
-  statusesFor,
+  PROJECT_CLOSED_STATUSES,
   typeFromPath,
 } from './types';

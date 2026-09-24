@@ -7,7 +7,7 @@ import { dayLabel, dayOf, dueTone, fromDate, toDate } from '../tasks/dates';
 import { ProjectDot } from '../tasks/ProjectDot';
 import { ProjectPicker } from '../tasks/ProjectPicker';
 import { useProjectRefs } from '../tasks/projectRefs';
-import { kindLabel } from './kinds';
+import { kindLabel } from '../../lib/itemKinds';
 import { TagEditor } from './TagEditor';
 
 function ProjectProperty({ item }: { item: ArtifactSummary }) {

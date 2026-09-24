@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { sections } from '../../app/routes';
 import { toSettingsUrl } from '../../app/navigation';
 import { useUIStore } from '../../store/ui';
-import { hasPrimaryModifier } from '../../utils/platform';
+import { hasPrimaryModifier } from '../../lib/platform';
 import { sectionUrl } from './navigationMemory';
 import { useCreate } from './useCreate';
 

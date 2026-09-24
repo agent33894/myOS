@@ -18,9 +18,9 @@ Renderer code must not import Node APIs. The layers are described in `../docs/ar
 - `shared/spec/` owns the frontmatter field table and per-type rules. Unknown keys round-trip through `Artifact.extra`.
 - In the renderer, only `src/data/ipc.ts` touches `window.electronAPI`. Read through `src/data/selectors.ts` hooks. Write through `src/data/gateway.ts`, which records undo. Edit documents with `useDocument`, which saves against the loaded `rev` and raises `conflict` instead of overwriting.
 
-## Chronicle Mac v3
+## Design system
 
-Use semantic tokens from `shared/design-system/tokens.ts` and generated CSS. Serif speaks about user content, mono speaks about time/system metadata, and sans handles controls. Prefer paper, rules, and rhythm over decorative cards. Do not add gradients, glow, oversized titles, or unapproved hardcoded colors.
+Follow `../docs/design/design-system.md` and `../docs/product-model.md`. Tokens live in `src/styles/tokens.css`; Tailwind maps onto them (`bg-raised text-text-secondary rounded-md shadow-overlay`). Build UI from `src/ui` primitives and patterns: lint forbids raw `<button>`, `<input>`, `<textarea>`, and `<select>` elsewhere, hardcoded colors, and arbitrary values. Use plain sentence-case copy with the nouns Note, Task, Project, and Inbox.
 
 ## Required checks
 
@@ -30,4 +30,4 @@ npm run lint
 npm test
 ```
 
-Use the audit scripts in `package.json` for IPC, imports, dead code, documentation, and design-token changes.
+Run `npm run audit:ipc`, `npm run audit:dead-code`, `npm run audit:exports`, and `npm run audit:docs` for IPC, structural, and documentation changes. Keep tests to critical invariants.

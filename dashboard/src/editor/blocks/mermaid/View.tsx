@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useAccent } from '../../../hooks/useAccent';
+import { useAccent } from '../../../app/useAccent';
 import { Spinner } from '../../../ui';
 import { renderDiagram } from './render';
 

@@ -4,7 +4,8 @@
     "electron/main.ts",
     "electron/preload.ts",
     "public/theme-init.js",
-    "scripts/*.{js,mjs,ts}"
+    "scripts/*.{js,mjs,ts}",
+    "src/ui/index.ts"
   ],
   "project": [
     "src/**/*.{ts,tsx,js,jsx}",

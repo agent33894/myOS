@@ -1,7 +1,8 @@
 import { useMemo } from 'react';
 import { projectSwatchFor } from '@shared/design-system/accents';
+import { matchProject } from '@shared/inbox';
 import { ArtifactType } from '@shared/types';
-import { PROJECT_CLOSED_STATUSES } from '../../data/projects';
+import { PROJECT_CLOSED_STATUSES } from '@shared/spec';
 import { useArtifacts } from '../../data/selectors';
 
 export interface ProjectRef {
@@ -15,8 +16,6 @@ export interface ProjectRef {
 
 export const projectColor = (project: { title: string; swatch?: string }) =>
   projectSwatchFor(project.title, project.swatch).hex;
-
-const slug = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
 /**
  * Every project, plus lookup by the `project:` value items carry (an id, or a
@@ -40,15 +39,7 @@ export function useProjectRefs() {
     const find = (ref?: string | null) =>
       ref ? all.find((project) => project.id === ref || project.title === ref) : undefined;
 
-    /** `@kitch` finds "Kitchen renovation": exact id or title first, then prefixes. */
-    const match = (typed: string) => {
-      const wanted = slug(typed);
-      if (!wanted) return undefined;
-      return (
-        open.find((project) => project.id === typed || slug(project.title) === wanted) ??
-        open.find((project) => slug(project.title).startsWith(wanted) || project.id.startsWith(wanted))
-      );
-    };
+    const match = (typed: string) => matchProject(typed, open);
 
     return { all, open, find, match };
   }, [artifacts]);

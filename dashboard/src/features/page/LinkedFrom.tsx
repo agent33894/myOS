@@ -4,8 +4,8 @@ import type { ArtifactSummary } from '@shared/types';
 import { toItemUrl } from '../../app/navigation';
 import { useArtifacts } from '../../data/selectors';
 import { Icon, ListRow, SectionHeader } from '../../ui';
-import { findBacklinks } from '../../utils/artifactLinks';
-import { itemIcon } from './kinds';
+import { findBacklinks } from '../../lib/artifactLinks';
+import { itemIcon } from '../../lib/itemKinds';
 
 /** Pages that point here with `[[links]]` or `related`. */
 export function LinkedFrom({ item }: { item: ArtifactSummary }) {

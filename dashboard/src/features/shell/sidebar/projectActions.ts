@@ -1,7 +1,7 @@
 import { toast } from 'sonner';
 import { projectSwatchFor } from '@shared/design-system/accents';
 import { ArtifactStatus, ArtifactType, type ArtifactPatch, type ArtifactSummary } from '@shared/types';
-import { PROJECT_CLOSED_STATUSES } from '../../../data/projects';
+import { PROJECT_CLOSED_STATUSES } from '@shared/spec';
 import { moveToProject, patch, patchMany, remove } from '../../../data/gateway';
 import { useDataStore } from '../../../data/store';
 import { undo } from '../../../data/undo';

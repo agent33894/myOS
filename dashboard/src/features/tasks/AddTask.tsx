@@ -19,7 +19,7 @@ interface AddTaskProps {
 export function AddTask({ due, project }: AddTaskProps) {
   const [text, setText] = useState('');
   const projects = useProjectRefs();
-  const resolved = useMemo(() => (text.trim() ? resolveCapture(text, projects.match) : null), [text, projects]);
+  const resolved = useMemo(() => (text.trim() ? resolveCapture(text, projects.open) : null), [text, projects]);
 
   const submit = async () => {
     if (!resolved) return;

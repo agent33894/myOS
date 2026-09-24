@@ -5,7 +5,7 @@ import { sectionOf, sections } from '../../../app/routes';
 import { useCounts } from '../../../data/selectors';
 import { useUIStore } from '../../../store/ui';
 import { Icon, IconButton, cn } from '../../../ui';
-import { isMac } from '../../../utils/platform';
+import { isMac } from '../../../lib/platform';
 import myosIcon from '../../../assets/myos-icon.png';
 import { sectionUrl } from '../navigationMemory';
 import { SHORTCUTS } from '../shortcuts';

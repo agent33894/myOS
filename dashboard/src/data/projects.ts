@@ -1,14 +1,8 @@
+import { PROJECT_CLOSED_STATUSES } from '@shared/spec';
 import { ArtifactType, type ArtifactSummary } from '@shared/types';
 
 type ProjectHealth = 'active' | 'at-risk' | 'dormant';
 
-/** Terminal project statuses per the artifact spec; 'completed' is a legacy vault alias. */
-export const PROJECT_CLOSED_STATUSES: ReadonlySet<string> = new Set([
-  'done',
-  'cancelled',
-  'archived',
-  'completed',
-]);
 
 const DORMANT_AFTER_DAYS = 30;
 const OPEN_EXCLUDED = new Set<string>(['done', 'cancelled']);

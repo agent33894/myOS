@@ -1,5 +1,5 @@
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
-import { ErrorBoundary } from './components/ErrorBoundary';
+import { ErrorBoundary } from './app/ErrorBoundary';
 import { ThemeController } from './app/ThemeController';
 import AppShell from './app/AppShell';
 import { NotFound } from './app/NotFound';

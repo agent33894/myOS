@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { X } from 'lucide-react';
 import { invoke } from '../../data/ipc';
 import { IconButton, cn } from '../../ui';
-import { isLinux } from '../../utils/platform';
+import { isLinux } from '../../lib/platform';
 
 /**
  * The 40px title strip: a window drag region. Linux windows are frameless,

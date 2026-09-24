@@ -3,7 +3,8 @@ import { copyFileSync, existsSync, lstatSync, mkdirSync, readFileSync, readlinkS
 import { execFileSync } from 'child_process';
 import { homedir } from 'os';
 import { join } from 'path';
-import { captureDraft } from '../shared/inbox';
+import { captureDraft, parseCapture } from '../shared/inbox';
+import { PROJECT_CLOSED_STATUSES } from '../shared/spec';
 import { selectToday } from '../shared/today';
 import { ArtifactType, type ArtifactSummary } from '../shared/types';
 import { createArtifact, listArtifacts } from './documents/artifacts';
@@ -71,8 +72,10 @@ async function capture(args: string[]): Promise<number> {
     console.error('Nothing to capture. Usage: myos capture <text>');
     return 1;
   }
-  const projects = (await listArtifacts()).filter((artifact) => artifact.type === ArtifactType.PROJECT);
-  const draft = captureDraft(text, projects);
+  const projects = (await listArtifacts()).filter(
+    (artifact) => artifact.type === ArtifactType.PROJECT && !PROJECT_CLOSED_STATUSES.has(artifact.status),
+  );
+  const draft = captureDraft(parseCapture(text, projects));
   const artifact = await createArtifact(draft);
   console.log(`${draft.type === ArtifactType.TODO ? 'Added task' : 'Captured to Inbox'}: ${artifact.filePath}`);
   return 0;

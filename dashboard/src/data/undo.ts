@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { toast } from 'sonner';
-import { hasPrimaryModifier } from '../utils/platform';
+import { hasPrimaryModifier } from '../lib/platform';
 
 export interface UndoEntry {
   label: string;

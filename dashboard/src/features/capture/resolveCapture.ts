@@ -1,5 +1,5 @@
-import { parseCapture, type ParsedCapture } from '@shared/inbox';
-import { ArtifactType, type ArtifactDraft } from '@shared/types';
+import { captureDraft, parseCapture } from '@shared/inbox';
+import type { ArtifactDraft } from '@shared/types';
 import { dayLabel } from '../tasks/dates';
 import type { ProjectRef } from '../tasks/projectRefs';
 
@@ -18,40 +18,14 @@ export interface ResolvedCapture {
   destination: string;
 }
 
-// A private-use character hides an unknown `@name` from the parser so it stays in the title.
-const HIDDEN_AT = '';
-
 /**
- * Quick Capture's reading of the text. `@kitch` files into "Kitchen
- * renovation" when a project starts that way; an `@name` that matches no
+ * Quick Capture's reading of the text, shared with the file it becomes.
+ * `@kitch` files into "Kitchen renovation"; an `@name` that matches no open
  * project stays as written and never creates a project.
  */
-export function resolveCapture(
-  text: string,
-  match: (typed: string) => ProjectRef | undefined,
-  now = new Date(),
-): ResolvedCapture {
-  let parsed: ParsedCapture = parseCapture(text, now);
-  const project = parsed.projectRef ? match(parsed.projectRef) : undefined;
-  const unknownRef = parsed.projectRef && !project ? parsed.projectRef : undefined;
-  if (unknownRef) {
-    const hidden = text.replace(new RegExp(`(^|\\s)@${unknownRef}(?=\\s|$)`), `$1${HIDDEN_AT}${unknownRef}`);
-    parsed = parseCapture(hidden, now);
-    parsed = { ...parsed, title: parsed.title.replace(HIDDEN_AT, '@') };
-  }
-
-  const task = Boolean(parsed.due || parsed.flagged || parsed.priority || project);
-  const draft: ArtifactDraft = {
-    type: task ? ArtifactType.TODO : ArtifactType.INBOX,
-    title: parsed.title,
-    content: parsed.body,
-    tags: parsed.tags,
-    due: parsed.due,
-    flagged: parsed.flagged || undefined,
-    priority: parsed.priority,
-    project: project?.id,
-  };
-
+export function resolveCapture(text: string, projects: readonly ProjectRef[], now = new Date()): ResolvedCapture {
+  const parsed = parseCapture(text, projects, now);
+  const { project, unknownRef } = parsed;
   const when = parsed.due ? dayLabel(parsed.due, now) : undefined;
   const tokens: CaptureToken[] = [
     ...(when ? [{ kind: 'date' as const, label: when }] : []),
@@ -62,8 +36,8 @@ export function resolveCapture(
     ...parsed.tags.map((tag) => ({ kind: 'tag' as const, label: `#${tag}` })),
   ];
 
-  const destination = task
+  const destination = parsed.kind === 'task'
     ? [project?.title ?? 'Tasks', when ?? (parsed.flagged ? 'Flagged' : undefined)].filter(Boolean).join(' · ')
     : 'Inbox';
-  return { draft, tokens, destination };
+  return { draft: captureDraft(parsed), tokens, destination };
 }

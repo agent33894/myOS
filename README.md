@@ -8,16 +8,14 @@ No account is required. myOS has no hosted sync service, telemetry, advertising,
 
 ## What it does
 
-- Opens an existing Markdown folder or creates a starter workspace in `Documents/myOS`
-- Provides Today, Unfiled, Library, and Projects views
-- Edits Markdown with source, reading, and split views
-- Searches titles, tags, and full text across the workspace
-- Tracks tasks and project context through optional YAML frontmatter
-- Keeps new capture choices focused on Unfiled, Task, Note, and Project while still reading older typed files
-- Renders code, tables, Mermaid diagrams, charts, callouts, KPIs, and roadmaps
-- Watches the selected folder for changes made by Git or other editors
-- Shows local Git activity and commit diffs when the folder is a repository
-- Uses the Chronicle Mac v3 paper-and-ink interface in light and dark themes
+- **Capture** anything with ⌘N. Type and press Enter; `tomorrow`, `#tag`, `@project`, and `!` are optional.
+- **Inbox** holds captures until you sort them, one at a time, into tasks, notes, or projects.
+- **Today** shows what is overdue, due today, flagged, or in progress, with a quiet look at the week ahead.
+- **Notes** is a search-first home for everything you write, with a calm editor, `/` blocks, tables, code, charts, KPIs, roadmaps, callouts, and diagrams.
+- **Projects** gather a short description, tasks, and notes in one place.
+- Every page edits its properties inline (dates, flags, project, tags) and autosaves.
+- Edits made in another editor or by Git are picked up live. If a page changed on disk while you were typing, myOS asks instead of overwriting.
+- Light and dark themes, a choice of accent colors, and an optional serif reading font.
 
 ## Install
 
@@ -63,7 +61,6 @@ Validate a change:
 npm run typecheck
 npm run lint
 npm test
-npm run audit:imports
 npm run audit:ipc
 npm run audit:dead-code
 ```

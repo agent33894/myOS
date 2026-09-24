@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
-import { create } from '../../data/gateway';
+import { capture } from '../../data/gateway';
 import { useUIStore } from '../../store/ui';
 import { Button, Dialog, DialogContent, DialogTitle, Icon, Kbd, Textarea } from '../../ui';
 import { toastWithUndo } from '../tasks/actions';
@@ -19,7 +19,7 @@ export default function QuickCapture() {
   const setStoredDraft = useUIStore((state) => state.setQuickCaptureDraft);
   const [text, setText] = useState(() => useUIStore.getState().quickCaptureDraft);
   const projects = useProjectRefs();
-  const resolved = useMemo(() => (text.trim() ? resolveCapture(text, projects.match) : null), [text, projects]);
+  const resolved = useMemo(() => (text.trim() ? resolveCapture(text, projects.open) : null), [text, projects]);
 
   // The dialog unmounts on close; the store keeps an unsent draft so Escape never loses it.
   useEffect(() => setStoredDraft(text), [text, setStoredDraft]);
@@ -28,7 +28,7 @@ export default function QuickCapture() {
     if (!resolved) return;
     close();
     useUIStore.getState().clearQuickCaptureDraft();
-    create(resolved.draft, `Capture “${resolved.draft.title}”`)
+    capture(text)
       .then(() => toastWithUndo('Captured'))
       .catch((error: unknown) => {
         useUIStore.getState().setQuickCaptureDraft(text);

@@ -7,7 +7,7 @@ Thanks for helping improve myOS. Keep changes local-first, readable, and compati
 ```bash
 cd dashboard
 npm install
-npm run electron:dev
+npm run dev
 ```
 
 Before opening a pull request, run:
@@ -16,7 +16,6 @@ Before opening a pull request, run:
 npm run typecheck
 npm run lint
 npm test
-npm run audit:imports
 npm run audit:ipc
 npm run audit:dead-code
 ```
@@ -28,6 +27,6 @@ npm run audit:dead-code
 - Keep filesystem access in the Electron main process behind the typed preload contract.
 - Treat arbitrary user-selected paths as untrusted and retain path-containment checks.
 - Follow the design system in [`docs/design/design-system.md`](docs/design/design-system.md).
-- Add or update tests when changing artifact normalization, file mutations, IPC, tasks, or project behavior.
+- Keep tests few and meaningful: add one when a change touches a critical invariant (file round-trips, conflict handling, path containment, Today and capture rules).
 
 Use focused commits and explain user-visible changes in the pull request.

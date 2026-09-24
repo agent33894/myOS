@@ -1,4 +1,4 @@
-import { isMac } from '../utils/platform';
+import { isMac } from '../lib/platform';
 import { cn } from './cn';
 
 const MAC_KEYS: Record<string, string> = {

@@ -12,29 +12,6 @@ const token = (name) => ({ opacityValue }) =>
 
 const size = (name) => [`var(--text-${name})`, { lineHeight: `var(--leading-${name})` }];
 
-/**
- * TEMPORARY — Chronicle-era utility names still used by screens that have not
- * been rebuilt on src/ui. Each alias points at a new token. Delete this block
- * (and src/styles/legacy.css) once `rg "text-foreground|bg-card|text-2xs"` is empty.
- */
-const legacyColors = {
-  background: token('canvas'),
-  foreground: token('text'),
-  card: { DEFAULT: token('raised'), foreground: token('text') },
-  popover: { DEFAULT: token('overlay'), foreground: token('text') },
-  primary: { DEFAULT: token('text'), foreground: token('canvas') },
-  secondary: { DEFAULT: token('sunken'), foreground: token('text') },
-  muted: { DEFAULT: token('sunken'), foreground: token('text-secondary') },
-  destructive: { DEFAULT: token('danger'), foreground: token('on-accent') },
-  input: token('border'),
-  ring: token('focus'),
-};
-const legacyFontSize = {
-  '2xs': size('xs'),
-  '3xs': size('xs'),
-  '4xs': size('xs'),
-};
-
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
@@ -73,14 +50,12 @@ export default {
         soft: token('accent-soft'),
         text: token('accent-text'),
         on: token('on-accent'),
-        foreground: token('on-accent'), // legacy alias
       },
       success: { DEFAULT: token('success'), soft: token('success-soft') },
       warning: { DEFAULT: token('warning'), soft: token('warning-soft') },
       danger: { DEFAULT: token('danger'), soft: token('danger-soft') },
       focus: token('focus'),
       scrim: token('scrim'),
-      ...legacyColors,
     },
     fontFamily: {
       sans: 'var(--font-sans)',
@@ -96,7 +71,6 @@ export default {
       lg: [`var(--text-lg)`, { lineHeight: 'var(--leading-lg)', letterSpacing: '-0.01em' }],
       xl: [`var(--text-xl)`, { lineHeight: 'var(--leading-xl)', letterSpacing: '-0.015em' }],
       '2xl': [`var(--text-2xl)`, { lineHeight: 'var(--leading-2xl)', letterSpacing: '-0.02em' }],
-      ...legacyFontSize,
     },
     borderRadius: {
       none: '0',
@@ -105,16 +79,13 @@ export default {
       lg: 'var(--radius-lg)',
       xl: 'var(--radius-xl)',
       full: '9999px',
-      DEFAULT: 'var(--radius-sm)', // legacy `rounded`
+      DEFAULT: 'var(--radius-sm)',
     },
     boxShadow: {
       none: 'none',
       raised: 'var(--shadow-raised)',
       overlay: 'var(--shadow-overlay)',
       dialog: 'var(--shadow-dialog)',
-      // legacy aliases
-      'chronicle-lifted': 'var(--shadow-raised)',
-      'chronicle-overlay': 'var(--shadow-overlay)',
     },
     zIndex: {
       auto: 'auto',
@@ -125,10 +96,6 @@ export default {
       dialog: 'var(--z-dialog)',
       popover: 'var(--z-popover)',
       toast: 'var(--z-toast)',
-      // legacy numeric layers used by unrebuilt screens
-      30: '30',
-      40: '40',
-      50: '50',
     },
     extend: {
       spacing: { 4.5: '1.125rem' }, // 18px: the task checkbox

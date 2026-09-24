@@ -8,10 +8,10 @@ import { invoke } from '../../data/ipc';
 import { useArtifacts } from '../../data/selectors';
 import { useWorkspacePath } from '../../data/workspace';
 import { Popover, PopoverAnchor, PopoverContent } from '../../ui';
-import { findLinkedArtifact, findWikiLinkedArtifact } from '../../utils/artifactLinks';
+import { findLinkedArtifact, findWikiLinkedArtifact } from '../../lib/artifactLinks';
 import { commitHashOf } from '../diff/commitLinks';
 import { CommitDiffModal } from '../diff/CommitDiffModal';
-import { CommitSummaryCard, useCommitSummary } from '../diff/CommitDiffPopover';
+import { CommitSummaryCard, useCommitSummary } from '../diff/commitSummary';
 
 interface LinkContext {
   filePath: string;

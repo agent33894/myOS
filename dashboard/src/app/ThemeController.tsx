@@ -1,6 +1,6 @@
 import { useLayoutEffect } from 'react';
 import { useSettingsStore } from '../store/settings';
-import { useAccent } from '../hooks/useAccent';
+import { useAccent } from './useAccent';
 
 /**
  * Applies Appearance settings to <html>: `data-theme`, `data-reading-font`,

@@ -8,7 +8,7 @@ import { useArtifacts } from '../../data/selectors';
 import { useDataStore } from '../../data/store';
 import { useUIStore } from '../../store/ui';
 import { Dialog, DialogContent, DialogTitle, Icon, Input, Kbd, cn } from '../../ui';
-import { getTypeLabel } from '../../utils/typeIcons';
+import { kindLabel } from '../../lib/itemKinds';
 import { buildIndex, labelScore, searchDocs, type Snippet } from './search';
 import { usePaletteCommands, type Command } from './usePaletteCommands';
 
@@ -26,8 +26,6 @@ interface Row {
 }
 
 const GROUP_ORDER: GroupName[] = ['Recent', 'Go to', 'Actions', 'Results'];
-const NOTE_TYPES_WITH_KIND = new Set<string>([ArtifactType.MEMO, ArtifactType.TODO, ArtifactType.PROJECT, ArtifactType.INBOX]);
-
 function ItemGlyph({ item }: { item: ArtifactSummary }) {
   if (item.type === ArtifactType.PROJECT) {
     return (
@@ -78,7 +76,7 @@ function PaletteBody({ onClose }: { onClose: () => void }) {
   const rows = useMemo<Row[]>(() => {
     const needle = query.trim();
     const itemRow = (item: ArtifactSummary, group: GroupName, snippet?: Snippet): Row => {
-      const kind = NOTE_TYPES_WITH_KIND.has(item.type) ? undefined : getTypeLabel(item.type as ArtifactType);
+      const kind = kindLabel(item.type);
       const project = item.project ? (projectTitles.get(item.project) ?? item.project) : undefined;
       return {
         id: `${group}-${item.filePath}`,

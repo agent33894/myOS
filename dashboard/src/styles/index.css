@@ -1,6 +1,6 @@
 /*
  * myOS stylesheet entry. Order is the cascade:
- *   fonts → Tailwind → tokens → base → editor prose → motion → legacy.
+ *   fonts → Tailwind → tokens → base → editor prose → motion.
  * Toasts are styled in src/ui/Toaster.tsx; components use Tailwind utilities.
  */
 
@@ -11,8 +11,3 @@
 @import './components/_prose.css';
 @import './components/_tiptap.css';
 @import './motion.css';
-
-/* TEMPORARY: Chronicle screens until they are rebuilt on src/ui. */
-@import './legacy.css';
-@import './features/_zen-mode.css';
-@import './features/_chronicle.css';

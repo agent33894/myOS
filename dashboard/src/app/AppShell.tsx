@@ -11,7 +11,7 @@ import { Sidebar } from '../features/shell/sidebar/Sidebar';
 import { useGlobalShortcuts } from '../features/shell/useGlobalShortcuts';
 import { WindowStrip } from '../features/shell/WindowStrip';
 import { useUIStore } from '../store/ui';
-import { ErrorBoundary } from '../components/ErrorBoundary';
+import { ErrorBoundary } from './ErrorBoundary';
 import { LoadingState } from '../ui';
 import { useDueReminder } from './useDueReminder';
 

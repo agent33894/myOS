@@ -1,9 +1,8 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { ArrowRight, FileCode, GitCommit } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { ArrowRight, FileCode } from 'lucide-react';
 import type { CommitSummary } from '@shared/ipc/contracts';
 import { invoke } from '../../data/ipc';
-import { Button, Icon, LoadingState, Popover, PopoverAnchor, PopoverContent } from '../../ui';
-import { CommitDiffModal } from './CommitDiffModal';
+import { Button, Icon, LoadingState } from '../../ui';
 import { DiffStat } from './DiffView';
 
 const summaries = new Map<string, Promise<CommitSummary>>();
@@ -71,68 +70,5 @@ export function CommitSummaryCard({ hash, message, summary, error, onOpenDiff }:
         <Icon icon={ArrowRight} size="sm" />
       </Button>
     </div>
-  );
-}
-
-interface CommitDiffPopoverProps {
-  commitHash: string;
-  commitMessage?: string;
-  projectPath: string;
-  /** Custom trigger content; defaults to the short hash with a commit icon. */
-  children?: ReactNode;
-}
-
-/**
- * An inline commit reference: hovering shows the files it changed, clicking
- * opens the full diff.
- */
-export function CommitDiffPopover({ commitHash, commitMessage, projectPath, children }: CommitDiffPopoverProps) {
-  const [hovering, setHovering] = useState(false);
-  const [diffOpen, setDiffOpen] = useState(false);
-  const timer = useRef<number>();
-  const { summary, error } = useCommitSummary(projectPath, commitHash, hovering || diffOpen);
-
-  const hover = (next: boolean) => {
-    window.clearTimeout(timer.current);
-    timer.current = window.setTimeout(() => setHovering(next), next ? 300 : 150);
-  };
-  useEffect(() => () => window.clearTimeout(timer.current), []);
-
-  const openDiff = () => {
-    setHovering(false);
-    setDiffOpen(true);
-  };
-
-  return (
-    <>
-      <Popover open={hovering} onOpenChange={setHovering}>
-        <PopoverAnchor asChild>
-          <Button
-            variant="ghost"
-            size="sm"
-            leadingIcon={GitCommit}
-            className="font-mono text-accent-text"
-            onClick={openDiff}
-            onMouseEnter={() => hover(true)}
-            onMouseLeave={() => hover(false)}
-            onFocus={() => hover(true)}
-            onBlur={() => hover(false)}
-          >
-            {children ?? commitHash.slice(0, 7)}
-          </Button>
-        </PopoverAnchor>
-        <PopoverContent side="top" onOpenAutoFocus={(event) => event.preventDefault()} onMouseEnter={() => hover(true)} onMouseLeave={() => hover(false)}>
-          <CommitSummaryCard hash={commitHash} message={commitMessage} summary={summary} error={error} onOpenDiff={openDiff} />
-        </PopoverContent>
-      </Popover>
-      <CommitDiffModal
-        isOpen={diffOpen}
-        onClose={() => setDiffOpen(false)}
-        commitHash={commitHash}
-        commitMessage={summary?.message || commitMessage}
-        projectPath={projectPath}
-        summary={summary}
-      />
-    </>
   );
 }

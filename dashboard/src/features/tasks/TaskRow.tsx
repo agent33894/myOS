@@ -5,6 +5,7 @@ import { formatLocalDate } from '@shared/date';
 import { TodoStatus, type ArtifactSummary } from '@shared/types';
 import { toItemUrl } from '../../app/navigation';
 import { defer, moveToProject, setDue, setFlag } from '../../data/gateway';
+import { draggableItem } from '../../lib/artifactDnd';
 import {
   Checkbox,
   ContextMenu,
@@ -175,6 +176,7 @@ export function TaskRow({ task, hideDueOn, hideProject = false }: TaskRowProps) 
       <ContextMenuTrigger asChild>
         <div
           data-task-row
+          {...draggableItem(task)}
           tabIndex={0}
           aria-label={task.title}
           onKeyDown={onKeyDown}

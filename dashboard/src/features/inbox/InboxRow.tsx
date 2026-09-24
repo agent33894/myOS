@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowUpRight, CheckCircle2, FileText, FolderInput, MoreHorizontal, Trash2 } from 'lucide-react';
 import type { ArtifactSummary } from '@shared/types';
 import { toItemUrl } from '../../app/navigation';
+import { draggableItem } from '../../lib/artifactDnd';
 import {
   ContextMenu,
   ContextMenuContent,
@@ -58,6 +59,7 @@ export function InboxRow({ item }: { item: ArtifactSummary }) {
       <ContextMenuTrigger asChild>
         <div
           role="listitem"
+          {...draggableItem(item)}
           tabIndex={0}
           onKeyDown={(event) => {
             if (event.target !== event.currentTarget) return;

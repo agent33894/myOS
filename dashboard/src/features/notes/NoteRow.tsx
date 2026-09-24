@@ -1,7 +1,8 @@
 import { forwardRef, type KeyboardEvent, type ReactNode } from 'react';
 import type { ArtifactSummary } from '@shared/types';
+import { draggableItem } from '../../lib/artifactDnd';
 import { cn } from '../../ui';
-import { kindLabel } from '../page/kinds';
+import { kindLabel } from '../../lib/itemKinds';
 import { relativeTime } from '../tasks/dates';
 import { ProjectDot } from '../tasks/ProjectDot';
 import type { ProjectRef } from '../tasks/projectRefs';
@@ -43,6 +44,7 @@ export const NoteRow = forwardRef<HTMLDivElement, NoteRowProps>(function NoteRow
     <div
       ref={ref}
       role="option"
+      {...draggableItem(note)}
       aria-selected={selected}
       tabIndex={selected ? 0 : -1}
       onClick={onSelect}

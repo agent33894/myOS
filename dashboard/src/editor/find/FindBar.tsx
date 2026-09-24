@@ -2,7 +2,7 @@ import { useEffect, useState, type KeyboardEvent } from 'react';
 import type { Editor } from '@tiptap/react';
 import { ChevronDown, ChevronUp, Search, X } from 'lucide-react';
 import { IconButton, Input } from '../../ui';
-import { hasPrimaryModifier } from '../../utils/platform';
+import { hasPrimaryModifier } from '../../lib/platform';
 import { findKey, setFind } from './plugin';
 
 /** ⌘F inside the editor: a small bar that highlights matches and steps through them. */

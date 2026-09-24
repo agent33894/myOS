@@ -15,7 +15,6 @@ npm run electron:dev
 npm run typecheck
 npm run lint
 npm test
-npm run audit:imports
 npm run audit:ipc
 npm run audit:dead-code
 ```

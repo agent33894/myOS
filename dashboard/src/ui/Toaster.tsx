@@ -1,6 +1,5 @@
 import { Toaster as Sonner } from 'sonner';
 import { AlertTriangle, CheckCircle2, Info, XCircle } from 'lucide-react';
-import { useIsDark } from '../hooks/useAccent';
 import { Icon } from './Icon';
 import { Spinner } from './Spinner';
 
@@ -9,11 +8,9 @@ import { Spinner } from './Spinner';
  * styled with tokens and layered above dialogs. Call `toast()` from `sonner`.
  */
 export function Toaster() {
-  const isDark = useIsDark();
   return (
     <Sonner
       position="bottom-center"
-      theme={isDark ? 'dark' : 'light'}
       gap={8}
       style={{ zIndex: 'var(--z-toast)' }}
       icons={{

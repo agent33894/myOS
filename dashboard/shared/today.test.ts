@@ -42,12 +42,22 @@ describe('selectToday', () => {
 });
 
 describe('parseCapture', () => {
+  const launchPlan = { id: 'launch-plan-x1', title: 'Launch plan' };
+
+  it('leaves an @name that matches no project in the title', () => {
+    expect(parseCapture('Ask @sam about tiles', [launchPlan], now)).toMatchObject({
+      title: 'Ask @sam about tiles',
+      unknownRef: 'sam',
+      kind: 'capture',
+    });
+  });
+
   it('pulls dates, tags, project, flag, and priority out of the title', () => {
-    expect(parseCapture('Call Ana tomorrow #calls @launch-plan ! !high', now)).toMatchObject({
+    expect(parseCapture('Call Ana tomorrow #calls @launch ! !high', [launchPlan], now)).toMatchObject({
       title: 'Call Ana',
       due: '2026-09-24',
       tags: ['calls'],
-      projectRef: 'launch-plan',
+      project: launchPlan,
       flagged: true,
       priority: 'high',
       kind: 'task',
@@ -62,22 +72,23 @@ describe('parseCapture', () => {
     ['Water plants today', '2026-09-23'],
     ['Sunday roast #food', '2026-09-27'],
   ])('reads the date in "%s"', (text, due) => {
-    expect(parseCapture(text, now).due).toBe(due);
+    expect(parseCapture(text, [], now).due).toBe(due);
   });
 
   it.each(['Buy sun cream', "Read today's news", 'Sat with Joe about the plan'])('keeps "%s" undated', (text) => {
-    expect(parseCapture(text, now)).toMatchObject({ title: text, due: undefined, kind: 'capture' });
+    expect(parseCapture(text, [], now)).toMatchObject({ title: text, due: undefined, kind: 'capture' });
   });
 
   it('keeps plain thoughts as Inbox captures with the rest as the body', () => {
-    expect(parseCapture('Mail from ana@example.com about the sundae bar\nsecond line', now)).toEqual({
+    expect(parseCapture('Mail from ana@example.com about the sundae bar\nsecond line', [], now)).toEqual({
       title: 'Mail from ana@example.com about the sundae bar',
       body: 'second line',
       flagged: false,
       tags: [],
       due: undefined,
       priority: undefined,
-      projectRef: undefined,
+      project: undefined,
+      unknownRef: undefined,
       kind: 'capture',
     });
   });
