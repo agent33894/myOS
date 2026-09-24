@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Editor } from '@tiptap/core';
 import { EditorState, TextSelection } from '@tiptap/pm/state';
+import { attach, parseWithSource, serializeWithSource, type SourceMap } from './markdownSource';
 
 /**
  * Whether an incoming `value` must be loaded into the editor. Our own
@@ -26,14 +27,16 @@ function settle(editor: Editor) {
 /**
  * Replace the document without an undo step, an `update` event, or a focus
  * change. A fresh state also drops the undo history, which belongs to the
- * document being replaced.
+ * document being replaced. Returns the map that keeps untouched blocks as written.
  */
-function load(editor: Editor, markdown: string) {
-  const parsed = editor.schema.nodeFromJSON(editor.markdown!.parse(markdown));
+function load(editor: Editor, markdown: string): SourceMap | null {
+  const { doc: json, source } = parseWithSource(editor.markdown!, markdown);
+  const parsed = editor.schema.nodeFromJSON(json);
   // An empty file parses to a doc with no blocks; the schema needs one.
   const doc = parsed.type.createAndFill(parsed.attrs, parsed.content) ?? parsed;
   editor.view.updateState(EditorState.create({ doc, plugins: editor.state.plugins, selection: TextSelection.atStart(doc) }));
   settle(editor);
+  return attach(source, editor.state.doc);
 }
 
 /**
@@ -44,10 +47,11 @@ function load(editor: Editor, markdown: string) {
 export function connectMarkdown(editor: Editor, initial: { value: string; documentKey: string }, onChange: (markdown: string) => void) {
   let lastSeen = initial.value;
   let documentKey = initial.documentKey;
-  settle(editor);
+  let source = load(editor, initial.value);
+  const current = () => serializeWithSource(editor, source);
 
   const emit = () => {
-    const markdown = editor.getMarkdown();
+    const markdown = current();
     if (markdown === lastSeen) return;
     lastSeen = markdown;
     onChange(markdown);
@@ -59,7 +63,7 @@ export function connectMarkdown(editor: Editor, initial: { value: string; docume
     receive(value: string, key: string) {
       const switched = key !== documentKey;
       const normalize = (markdown: string) => editor.markdown!.serialize(editor.markdown!.parse(markdown));
-      if (switched || needsSync(lastSeen, () => editor.getMarkdown(), value, normalize)) load(editor, value);
+      if (switched || needsSync(lastSeen, current, value, normalize)) source = load(editor, value);
       documentKey = key;
       lastSeen = value;
     },

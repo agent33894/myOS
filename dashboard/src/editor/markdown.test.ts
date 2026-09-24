@@ -112,6 +112,33 @@ describe('editor binding', () => {
     expect(changes).toHaveLength(1);
     editor.destroy();
   });
+
+  it('rewrites only the block that was edited', () => {
+    const file = [
+      'Intro paragraph',
+      '* star bullet',
+      '* another',
+      '',
+      '',
+      '1) first',
+      '2) second',
+      '',
+      '|a|b|',
+      '|-|-|',
+      '|1|2|',
+      '',
+      '[ref]: https://example.com',
+      '',
+      'Ends with a [link][ref].',
+      '',
+    ].join('\n');
+    const { editor, changes } = open(file);
+    editor.view.dispatch(editor.state.tr.insertText('!', 1 + 'Intro paragraph'.length));
+    expect(changes).toEqual([file.replace('Intro paragraph', 'Intro paragraph!')]);
+    editor.view.dispatch(editor.state.tr.insertText('?', editor.state.doc.content.size - 1));
+    expect(changes.at(-1)).toBe(file.replace('Intro paragraph', 'Intro paragraph!').replace('[link][ref].', '[link](https://example.com).?'));
+    editor.destroy();
+  });
 });
 
 describe('external value sync', () => {

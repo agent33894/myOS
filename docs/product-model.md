@@ -50,4 +50,5 @@ Git activity for projects linked to a repository, Git ignore rules, "Open in edi
 
 - Every save is conditional on the revision the editor last read. If the file changed on disk (another editor, Git, sync), myOS shows **"This page changed on disk"** with *Load theirs* and *Keep mine* and never overwrites silently.
 - Undo restores exactly: same path, same frontmatter (including custom keys), same body.
+- Opening a page never rewrites its file. Editing one block rewrites only that block; every untouched block keeps the exact Markdown it was written in.
 - New items start empty. There are no template placeholders.
