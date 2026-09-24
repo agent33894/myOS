@@ -1,0 +1,50 @@
+import { sections } from '../../app/routes';
+
+/** Shortcuts in `mod+shift+k` form (see ui/Kbd). The global ones are bound in useGlobalShortcuts. */
+export const SHORTCUTS = {
+  palette: 'mod+k',
+  capture: 'mod+n',
+  newNote: 'mod+shift+n',
+  settings: 'mod+,',
+  sidebar: 'mod+\\',
+  help: '?',
+  undo: 'mod+z',
+  redo: 'mod+shift+z',
+} as const;
+
+interface ShortcutGroup {
+  title: string;
+  items: Array<{ keys: string; label: string }>;
+}
+
+export const SHORTCUT_GROUPS: ShortcutGroup[] = [
+  {
+    title: 'Everywhere',
+    items: [
+      { keys: SHORTCUTS.palette, label: 'Search and commands' },
+      { keys: SHORTCUTS.capture, label: 'Quick capture' },
+      { keys: SHORTCUTS.newNote, label: 'New note' },
+      { keys: SHORTCUTS.undo, label: 'Undo' },
+      { keys: SHORTCUTS.redo, label: 'Redo' },
+      { keys: SHORTCUTS.help, label: 'Keyboard shortcuts' },
+    ],
+  },
+  {
+    title: 'Go to',
+    items: [
+      ...sections.map((section) => ({ keys: section.shortcut, label: section.label })),
+      { keys: SHORTCUTS.settings, label: 'Settings' },
+      { keys: SHORTCUTS.sidebar, label: 'Show or hide the sidebar' },
+    ],
+  },
+  {
+    title: 'Sorting the Inbox',
+    items: [
+      { keys: 't', label: 'Make task' },
+      { keys: 'n', label: 'Make note' },
+      { keys: 'p', label: 'Move to project' },
+      { keys: 'backspace', label: 'Delete' },
+      { keys: 'right', label: 'Skip' },
+    ],
+  },
+];

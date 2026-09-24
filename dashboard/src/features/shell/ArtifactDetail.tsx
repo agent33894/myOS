@@ -15,7 +15,7 @@ export function ArtifactDetail({
 }) {
   if (!artifact) {
     return (
-      <div className="chronicle-detail-empty">
+      <div className="grid h-full place-items-center text-base text-text-secondary">
         <p>Nothing selected.</p>
       </div>
     );

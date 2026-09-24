@@ -1,18 +1,19 @@
 import { lazy, type ComponentType } from 'react';
+import type { LucideIcon } from 'lucide-react';
 import { FileText, FolderKanban, Inbox, Settings, SunMedium } from 'lucide-react';
 import TodayPage from '../features/today/TodayPage';
 import { paths } from './navigation';
 
+export type SectionId = 'inbox' | 'today' | 'notes' | 'projects';
+
 export interface AppRoute {
-  id: string;
+  id: SectionId | 'page' | 'settings';
   label: string;
   /** Router pattern (may contain params); `href` is where navigation links point. */
   path: string;
   href: string;
-  icon: ComponentType<{ className?: string }>;
+  icon: LucideIcon;
   component: ComponentType;
-  group: 'primary' | 'hidden';
-  shortcut?: string;
   /** Warms the route's lazy chunk (sidebar hover) so navigation never flashes. */
   preload?: () => void;
 }
@@ -27,15 +28,43 @@ const Inbox_ = lazyRoute(() => import('../features/inbox/InboxPage'));
 const Notes = lazyRoute(() => import('../features/notes/NotesPage'));
 const Projects = lazyRoute(() => import('../features/projects/ProjectsPage'));
 const Page = lazyRoute(() => import('../features/page/PageRoute'));
-const SettingsPage = lazyRoute(() => import('../pages/Settings'));
+const SettingsPage = lazyRoute(() => import('../features/settings/SettingsPage'));
+
+export interface SectionRoute extends AppRoute {
+  id: SectionId;
+  /** ⌘1–⌘4, in sidebar order. */
+  shortcut: string;
+}
+
+/** The four places, in sidebar order. */
+export const sections: SectionRoute[] = [
+  { id: 'inbox', label: 'Inbox', path: paths.inbox, href: paths.inbox, icon: Inbox, shortcut: 'mod+1', ...Inbox_ },
+  { id: 'today', label: 'Today', path: paths.today, href: paths.today, icon: SunMedium, shortcut: 'mod+2', component: TodayPage },
+  { id: 'notes', label: 'Notes', path: paths.notes, href: paths.notes, icon: FileText, shortcut: 'mod+3', ...Notes },
+  {
+    id: 'projects',
+    label: 'Projects',
+    path: `${paths.projects}/:projectId?`,
+    href: paths.projects,
+    icon: FolderKanban,
+    shortcut: 'mod+4',
+    ...Projects,
+  },
+];
+
+export const settingsRoute: AppRoute = {
+  id: 'settings',
+  label: 'Settings',
+  path: paths.settings,
+  href: paths.settings,
+  icon: Settings,
+  ...SettingsPage,
+};
 
 export const APP_ROUTES: AppRoute[] = [
-  { id: 'inbox', label: 'Inbox', path: paths.inbox, href: paths.inbox, icon: Inbox, group: 'primary', ...Inbox_ },
-  { id: 'today', label: 'Today', path: paths.today, href: paths.today, icon: SunMedium, component: TodayPage, group: 'primary' },
-  { id: 'notes', label: 'Notes', path: paths.notes, href: paths.notes, icon: FileText, group: 'primary', ...Notes },
-  { id: 'projects', label: 'Projects', path: `${paths.projects}/:projectId?`, href: paths.projects, icon: FolderKanban, group: 'primary', ...Projects },
-  { id: 'page', label: 'Page', path: paths.page, href: paths.page, icon: FileText, group: 'hidden', ...Page },
-  { id: 'settings', label: 'Settings', path: paths.settings, href: paths.settings, icon: Settings, group: 'hidden', ...SettingsPage },
+  ...sections,
+  { id: 'page', label: 'Page', path: paths.page, href: paths.page, icon: FileText, ...Page },
+  settingsRoute,
 ];
 
 /** Old bookmarks and deep links keep working. */
@@ -45,14 +74,9 @@ export const LEGACY_REDIRECTS: Array<{ from: string; to: string }> = [
   { from: '/artifact', to: paths.notes },
 ];
 
-export const sidebarRoutes = APP_ROUTES.filter((route) => route.group === 'primary');
-sidebarRoutes.forEach((route, index) => {
-  route.shortcut = String(index + 1);
-});
-
-export function getRoute(pathname: string) {
-  return APP_ROUTES.find((route) =>
-    route.href === '/' ? pathname === '/' : pathname === route.href || pathname.startsWith(`${route.href}/`),
+/** The sidebar section a URL belongs to, if any. */
+export function sectionOf(pathname: string): SectionRoute | undefined {
+  return sections.find((route) =>
+    route.href === paths.today ? pathname === paths.today : pathname === route.href || pathname.startsWith(`${route.href}/`),
   );
 }
-export const paletteRoutes = APP_ROUTES.filter((route) => route.id !== 'page');

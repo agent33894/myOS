@@ -9,6 +9,8 @@ export interface StoredSettings {
   accent: string;
   /** Face for the document body: Inter or Literata. */
   readingFont: ReadingFont;
+  /** One desktop notification a day when tasks are due today or overdue. */
+  remindDueToday: boolean;
   hasCompletedOnboarding: boolean;
 }
 
@@ -17,6 +19,7 @@ const DEFAULT_SETTINGS: StoredSettings = {
   themeMode: 'system',
   accent: DEFAULT_ACCENT_ID,
   readingFont: 'sans',
+  remindDueToday: false,
   hasCompletedOnboarding: false,
 };
 
@@ -46,6 +49,7 @@ export function normalizeStoredSettings(value: unknown): StoredSettings {
     // for everyone, so it never expressed a choice.
     accent: isAccentChoice(parsed.accent) ? parsed.accent.toLowerCase() : defaults.accent,
     readingFont: isOneOf(parsed.readingFont, ['sans', 'serif']) ? parsed.readingFont : defaults.readingFont,
+    remindDueToday: typeof parsed.remindDueToday === 'boolean' ? parsed.remindDueToday : defaults.remindDueToday,
     hasCompletedOnboarding: typeof parsed.hasCompletedOnboarding === 'boolean'
       ? parsed.hasCompletedOnboarding
       : defaults.hasCompletedOnboarding,
@@ -77,6 +81,7 @@ export function getStorableSettings(state: StoredSettings): StoredSettings {
     themeMode: state.themeMode,
     accent: state.accent,
     readingFont: state.readingFont,
+    remindDueToday: state.remindDueToday,
     hasCompletedOnboarding: state.hasCompletedOnboarding,
   };
 }
