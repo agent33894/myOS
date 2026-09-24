@@ -1,21 +1,8 @@
 /**
- * The vault scaffold writes a leading "# <title>" into every artifact body,
- * duplicating the frontmatter title the detail pane already sets in display
- * serif. Drop that echo before rendering; anything else — including a leading
- * H1 that says something different — is real content and passes through.
- *
- * Only blank lines may
- * precede the heading, and comparison is trimmed, lowercased, and
- * whitespace-collapsed.
- */
-export function stripTitleEcho(body: string, title: string): string {
-  return splitTitleEcho(body, title).body;
-}
-
-/**
- * Like stripTitleEcho, but also reports whether an echo was removed so an
- * editing surface can rejoin it on save — files keep their scaffolded
- * "# <title>" line even though the pane never shows it.
+ * Older files (and files from other tools) open with a "# <title>" line that
+ * repeats the frontmatter title the page already shows. The page hides that
+ * echo while editing and rejoins it on save, so the file keeps its heading.
+ * Only blank lines may precede it; comparison ignores case and spacing.
  */
 export function splitTitleEcho(body: string, title: string): { body: string; hadEcho: boolean } {
   const normalizedTitle = normalizeHeading(title);
@@ -32,7 +19,7 @@ export function splitTitleEcho(body: string, title: string): { body: string; had
 }
 
 /**
- * Inverse of splitTitleEcho: restore the scaffolded echo line ahead of the
+ * Inverse of splitTitleEcho: restore the echo line ahead of the
  * edited body. If the title changed since load, the echo follows the new
  * title — the file's H1 should never disagree with its frontmatter.
  */

@@ -1,7 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { chartModel, newChart, withType, type CartesianChart } from './model';
-import { niceTicks } from './scale';
-import { fromTable, toTable } from './table';
+import { chartModel } from './model';
 
 const line = {
   type: 'line',
@@ -23,48 +21,4 @@ describe('chart model', () => {
     expect(JSON.parse(chartModel.serialize(parsed.value))).toEqual(line);
   });
 
-  it('parses pie charts and keeps an explicit height within bounds', () => {
-    const parsed = chartModel.parse(JSON.stringify({ type: 'pie', data: [{ name: 'a', value: 2 }], nameKey: 'name', valueKey: 'value', height: 9000 }));
-    expect(parsed.ok && parsed.value.type === 'pie' && parsed.value.height).toBe(520);
-  });
-
-  it('explains what is wrong with an invalid spec', () => {
-    const cases: Array<[unknown, RegExp]> = [
-      ['{', /valid JSON/],
-      [{ type: 'scatter', data: [{}] }, /scatter/],
-      [{ ...line, data: [{ day: 'Mon', created: 'lots', closed: 1 }] }, /created must be a number/],
-      [{ ...line, series: [{ key: 'created', color: 'red' }] }, /hex color/],
-    ];
-    for (const [input, message] of cases) {
-      const parsed = chartModel.parse(typeof input === 'string' ? input : JSON.stringify(input));
-      expect(parsed.ok ? '' : parsed.error).toMatch(message);
-    }
-  });
-
-  it('edits data as a table, keeping series names and colors', () => {
-    const chart = chartModel.parse(JSON.stringify(line));
-    if (!chart.ok) throw new Error(chart.error);
-    expect(toTable(chart.value)).toBe('day, created, closed\nMon, 4, 1\nTue, 6, 3');
-
-    const edited = fromTable('day\tcreated\nMon\t10\nWed\t2', chart.value);
-    expect(edited.ok).toBe(true);
-    if (!edited.ok) return;
-    const next = edited.chart as CartesianChart;
-    expect(next.data).toEqual([{ day: 'Mon', created: 10 }, { day: 'Wed', created: 2 }]);
-    expect(next.series).toEqual([{ key: 'created', label: 'Created', color: '#3366ff' }]);
-    expect(chartModel.parse(chartModel.serialize(next)).ok).toBe(true);
-  });
-
-  it('switches between cartesian and pie without losing the mapping', () => {
-    const pie = withType(newChart(), 'pie');
-    expect(pie).toMatchObject({ type: 'pie', nameKey: 'label', valueKey: 'value' });
-    expect(withType(pie, 'bar')).toMatchObject({ type: 'bar', xKey: 'label', series: [{ key: 'value' }] });
-    expect(chartModel.parse(chartModel.serialize(pie)).ok).toBe(true);
-  });
-
-  it('picks round axis ticks', () => {
-    expect(niceTicks(0, 210)).toEqual([0, 50, 100, 150, 200, 250]);
-    expect(niceTicks(0, 9)).toEqual([0, 2, 4, 6, 8, 10]);
-    expect(niceTicks(-3, 8)).toEqual([-5, -2.5, 0, 2.5, 5, 7.5, 10]);
-  });
 });

@@ -1,42 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { joinTitleEcho, splitTitleEcho, stripTitleEcho } from './titleEcho';
-
-describe('stripTitleEcho', () => {
-  it('drops a leading H1 that duplicates the title', () => {
-    expect(stripTitleEcho('# Ship the thing\n\nBody text.', 'Ship the thing')).toBe('Body text.');
-  });
-
-  it('ignores case and whitespace differences when matching', () => {
-    expect(stripTitleEcho('#  ship  THE thing \n\nBody.', 'Ship the Thing')).toBe('Body.');
-  });
-
-  it('allows blank lines before the echo', () => {
-    expect(stripTitleEcho('\n\n# Title\n\nBody.', 'Title')).toBe('Body.');
-  });
-
-  it('keeps a leading H1 that says something different', () => {
-    const body = '# Context\n\nBody.';
-    expect(stripTitleEcho(body, 'Ship the thing')).toBe(body);
-  });
-
-  it('keeps an H1 that is not the first content line', () => {
-    const body = 'Intro line.\n\n# Ship the thing\n\nBody.';
-    expect(stripTitleEcho(body, 'Ship the thing')).toBe(body);
-  });
-
-  it('only matches level-1 headings', () => {
-    const body = '## Ship the thing\n\nBody.';
-    expect(stripTitleEcho(body, 'Ship the thing')).toBe(body);
-  });
-
-  it('returns an empty body when the echo is the whole body', () => {
-    expect(stripTitleEcho('# Ship the thing', 'Ship the thing')).toBe('');
-  });
-
-  it('passes through when the title is empty', () => {
-    expect(stripTitleEcho('# Anything\n\nBody.', '  ')).toBe('# Anything\n\nBody.');
-  });
-});
+import { joinTitleEcho, splitTitleEcho } from './titleEcho';
 
 describe('splitTitleEcho / joinTitleEcho', () => {
   it('round-trips a body with an echo', () => {

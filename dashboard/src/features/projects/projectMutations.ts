@@ -5,10 +5,7 @@ import type { ArtifactPatch, ArtifactSummary } from '@shared/types';
 import { patch } from '../../data/gateway';
 import { useDataStore } from '../../data/store';
 
-/**
- * The stored project. ProjectWithStats carries derived fields (ledger,
- * health, linked artifacts) that are never written.
- */
+/** The stored project, without the derived fields ProjectWithStats adds. */
 export function projectBaseArtifact(projectId: string): ArtifactSummary | undefined {
   return Object.values(useDataStore.getState().byPath).find((artifact) => artifact.id === projectId);
 }

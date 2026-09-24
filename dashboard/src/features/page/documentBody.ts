@@ -1,5 +1,5 @@
 import type { useDocument } from '../../data/useDocument';
-import { joinTitleEcho, splitTitleEcho } from '../shell/titleEcho';
+import { joinTitleEcho, splitTitleEcho } from './titleEcho';
 
 type Doc = Pick<ReturnType<typeof useDocument>, 'title' | 'content' | 'edit'>;
 

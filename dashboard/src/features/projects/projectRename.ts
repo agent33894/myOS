@@ -4,7 +4,7 @@ import { projectSwatchFor } from '@shared/design-system/accents';
 import type { ArtifactSummary } from '@shared/types';
 import { patchMany, read, save } from '../../data/gateway';
 import { useDataStore } from '../../data/store';
-import { joinTitleEcho, splitTitleEcho } from '../shell/titleEcho';
+import { joinTitleEcho, splitTitleEcho } from '../page/titleEcho';
 import { projectBaseArtifact } from './projectMutations';
 
 /**
