@@ -98,7 +98,7 @@ export function Editor({ value, onChange, artifact, placeholder = 'Start writing
   return (
     <div className="relative flex flex-col">
       {find ? (
-        <div className="sticky top-2 z-sticky flex h-0 justify-end overflow-visible">
+        <div className="sticky top-2 z-sticky flex h-0 items-start justify-end overflow-visible">
           <FindBar key={find.opened} editor={editor} initialQuery={find.query} onClose={() => setFind(null)} />
         </div>
       ) : null}

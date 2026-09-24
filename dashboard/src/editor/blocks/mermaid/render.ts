@@ -2,7 +2,10 @@
 // design tokens (both themes) plus the current accent each time it renders.
 
 const channels = (hex: string) => {
-  const value = Number.parseInt(hex.replace('#', '').padEnd(6, '0'), 16);
+  let digits = hex.replace('#', '');
+  // The CSS minifier shortens tokens like #ffffff to #fff.
+  if (digits.length === 3) digits = [...digits].map((digit) => digit + digit).join('');
+  const value = Number.parseInt(digits, 16);
   return [(value >> 16) & 255, (value >> 8) & 255, value & 255];
 };
 

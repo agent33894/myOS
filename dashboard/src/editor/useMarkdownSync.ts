@@ -4,12 +4,14 @@ import { EditorState, TextSelection } from '@tiptap/pm/state';
 
 /**
  * Whether an incoming `value` must be loaded into the editor. Our own
- * `onChange` echoes back as `value` (already shown), and the editor's
- * serialization may differ slightly from the file (already equivalent);
- * neither should reset the document under the caret.
+ * `onChange` echoes back as `value`, sometimes reformatted by the host or the
+ * file on disk (a trailing newline, aligned tables). A value that shows the
+ * same document as the editor must never reset it under the caret.
  */
-export function needsSync(lastSeen: string | null, current: () => string, next: string): boolean {
-  return lastSeen !== next && current() !== next;
+export function needsSync(lastSeen: string | null, current: () => string, next: string, normalize: (markdown: string) => string): boolean {
+  if (lastSeen === next) return false;
+  const shown = current().trimEnd();
+  return shown !== next.trimEnd() && shown !== normalize(next).trimEnd();
 }
 
 /**
@@ -56,7 +58,8 @@ export function connectMarkdown(editor: Editor, initial: { value: string; docume
     /** A value from the host: another document, a reload from disk, or the echo of our own change. */
     receive(value: string, key: string) {
       const switched = key !== documentKey;
-      if (switched || needsSync(lastSeen, () => editor.getMarkdown(), value)) load(editor, value);
+      const normalize = (markdown: string) => editor.markdown!.serialize(editor.markdown!.parse(markdown));
+      if (switched || needsSync(lastSeen, () => editor.getMarkdown(), value, normalize)) load(editor, value);
       documentKey = key;
       lastSeen = value;
     },

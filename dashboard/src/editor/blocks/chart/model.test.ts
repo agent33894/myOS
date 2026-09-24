@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { chartModel, newChart, withType, type CartesianChart } from './model';
+import { niceTicks } from './scale';
 import { fromTable, toTable } from './table';
 
 const line = {
@@ -59,5 +60,11 @@ describe('chart model', () => {
     expect(pie).toMatchObject({ type: 'pie', nameKey: 'label', valueKey: 'value' });
     expect(withType(pie, 'bar')).toMatchObject({ type: 'bar', xKey: 'label', series: [{ key: 'value' }] });
     expect(chartModel.parse(chartModel.serialize(pie)).ok).toBe(true);
+  });
+
+  it('picks round axis ticks', () => {
+    expect(niceTicks(0, 210)).toEqual([0, 50, 100, 150, 200, 250]);
+    expect(niceTicks(0, 9)).toEqual([0, 2, 4, 6, 8, 10]);
+    expect(niceTicks(-3, 8)).toEqual([-5, -2.5, 0, 2.5, 5, 7.5, 10]);
   });
 });

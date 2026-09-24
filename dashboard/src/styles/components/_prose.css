@@ -223,6 +223,10 @@
   flex: 1;
 }
 
+.prose ul[data-type='taskList'] li > div > p {
+  margin: 0;
+}
+
 .prose ul[data-type='taskList'] input[type='checkbox'] {
   display: grid;
   width: 1.125rem;

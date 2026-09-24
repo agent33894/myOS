@@ -127,6 +127,7 @@ export function RichBlockView({ node, editor, getPos, selected, updateAttributes
       }}
       onLeave={leave}
       onBlur={() => flushRef.current()}
+      focusForm={Boolean(node.attrs.fresh)}
     >
       <BlockBody definition={definition} mode={mode} source={source} write={write} flushRef={flushRef} onEditSource={() => changeMode('source')} />
     </BlockFrame>

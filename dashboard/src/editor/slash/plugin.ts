@@ -28,8 +28,8 @@ function follow(prev: SlashState, state: EditorState): SlashState {
 }
 
 interface SlashOptions {
-  /** Keys while the menu is open; return true when handled. Set by the React menu. */
-  onKeyDown: { current: ((event: KeyboardEvent) => boolean) | null };
+  /** Keys while the menu is open; return true when handled. */
+  onKeyDown: (event: KeyboardEvent) => boolean;
 }
 
 /**
@@ -40,7 +40,7 @@ export const SlashCommand = Extension.create<SlashOptions>({
   name: 'slashCommand',
 
   addOptions() {
-    return { onKeyDown: { current: null } };
+    return { onKeyDown: () => false };
   },
 
   addProseMirrorPlugins() {
@@ -68,8 +68,8 @@ export const SlashCommand = Extension.create<SlashOptions>({
             view.dispatch(view.state.tr.insertText('/', from, to).setMeta(slashKey, from));
             return true;
           },
-          handleKeyDown(_view, event) {
-            return slashKey.getState(_view.state)?.active ? (onKeyDown.current?.(event) ?? false) : false;
+          handleKeyDown(view, event) {
+            return slashKey.getState(view.state)?.active ? onKeyDown(event) : false;
           },
           handleDOMEvents: {
             blur(view) {

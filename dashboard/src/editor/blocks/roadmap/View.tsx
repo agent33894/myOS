@@ -5,10 +5,10 @@ import type { Roadmap, RoadmapItem, RoadmapStatus } from './model';
 import { buildTimeline, groupByLane, type Timeline } from './timeline';
 
 export const STATUS: Record<RoadmapStatus, { label: string; dot: string; bar: string }> = {
-  planned: { label: 'Planned', dot: 'bg-text-tertiary', bar: 'fill-text/20' },
+  planned: { label: 'Planned', dot: 'bg-text-tertiary', bar: 'fill-text/25' },
   'in-progress': { label: 'In progress', dot: 'bg-accent', bar: 'fill-accent' },
   blocked: { label: 'Blocked', dot: 'bg-danger', bar: 'fill-danger' },
-  done: { label: 'Done', dot: 'bg-success', bar: 'fill-success' },
+  done: { label: 'Done', dot: 'bg-success', bar: 'fill-success/60' },
   cancelled: { label: 'Cancelled', dot: 'bg-border-strong', bar: 'fill-text/10' },
 };
 
@@ -28,7 +28,8 @@ function Track({ timeline, item }: { timeline: Timeline; item?: RoadmapItem }) {
         <line key={month.label} x1={`${month.left}%`} x2={`${month.left}%`} y1="0" y2="100%" className="stroke-border" />
       ))}
       {timeline.today !== null ? <line x1={`${timeline.today}%`} x2={`${timeline.today}%`} y1="0" y2="100%" className="stroke-accent" strokeWidth={1.5} /> : null}
-      {span && item ? <rect x={`${span.left}%`} width={`${span.width}%`} y="6" height="12" rx="6" className={STATUS[item.status].bar} /> : null}
+      {span && item && span.point ? <circle cx={`${span.left + span.width / 2}%`} cy="12" r="6" className={STATUS[item.status].bar} /> : null}
+      {span && item && !span.point ? <rect x={`${span.left}%`} width={`${span.width}%`} y="6" height="12" rx="6" className={STATUS[item.status].bar} /> : null}
     </svg>
   );
 }

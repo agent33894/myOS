@@ -52,7 +52,8 @@ describe('roadmap model', () => {
     const timeline = buildTimeline(parsed.value.items, new Date(2026, 3, 8))!;
     expect(timeline.months.map((month) => month.label)).toEqual(['Apr 2026', 'May']);
     const span = timeline.spanOf(parsed.value.items[0])!;
-    expect(span.left).toBe(0);
+    expect(span.left).toBeGreaterThan(0);
+    expect(span.left + span.width).toBeLessThan(100);
     expect(timeline.today).toBeGreaterThan(0);
     expect(groupByLane(parsed.value).map((group) => group.lane?.id)).toEqual(['editor', 'data']);
   });

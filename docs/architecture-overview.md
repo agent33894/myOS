@@ -39,7 +39,7 @@ An **artifact** is one Markdown file: YAML frontmatter plus a body. This is the 
 
 - `data/`: the artifacts store (`byPath`, bodies keyed by path), updated only from gateway results and watcher events; memoized selectors (Inbox, Today, Projects, Notes, counts); the gateway, which is the single write path and records undo; and undo/redo.
 - `features/`: one folder per surface (shell, inbox, today, notes, projects, page, capture, palette, settings, onboarding). Each owns its components and hooks.
-- `editor/`: TipTap composition (`Editor.tsx`), extensions, slash menu, link routing, and rich blocks rendered as React node views through a shared `BlockFrame` and `useBlockDraft`.
+- `editor/`: TipTap composition (`index.tsx`, the `Editor` contract), `extensions.ts`, `useMarkdownSync.ts` (value in, edits out, never an echo), the `/` insert menu, the selection toolbar, find in page, link routing, commit diffs, and rich blocks: fenced `chart`, `callout`, `kpi`, `roadmap`, and `mermaid` code rendered as React node views through a shared `BlockFrame` and `useBlockDraft`. Shiki grammars, recharts, and mermaid load on first use.
 - `ui/`: the design system (see [`design/design-system.md`](design/design-system.md)).
 
 ## Conflict handling

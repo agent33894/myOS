@@ -80,14 +80,23 @@ export const SLASH_ITEMS: SlashItem[] = [
   ...(Object.keys(BLOCKS) as BlockKind[]).map(richBlock),
 ];
 
-/** Items matching every word of `query`, in menu order. */
+/** How well `item` matches: label prefix beats a label word beats a keyword; null when it doesn't. */
+function score(item: SlashItem, query: string): number | null {
+  const label = item.label.toLowerCase();
+  if (label.startsWith(query)) return 0;
+  const starts = (text: string) => text.split(/[\s-]+/).some((word) => word.startsWith(query));
+  if (starts(label)) return 1;
+  return item.keywords.some((keyword) => starts(keyword.toLowerCase())) ? 2 : null;
+}
+
+/** All items when the query is empty; otherwise the matches, best first. */
 export function filterItems(query: string): SlashItem[] {
-  const words = query.toLowerCase().split(/\s+/).filter(Boolean);
-  if (!words.length) return SLASH_ITEMS;
-  return SLASH_ITEMS.filter((item) => {
-    const haystack = [item.label, ...item.keywords].join(' ').toLowerCase();
-    return words.every((word) => haystack.includes(word));
-  });
+  const needle = query.trim().toLowerCase();
+  if (!needle) return SLASH_ITEMS;
+  return SLASH_ITEMS.map((item, order) => ({ item, order, score: score(item, needle) }))
+    .filter((entry): entry is { item: SlashItem; order: number; score: number } => entry.score !== null)
+    .sort((a, b) => a.score - b.score || a.order - b.order)
+    .map((entry) => entry.item);
 }
 
 export function removeQuery(editor: Editor, range: Range) {

@@ -1,4 +1,4 @@
-import { Component, type FocusEvent, type KeyboardEvent, type ReactNode } from 'react';
+import { Component, useEffect, useRef, type FocusEvent, type KeyboardEvent, type ReactNode } from 'react';
 import { AlertCircle, Braces, Copy, CopyPlus, Eye, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { NodeViewWrapper } from '@tiptap/react';
 import {
@@ -82,6 +82,8 @@ interface BlockFrameProps {
   onLeave: (side: 'before' | 'after') => void;
   /** Focus left the block: write pending edits. */
   onBlur: () => void;
+  /** Put the caret in the form's first field on mount (a block just inserted). */
+  focusForm?: boolean;
   children: ReactNode;
 }
 
@@ -92,7 +94,15 @@ interface BlockFrameProps {
  * removes, arrows leave the block.
  */
 export function BlockFrame(props: BlockFrameProps) {
-  const { label, mode, onModeChange, editable, selected } = props;
+  const { label, mode, onModeChange, editable, selected, focusForm } = props;
+  const frame = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!focusForm) return;
+    // Wait a tick so the form has rendered.
+    const timer = window.setTimeout(() => frame.current?.querySelector<HTMLElement>('input, textarea')?.focus(), 0);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (event.key === 'Escape' && mode !== 'preview') {
@@ -126,6 +136,7 @@ export function BlockFrame(props: BlockFrameProps) {
   return (
     <NodeViewWrapper className="rich-block not-prose group/block relative my-6" contentEditable={false}>
       <div
+        ref={frame}
         tabIndex={0}
         role="group"
         aria-label={`${label} block`}

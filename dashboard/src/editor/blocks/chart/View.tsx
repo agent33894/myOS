@@ -22,6 +22,7 @@ import { projectSwatches } from '@shared/design-system/accents';
 import { useAccent } from '../../../hooks/useAccent';
 import { formatNumber, formatTick } from '../format';
 import { DEFAULT_HEIGHT, type CartesianChart, type Chart, type PieChart as PieSpec } from './model';
+import { niceTicks, valueRange } from './scale';
 
 // Loaded on demand (recharts is heavy). Axis, grid, and cursor colors come from
 // tokens in _tiptap.css; series use the accent, then the project swatches.
@@ -58,10 +59,12 @@ function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: 
   );
 }
 
-function ChartLegend({ payload }: { payload?: Entry[] }) {
+function ChartLegend({ payload, order }: { payload?: Array<Entry & { dataKey?: unknown }>; order?: string[] }) {
+  // Recharts sorts legend entries by name; show them in series order instead.
+  const entries = order ? [...(payload ?? [])].sort((a, b) => order.indexOf(String(a.dataKey)) - order.indexOf(String(b.dataKey))) : payload;
   return (
     <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 pt-2 font-sans text-sm text-text-secondary">
-      {payload?.map((entry, index) => (
+      {entries?.map((entry, index) => (
         <span key={index} className="inline-flex items-center gap-1.5">
           <Swatch color={entry.color} />
           {entry.value as string}
@@ -82,13 +85,22 @@ function formatLabel(value: unknown): string {
 function Cartesian({ chart, palette }: { chart: CartesianChart; palette: string[] }) {
   const Frame = chart.type === 'line' ? LineChart : chart.type === 'area' ? AreaChart : BarChart;
   const stack = chart.stacked ? 'stack' : undefined;
+  const ticks = useMemo(() => niceTicks(...valueRange(chart)), [chart]);
   return (
     <Frame data={chart.data} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
       <CartesianGrid vertical={false} />
       <XAxis dataKey={chart.xKey} tickLine={false} axisLine={false} tickMargin={8} tickFormatter={formatLabel} minTickGap={16} />
-      <YAxis tickLine={false} axisLine={false} tickMargin={4} width={48} tickFormatter={formatTick} />
+      <YAxis
+        tickLine={false}
+        axisLine={false}
+        tickMargin={4}
+        width={48}
+        ticks={ticks}
+        domain={[ticks[0], ticks[ticks.length - 1]]}
+        tickFormatter={formatTick}
+      />
       <Tooltip content={<ChartTooltip />} isAnimationActive={false} />
-      {chart.series.length > 1 ? <Legend content={<ChartLegend />} /> : null}
+      {chart.series.length > 1 ? <Legend content={<ChartLegend order={chart.series.map((series) => series.key)} />} /> : null}
       {chart.thresholds?.map((threshold, index) => (
         <ReferenceLine
           key={index}

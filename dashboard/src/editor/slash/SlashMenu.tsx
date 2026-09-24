@@ -1,13 +1,13 @@
-import { useEffect, useId, useMemo, useRef } from 'react';
+import { useEffect, useId } from 'react';
 import type { Editor } from '@tiptap/react';
 import { cn, Icon, Popover, PopoverAnchor, PopoverContent } from '../../ui';
 import type { SlashItem } from './items';
 import { useSlashMenu } from './useSlashMenu';
 
-const GROUPS = [
+const GROUPS: Array<{ id: string; label: string }> = [
   { id: 'basic', label: 'Basic blocks' },
   { id: 'more', label: 'More blocks' },
-] as const;
+];
 
 interface SlashMenuProps {
   editor: Editor;
@@ -23,10 +23,11 @@ interface SlashMenuProps {
 export function SlashMenu({ editor, keyHandler, onAttachFile }: SlashMenuProps) {
   const menu = useSlashMenu(editor, keyHandler, { attachFile: onAttachFile });
   const id = useId();
-  const listRef = useRef<HTMLDivElement>(null);
   const optionId = (item: SlashItem) => `${id}-${item.id}`;
   const active = menu.items[menu.activeIndex];
-  const anchor = useMemo(() => ({ current: { getBoundingClientRect: menu.anchorRect } }), [menu.anchorRect]);
+  // Browsing shows the two groups; a query shows its matches best first.
+  const sections = menu.query.trim() ? [{ id: '', label: 'Best matches' }] : GROUPS;
+  const anchor = { current: { getBoundingClientRect: menu.anchorRect } };
 
   useEffect(() => {
     const dom = editor.view.dom;
@@ -57,15 +58,15 @@ export function SlashMenu({ editor, keyHandler, onAttachFile }: SlashMenuProps) 
         // Keep the caret in the editor while picking with the mouse.
         onMouseDown={(event) => event.preventDefault()}
       >
-        <div ref={listRef} id={`${id}-list`} role="listbox" aria-label="Insert block" className="max-h-80 overflow-y-auto">
+        <div id={`${id}-list`} role="listbox" aria-label="Insert block" className="max-h-80 overflow-y-auto">
           {menu.items.length === 0 ? <div className="px-2 py-3 text-sm text-text-tertiary">No blocks match “{menu.query}”</div> : null}
-          {GROUPS.map((group) => {
-            const items = menu.items.filter((item) => item.group === group.id);
+          {sections.map((section) => {
+            const items = menu.items.filter((item) => !section.id || item.group === section.id);
             if (!items.length) return null;
             return (
-              <div key={group.id} role="group" aria-labelledby={`${id}-${group.id}`} className="pb-1">
-                <div id={`${id}-${group.id}`} className="px-2 pb-1 pt-2 text-xs font-medium text-text-secondary">
-                  {group.label}
+              <div key={section.id} role="group" aria-labelledby={`${id}-${section.id}`} className="pb-1">
+                <div id={`${id}-${section.id}`} className="px-2 pb-1 pt-2 text-xs font-medium text-text-secondary">
+                  {section.label}
                 </div>
                 {items.map((item) => {
                   const selected = item === active;

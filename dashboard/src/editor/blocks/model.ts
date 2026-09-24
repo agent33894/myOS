@@ -48,16 +48,43 @@ export function isFiniteNumber(value: unknown): value is number {
   return typeof value === 'number' && Number.isFinite(value);
 }
 
-/** Pretty JSON without object keys whose value is undefined, an empty string, or an empty list. */
+const LINE_WIDTH = 80;
+
+function inline(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(inline).join(', ')}]`;
+  if (isRecord(value)) {
+    const entries = Object.entries(value).map(([key, entry]) => `${JSON.stringify(key)}: ${inline(entry)}`);
+    return entries.length ? `{ ${entries.join(', ')} }` : '{}';
+  }
+  return JSON.stringify(value);
+}
+
+/** Two-space JSON that keeps short objects and lists (a data row, a lane) on one line. */
+function pretty(value: unknown, indent: string): string {
+  const flat = inline(value);
+  if (indent.length + flat.length <= LINE_WIDTH || (!Array.isArray(value) && !isRecord(value))) return flat;
+  const inner = `${indent}  `;
+  const lines = Array.isArray(value)
+    ? value.map((entry) => inner + pretty(entry, inner))
+    : Object.entries(value).map(([key, entry]) => `${inner}${JSON.stringify(key)}: ${pretty(entry, inner)}`);
+  const [open, close] = Array.isArray(value) ? ['[', ']'] : ['{', '}'];
+  return `${open}\n${lines.join(',\n')}\n${indent}${close}`;
+}
+
+/**
+ * Readable JSON for a block's source, without object keys whose value is
+ * undefined, an empty string, or an empty list. The top level is always
+ * expanded so each setting sits on its own line.
+ */
 export function toJson(value: object): string {
-  return JSON.stringify(
-    value,
-    function omitEmpty(this: unknown, _key, entry: unknown) {
+  const clean: Record<string, unknown> = JSON.parse(
+    JSON.stringify(value, function omitEmpty(this: unknown, _key, entry: unknown) {
       if (Array.isArray(this)) return entry;
       return entry === '' || (Array.isArray(entry) && entry.length === 0) ? undefined : entry;
-    },
-    2,
+    }),
   );
+  const lines = Object.entries(clean).map(([key, entry]) => `  ${JSON.stringify(key)}: ${pretty(entry, '  ')}`);
+  return `{\n${lines.join(',\n')}\n}`;
 }
 
 /** Markdown for a fenced block, identical to what the code block serializer writes. */

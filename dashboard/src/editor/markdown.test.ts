@@ -68,10 +68,10 @@ describe('markdown round trip', () => {
     expect(roundTrip(document)).toBe(document);
   });
 
-  it('normalizes tables and rules once, then stays stable', () => {
-    const source = ['| Name | Value |', '| --- | --- |', '| a | 1 |', '', '---', '', 'After'].join('\n');
+  it('aligns table columns once, without adding blank lines, then stays stable', () => {
+    const source = ['Before', '', '---', '', '| Name | Value |', '| --- | --- |', '| a | 1 |', '', 'After'].join('\n');
     const once = roundTrip(source);
-    expect(once).toContain('| a    | 1     |');
+    expect(once).toBe(['Before', '', '---', '', '| Name | Value |', '| ---- | ----- |', '| a    | 1     |', '', 'After'].join('\n'));
     expect(roundTrip(once)).toBe(once);
   });
 });
@@ -107,7 +107,7 @@ describe('editor binding', () => {
     const { editor, changes, sync } = open('Hello');
     editor.view.dispatch(editor.state.tr.insertText(' world', editor.state.doc.content.size - 1));
     expect(changes).toEqual(['Hello world']);
-    sync.receive('Hello world', 'a'); // the host echoes it back
+    sync.receive('Hello world\n', 'a'); // the host echoes it back from disk
     expect(editor.getMarkdown()).toBe('Hello world');
     expect(changes).toHaveLength(1);
     editor.destroy();
@@ -116,13 +116,16 @@ describe('editor binding', () => {
 
 describe('external value sync', () => {
   const current = (markdown: string) => () => markdown;
+  const normalize = (source: string) => roundTrip(source);
 
-  it('ignores the echo of our own change and equivalent serializations', () => {
-    expect(needsSync('local', current('local'), 'local')).toBe(false);
-    expect(needsSync('old', current('external'), 'external')).toBe(false);
+  it('ignores echoes of our own change, however the host reformats them', () => {
+    expect(needsSync('local', current('local'), 'local', normalize)).toBe(false);
+    expect(needsSync('old', current('shown'), 'shown\n', normalize)).toBe(false);
+    const table = '| a | b |\n| --- | --- |\n| 1 | 2 |';
+    expect(needsSync('old', current(roundTrip(table)), table, normalize)).toBe(false);
   });
 
   it('loads genuinely new content', () => {
-    expect(needsSync('mine', current('mine'), 'from disk')).toBe(true);
+    expect(needsSync('mine', current('mine'), 'from disk', normalize)).toBe(true);
   });
 });

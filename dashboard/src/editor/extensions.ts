@@ -4,7 +4,7 @@ import { Image } from '@tiptap/extension-image';
 import { Link } from '@tiptap/extension-link';
 import { TaskItem, TaskList } from '@tiptap/extension-list';
 import { Placeholder } from '@tiptap/extension-placeholder';
-import { Table } from '@tiptap/extension-table';
+import { renderTableToMarkdown, Table } from '@tiptap/extension-table';
 import { TableCell } from '@tiptap/extension-table-cell';
 import { TableHeader } from '@tiptap/extension-table-header';
 import { TableRow } from '@tiptap/extension-table-row';
@@ -43,6 +43,12 @@ const HighlightedCodeBlock = CodeBlock.extend({
   },
 });
 
+// TipTap pads tables with blank lines of their own, on top of the blank line
+// between blocks; trimming keeps files from growing extra empty lines.
+const CompactTable = Table.extend({
+  renderMarkdown: (node, helpers) => renderTableToMarkdown(node, helpers).trim(),
+});
+
 interface ExtensionOptions {
   placeholder: string;
   /** Receives keys while the "/" menu is open. */
@@ -59,7 +65,7 @@ export function createExtensions({ placeholder, slashKeys = { current: null } }:
     // Without these, `- [ ]` parses as a plain bullet and autosave drops the checkbox.
     TaskList,
     TaskItem.configure({ nested: true }),
-    Table,
+    CompactTable,
     TableRow,
     TableHeader,
     TableCell,
@@ -76,7 +82,8 @@ export function createExtensions({ placeholder, slashKeys = { current: null } }:
     Typography,
     WikiLinks,
     FindInPage,
-    SlashCommand.configure({ onKeyDown: slashKeys }),
+    // A function, not the ref: configure() deep-copies plain objects.
+    SlashCommand.configure({ onKeyDown: (event) => slashKeys.current?.(event) ?? false }),
     Markdown,
   ];
 }
