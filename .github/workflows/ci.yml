@@ -27,7 +27,7 @@ jobs:
       - run: npm run typecheck
       - run: npm run lint
       - run: npm test
-      - run: npm run audit:imports
+      - run: npm run audit:dead-code
       - run: npm run audit:ipc
       - if: runner.os == 'Linux'
         run: npm run build:linux
