@@ -1,4 +1,4 @@
-import { projectSwatchFor } from '@shared/design-system/tokens';
+import { projectSwatchFor } from '@shared/design-system/accents';
 import { ArtifactType, type ArtifactSummary } from '@shared/types';
 import type { SearchHit } from './librarySearch';
 

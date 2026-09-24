@@ -1,11 +1,14 @@
-import { DEFAULT_ACCENT_ID, isHexColor, pantoneAccentById, SYSTEM_ACCENT } from '@shared/design-system/accents';
+import { accentById, DEFAULT_ACCENT_ID, isHexColor, SYSTEM_ACCENT } from '@shared/design-system/accents';
 
 export type ThemeMode = 'system' | 'light' | 'dark';
+export type ReadingFont = 'sans' | 'serif';
 
 export interface StoredSettings {
   themeMode: ThemeMode;
-  /** A Pantone accent id, `system` to follow the desktop theme, or a custom `#rrggbb`. */
+  /** A curated accent id, `system` to follow the desktop theme, or a custom `#rrggbb`. */
   accent: string;
+  /** Face for the document body: Inter or Literata. */
+  readingFont: ReadingFont;
   hasCompletedOnboarding: boolean;
 }
 
@@ -13,12 +16,13 @@ const STORAGE_KEY = 'myos-settings';
 const DEFAULT_SETTINGS: StoredSettings = {
   themeMode: 'system',
   accent: DEFAULT_ACCENT_ID,
+  readingFont: 'sans',
   hasCompletedOnboarding: false,
 };
 
 export function isAccentChoice(value: unknown): value is string {
   if (typeof value !== 'string') return false;
-  return value === SYSTEM_ACCENT || isHexColor(value) || pantoneAccentById(value) !== undefined;
+  return value === SYSTEM_ACCENT || isHexColor(value) || accentById(value) !== undefined;
 }
 
 function isOneOf<T extends string>(value: unknown, options: readonly T[]): value is T {
@@ -41,6 +45,7 @@ export function normalizeStoredSettings(value: unknown): StoredSettings {
     // Legacy `followSystemAccent` is intentionally dropped: its default was on
     // for everyone, so it never expressed a choice.
     accent: isAccentChoice(parsed.accent) ? parsed.accent.toLowerCase() : defaults.accent,
+    readingFont: isOneOf(parsed.readingFont, ['sans', 'serif']) ? parsed.readingFont : defaults.readingFont,
     hasCompletedOnboarding: typeof parsed.hasCompletedOnboarding === 'boolean'
       ? parsed.hasCompletedOnboarding
       : defaults.hasCompletedOnboarding,
@@ -71,6 +76,7 @@ export function getStorableSettings(state: StoredSettings): StoredSettings {
   return {
     themeMode: state.themeMode,
     accent: state.accent,
+    readingFont: state.readingFont,
     hasCompletedOnboarding: state.hasCompletedOnboarding,
   };
 }

@@ -1,4 +1,4 @@
-import { projectSwatchFor } from '@shared/design-system/tokens';
+import { projectSwatchFor } from '@shared/design-system/accents';
 import type { ProjectWithStats } from '../../data/projects';
 import { cn } from '../../lib/utils';
 import { shortDate } from './format';

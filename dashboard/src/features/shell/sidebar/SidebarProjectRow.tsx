@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { projectSwatchFor } from '@shared/design-system/tokens';
+import { projectSwatchFor } from '@shared/design-system/accents';
 import type { ArtifactSummary } from '@shared/types';
 import { cn } from '../../../lib/utils';
 import { useProjectRename } from '../../projects/projectRename';

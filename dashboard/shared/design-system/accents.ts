@@ -1,58 +1,48 @@
 /**
- * Accent (stamp ink) palette for myOS.
+ * Accent choices and decorative project colors.
  *
- * Each accent stores one nominal Pantone colour. The ink actually painted is
- * contrast-fitted per theme: lightness shifts (hue and saturation held) until
- * the ink reaches WCAG text contrast against every paper it sits on. That makes
- * any source — curated Pantone, the Omarchy theme accent, or a custom pick —
- * legible in both light and dark mode.
+ * The accent is one color, applied as `--accent` on <html> by ThemeController;
+ * the rest of the accent ramp derives from it in CSS. White text sits on the
+ * accent in both themes, so every accent is fitted to reach 4.5:1 against white.
  */
 
-interface PantoneAccent {
-  /** Stable kebab-case identifier persisted in settings. */
+interface Accent {
+  /** Stable identifier persisted in settings. */
   id: string;
   name: string;
-  /** Pantone Fashion, Home + Interiors (TCX) reference. */
-  code: string;
-  /** Nominal sRGB approximation of the Pantone chip. */
   hex: string;
 }
 
-/** Ordered around the hue wheel so the picker reads as a spectrum. */
-export const PANTONE_ACCENTS: PantoneAccent[] = [
-  { id: 'chili-pepper', name: 'Chili Pepper', code: '19-1557', hex: '#9B1B30' },
-  { id: 'viva-magenta', name: 'Viva Magenta', code: '18-1750', hex: '#BB2649' },
-  { id: 'honeysuckle', name: 'Honeysuckle', code: '18-2120', hex: '#D94F70' },
-  { id: 'tangerine-tango', name: 'Tangerine Tango', code: '17-1463', hex: '#DD4124' },
-  { id: 'mocha-mousse', name: 'Mocha Mousse', code: '17-1230', hex: '#A47864' },
-  { id: 'mimosa', name: 'Mimosa', code: '14-0848', hex: '#F0C05A' },
-  { id: 'greenery', name: 'Greenery', code: '15-0343', hex: '#88B04B' },
-  { id: 'emerald', name: 'Emerald', code: '17-5641', hex: '#009473' },
-  { id: 'turquoise', name: 'Turquoise', code: '15-5519', hex: '#45B5AA' },
-  { id: 'cerulean', name: 'Cerulean', code: '15-4020', hex: '#9BB7D4' },
-  { id: 'classic-blue', name: 'Classic Blue', code: '19-4052', hex: '#0F4C81' },
-  { id: 'very-peri', name: 'Very Peri', code: '17-3938', hex: '#6667AB' },
-  { id: 'ultra-violet', name: 'Ultra Violet', code: '18-3838', hex: '#5F4B8B' },
-  { id: 'radiant-orchid', name: 'Radiant Orchid', code: '18-3224', hex: '#B163A3' },
-  { id: 'marsala', name: 'Marsala', code: '18-1438', hex: '#955251' },
+/** Curated accents, ordered around the hue wheel. Each clears 4.5:1 with white text. */
+export const ACCENTS: readonly Accent[] = [
+  { id: 'iris', name: 'Iris', hex: '#5B5BD6' },
+  { id: 'violet', name: 'Violet', hex: '#8746C8' },
+  { id: 'pink', name: 'Pink', hex: '#C0369A' },
+  { id: 'rose', name: 'Rose', hex: '#D1335F' },
+  { id: 'orange', name: 'Orange', hex: '#C8481F' },
+  { id: 'amber', name: 'Amber', hex: '#B25A00' },
+  { id: 'green', name: 'Green', hex: '#2E7D4F' },
+  { id: 'teal', name: 'Teal', hex: '#0F7B78' },
+  { id: 'sky', name: 'Sky', hex: '#0B74A8' },
+  { id: 'blue', name: 'Blue', hex: '#2F6BD8' },
+  { id: 'graphite', name: 'Graphite', hex: '#5E636B' },
 ];
 
-export const DEFAULT_ACCENT_ID = 'ultra-violet';
+export const DEFAULT_ACCENT_ID = 'iris';
 
 /** Settings value that follows the desktop (Omarchy) theme accent. */
 export const SYSTEM_ACCENT = 'system';
 
-/** Minimum contrast for the stamp ink: it is used for small active-state text. */
-export const ACCENT_MIN_CONTRAST = 4.5;
-
 const HEX_PATTERN = /^#[0-9a-f]{6}$/i;
+const WHITE = '#FFFFFF';
+const MIN_CONTRAST = 4.5;
 
 export function isHexColor(value: unknown): value is string {
   return typeof value === 'string' && HEX_PATTERN.test(value);
 }
 
-export function pantoneAccentById(id: string): PantoneAccent | undefined {
-  return PANTONE_ACCENTS.find((accent) => accent.id === id);
+export function accentById(id: string): Accent | undefined {
+  return ACCENTS.find((accent) => accent.id === id);
 }
 
 function channels(hex: string): [number, number, number] {
@@ -68,87 +58,86 @@ function relativeLuminance(hex: string): number {
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
 
-export function contrastRatio(a: string, b: string): number {
+function contrastRatio(a: string, b: string): number {
   const [high, low] = [relativeLuminance(a), relativeLuminance(b)].sort((x, y) => y - x);
   return (high + 0.05) / (low + 0.05);
 }
 
-function toHsl(hex: string): [number, number, number] {
-  const [r, g, b] = channels(hex).map((channel) => channel / 255);
-  const max = Math.max(r, g, b);
-  const min = Math.min(r, g, b);
-  const lightness = (max + min) / 2;
-  const delta = max - min;
-  if (delta === 0) return [0, 0, lightness];
-  const saturation = delta / (1 - Math.abs(2 * lightness - 1));
-  let hue: number;
-  if (max === r) hue = ((g - b) / delta) % 6;
-  else if (max === g) hue = (b - r) / delta + 2;
-  else hue = (r - g) / delta + 4;
-  return [(hue * 60 + 360) % 360, saturation, lightness];
-}
-
-function fromHsl(hue: number, saturation: number, lightness: number): string {
-  const chroma = (1 - Math.abs(2 * lightness - 1)) * saturation;
-  const x = chroma * (1 - Math.abs(((hue / 60) % 2) - 1));
-  const m = lightness - chroma / 2;
-  const sectors: [number, number, number][] = [
-    [chroma, x, 0],
-    [x, chroma, 0],
-    [0, chroma, x],
-    [0, x, chroma],
-    [x, 0, chroma],
-    [chroma, 0, x],
-  ];
-  const [r, g, b] = sectors[Math.min(5, Math.floor(hue / 60))];
-  const toHex = (value: number) => Math.round((value + m) * 255).toString(16).padStart(2, '0');
-  return `#${toHex(r)}${toHex(g)}${toHex(b)}`.toUpperCase();
-}
-
-/**
- * Shift `hex` toward dark (on light paper) or light (on dark paper) just far
- * enough to reach `minContrast` against every background. Inks that already
- * pass are returned unchanged, so well-chosen colours stay exact.
- */
-export function fitInkToPapers(hex: string, papers: string[], minContrast = ACCENT_MIN_CONTRAST): string {
-  const passes = (candidate: string) => papers.every((paper) => contrastRatio(candidate, paper) >= minContrast);
-  const normalized = hex.toUpperCase();
-  if (passes(normalized)) return normalized;
-
-  const [hue, saturation, lightness] = toHsl(normalized);
-  const darken = papers.every((paper) => relativeLuminance(paper) > 0.5);
-  // Binary search the lightness closest to the original that still passes.
-  let low = darken ? 0 : lightness;
-  let high = darken ? lightness : 1;
-  for (let step = 0; step < 24; step += 1) {
+/** Darken `hex` toward black just enough for white text to reach 4.5:1. */
+function fitForWhiteText(hex: string): string {
+  if (contrastRatio(hex, WHITE) >= MIN_CONTRAST) return hex;
+  const [r, g, b] = channels(hex);
+  let low = 0;
+  let high = 1;
+  const scaled = (factor: number) =>
+    `#${[r, g, b].map((channel) => Math.round(channel * factor).toString(16).padStart(2, '0')).join('')}`.toUpperCase();
+  for (let step = 0; step < 20; step += 1) {
     const mid = (low + high) / 2;
-    const candidatePasses = passes(fromHsl(hue, saturation, mid));
-    if (darken === candidatePasses) low = mid;
+    if (contrastRatio(scaled(mid), WHITE) >= MIN_CONTRAST) low = mid;
     else high = mid;
   }
-  return fromHsl(hue, saturation, darken ? low : high);
+  return scaled(low);
 }
 
 interface ResolvedAccent {
   /** The settings value this resolved from, after fallbacks. */
   choice: string;
   name: string;
-  /** Pantone reference, when the accent is a curated swatch. */
-  code?: string;
-  /** Nominal colour before contrast fitting. */
+  /** The color painted as `--accent`. */
   hex: string;
 }
 
 /**
- * Turn a stored accent choice into a concrete colour. Following the desktop
- * theme without one available (macOS, non-Omarchy Linux) and unknown values
- * both fall back to the default Pantone accent.
+ * Turn a stored accent choice into the color to paint. A missing desktop
+ * accent (macOS, non-Omarchy Linux) and unknown values fall back to Iris.
  */
 export function resolveAccent(choice: string, systemAccent: string | null): ResolvedAccent {
-  if (choice === SYSTEM_ACCENT && systemAccent && isHexColor(systemAccent)) {
-    return { choice, name: 'Omarchy theme', hex: systemAccent.toUpperCase() };
+  if (choice === SYSTEM_ACCENT && isHexColor(systemAccent)) {
+    return { choice, name: 'Desktop theme', hex: fitForWhiteText(systemAccent.toUpperCase()) };
   }
-  if (isHexColor(choice)) return { choice, name: 'Custom', hex: choice.toUpperCase() };
-  const pantone = pantoneAccentById(choice) ?? pantoneAccentById(DEFAULT_ACCENT_ID)!;
-  return { choice: pantone.id, name: pantone.name, code: pantone.code, hex: pantone.hex };
+  if (isHexColor(choice)) return { choice, name: 'Custom', hex: fitForWhiteText(choice.toUpperCase()) };
+  const accent = accentById(choice) ?? accentById(DEFAULT_ACCENT_ID)!;
+  return { choice: accent.id, name: accent.name, hex: accent.hex };
+}
+
+interface Swatch {
+  /** Stable name persisted in project frontmatter (`swatch:`). */
+  name: string;
+  displayName: string;
+  /** Mid-tone that reads on both themes. Decorative only: dots and covers. */
+  hex: string;
+}
+
+export const projectSwatches: readonly Swatch[] = [
+  { name: 'terracotta', displayName: 'Terracotta', hex: '#BE6A4C' },
+  { name: 'marigold', displayName: 'Marigold', hex: '#D9A03C' },
+  { name: 'olive', displayName: 'Olive', hex: '#8B8B3E' },
+  { name: 'sage', displayName: 'Sage', hex: '#86A489' },
+  { name: 'teal', displayName: 'Teal', hex: '#4E8F8B' },
+  { name: 'cornflower', displayName: 'Cornflower', hex: '#6C8DC9' },
+  { name: 'iris', displayName: 'Iris', hex: '#8B7BC7' },
+  { name: 'plum', displayName: 'Plum', hex: '#9C5B88' },
+  { name: 'rose', displayName: 'Rose', hex: '#C36F8E' },
+  { name: 'oxblood', displayName: 'Oxblood', hex: '#8E3B3B' },
+  { name: 'slate', displayName: 'Slate', hex: '#6E7B8A' },
+  { name: 'umber', displayName: 'Umber', hex: '#8A6B4F' },
+];
+
+// Deterministic project → swatch mapping: FNV-1a 64-bit over the lowercased
+// UTF-8 name, modulo the swatch count. Changing this recolors every project.
+const FNV_OFFSET_64 = 0xcbf29ce484222325n;
+const FNV_PRIME_64 = 0x100000001b3n;
+const MASK_64 = 0xffffffffffffffffn;
+
+export function projectSwatchFor(projectName: string, storedSwatch?: string): Swatch {
+  if (storedSwatch) {
+    const stored = projectSwatches.find((swatch) => swatch.name === storedSwatch);
+    if (stored) return stored;
+  }
+  let hash = FNV_OFFSET_64;
+  for (const byte of new TextEncoder().encode(projectName.toLowerCase())) {
+    hash ^= BigInt(byte);
+    hash = (hash * FNV_PRIME_64) & MASK_64;
+  }
+  return projectSwatches[Number(hash % BigInt(projectSwatches.length))];
 }

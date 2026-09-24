@@ -3312,7 +3312,7 @@ button.chronicle-activity-title:hover {
 }
 /* Inset focus ring: the tab strip scrolls, an outset ring would clip. */
 .chronicle-settings-tab:focus-visible {
-  outline: 2px solid hsl(var(--ring));
+  outline: 2px solid var(--focus);
   outline-offset: -2px;
 }
 
@@ -3362,7 +3362,7 @@ button.chronicle-activity-title:hover {
 }
 /* Inset focus ring: an outset ring would clip against the group border. */
 .chronicle-segmented-option:focus-visible {
-  outline: 2px solid hsl(var(--ring));
+  outline: 2px solid var(--focus);
   outline-offset: -2px;
 }
 .chronicle-segmented-option:disabled {
@@ -3394,7 +3394,7 @@ button.chronicle-settings-section-header:hover .chronicle-settings-section-title
   color: var(--ds2-ink);
 }
 .chronicle-settings-section-header:focus-visible {
-  outline: 2px solid hsl(var(--ring));
+  outline: 2px solid var(--focus);
   outline-offset: -2px;
 }
 .chronicle-settings-section-title {

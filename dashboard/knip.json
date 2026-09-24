@@ -13,7 +13,7 @@
     "scripts/**/*.{ts,js,mjs}"
   ],
   "ignoreDependencies": [
-    "@fontsource/instrument-serif",
+    "@fontsource-variable/inter",
     "@fontsource/literata",
     "electron-builder",
     "non.geist"

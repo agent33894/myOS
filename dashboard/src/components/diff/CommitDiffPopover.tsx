@@ -2,7 +2,6 @@ import { useState, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { GitCommit, FileCode, ArrowRight } from 'lucide-react';
 import { Skeleton } from '../ui/skeleton';
-import { useAccentColor } from '../../hooks/useAccentColor';
 import { invoke } from '../../data/ipc';
 import CommitDiffModal from './CommitDiffModal';
 import type { CommitSummary } from '@shared/ipc/contracts';
@@ -22,7 +21,6 @@ export default function CommitDiffPopover({
   commitMessage,
   projectPath,
 }: CommitDiffPopoverProps) {
-  const { accentText } = useAccentColor();
   const [summary, setSummary] = useState<CommitSummary | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -106,7 +104,7 @@ export default function CommitDiffPopover({
         onClick={handleClick}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        className={`${accentText} hover:underline inline-flex items-center gap-1 font-mono text-sm cursor-pointer active:opacity-75`}
+        className={`text-accent-text hover:underline inline-flex items-center gap-1 font-mono text-sm cursor-pointer active:opacity-75`}
       >
         <GitCommit className="h-4 w-4" />
         {shortHash}

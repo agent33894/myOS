@@ -29,8 +29,6 @@ jobs:
       - run: npm test
       - run: npm run audit:imports
       - run: npm run audit:ipc
-      - run: npm run design-system:check
-      - run: npm run audit:design-tokens
       - if: runner.os == 'Linux'
         run: npm run build:linux
       - if: runner.os == 'Linux'

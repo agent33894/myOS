@@ -33,7 +33,7 @@ The scale uses tokens `--text-*` mapped to Tailwind `text-*`:
 | `xl` | 24 / 32 | Page titles |
 | `2xl` | 32 / 40 | Document title, hero moments |
 
-Use weights 400, 500 (interface emphasis and labels), and 600 (titles). Section labels use `text-sm font-medium text-secondary`, never uppercase.
+Use weights 400, 500 (interface emphasis and labels), and 600 (titles). Section labels use `text-sm font-medium text-text-secondary`, never uppercase.
 
 ## Color
 
@@ -50,7 +50,24 @@ Neutrals are warm but clean, not cream paper. The accent comes from one variable
 | `--border`, `--border-strong` | 1px separators, input borders |
 | `--accent`, `--accent-hover`, `--accent-soft`, `--accent-text`, `--on-accent` | The accent ramp. `--on-accent` is white in both themes |
 | `--success`, `--warning`, `--danger` (+ `-soft`) | Status |
-| `--focus` | Focus ring (the accent at 45%) |
+| `--focus` | Focus ring (the accent at 55%, so the 2px ring stays visible on every surface) |
+
+### Palette and contrast
+
+WCAG 2.x ratios for the minimum across canvas, sidebar, raised, overlay, and sunken (text tokens) and against each status color's own `-soft` tint (status tokens).
+
+| Token | Light | Dark |
+| --- | --- | --- |
+| `--canvas` · `--sidebar` · `--raised` · `--overlay` · `--sunken` | `#FCFBF9` · `#F4F2EF` · `#FFFFFF` · `#FFFFFF` · `#F1EFEB` | `#171716` · `#1E1D1C` · `#252423` · `#2B2A28` · `#121211` |
+| `--text` | `#1D1C1A` (14.8:1) | `#EDECE9` (12.1:1) |
+| `--text-secondary` | `#56534D` (≥6.7:1) | `#ABA7A0` (≥6.0:1) |
+| `--text-tertiary` | `#67635C` (≥5.2:1) | `#9A968F` (≥4.9:1) |
+| `--success` · `--warning` · `--danger` | `#236B40` · `#8A5100` · `#AF2D27` (≥4.7:1 on soft) | `#5DBE85` · `#E0A546` · `#F4857B` (≥4.9:1 on soft) |
+| `--accent` (Iris) | `#5B5BD6`, white text 5.4:1 | same |
+| `--accent-text` | accent 80% toward `--text` (6.0:1) | accent 55% toward `--text` (5.7:1) |
+| `--accent-soft` | accent at 12% | accent at 20% |
+
+The accent fill is the same in both themes so white text on it always reaches 4.5:1. Custom and desktop-theme accents are darkened just enough to keep that true; `--accent-text` does the per-theme lightening.
 
 Project colors come from the `projectSwatches` list in `shared/design-system/accents.ts`. They are decorative (dots, covers) only.
 

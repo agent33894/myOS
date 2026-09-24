@@ -1,0 +1,168 @@
+/*
+ * TEMPORARY — Chronicle compatibility layer.
+ *
+ * Screens that have not been rebuilt on src/ui still reference Chronicle
+ * variables (--ds2-*, --rule-*, --type-*, HSL triplets) and a handful of
+ * global utility classes. This file points every one of them at the new
+ * tokens so those screens pick up the new palette and Inter.
+ *
+ * Do not reference anything in this file from new code. Delete it together
+ * with features/_chronicle.css and the `legacy*` blocks in tailwind.config.mjs
+ * once the feature rebuild lands.
+ *
+ * Removed outright (no alias): --card, --popover, --primary, --muted, --input,
+ * --ring, --sidebar-* and their -foreground HSL triplets; --ed-info-muted
+ * utilities (.ed-bg-success/error/info, .ed-card-*); .hover-accent,
+ * .accent-bg-{text,overlay,divider,tint}, .accent-border-left, .custom-scrollbar
+ * (scrollbars are global now), .font-editorial-display, .scrollbar-active;
+ * Instrument Serif; shared/design-system/tokens.ts (designColorPairs,
+ * stampInksFor, hexToHslTriplet, buildDS2CSSSource) and ds2.generated.css;
+ * PANTONE_ACCENTS (now ACCENTS). The shadcn names `--border` and `--accent`
+ * now hold real colors, not HSL triplets.
+ */
+
+:root {
+  /* Surfaces and ink */
+  --ds2-paper: var(--canvas);
+  --ds2-paper-elevated: var(--raised);
+  --ds2-paper-inset: var(--sunken);
+  --ds2-ink: var(--text);
+  --ds2-ink-secondary: var(--text-secondary);
+  --ds2-ink-tertiary: var(--text-tertiary);
+  --ds2-stamp: var(--accent);
+  --ds2-scrim: var(--scrim);
+
+  /* Rules and elevation */
+  --rule-faint: color-mix(in oklch, var(--text) 6%, transparent);
+  --rule-standard: var(--border);
+  --rule-strong: var(--border-strong);
+  --shadow-lifted: var(--shadow-raised);
+  --shadow-chronicle-lifted: var(--shadow-raised);
+
+  /* Type */
+  --font-display: var(--font-sans);
+  --font-chrome: var(--font-sans);
+  --type-sans: var(--font-sans);
+  --type-display: var(--text-xl);
+  --type-title: var(--text-lg);
+  --type-reading: var(--text-md);
+  --type-chrome: var(--text-base);
+  --type-meta: var(--text-xs);
+  --type-garnish: var(--text-xs);
+  --reading-line-height: 1.625;
+
+  /* Shape, space, motion, layers */
+  --radius: var(--radius-md);
+  --radius-chip: var(--radius-sm);
+  --radius-control: var(--radius-md);
+  --radius-overlay: var(--radius-lg);
+  --space-intra-block: 6px;
+  --space-inter-block: 14px;
+  --space-section: 20px;
+  --space-page-margin: 20px;
+  --timing-fast: var(--dur-fast);
+  --timing-normal: var(--dur-base);
+  --timing-medium: var(--dur-slow);
+  --timing-slow: var(--dur-slow);
+  --timing-emphasis: var(--dur-slow);
+  --easing-standard: var(--ease-out);
+  --easing-smooth: var(--ease-out);
+  --easing-bounce: var(--ease-spring);
+  --z-dropdown: var(--z-popover);
+  --z-tooltip: var(--z-popover);
+  --z-zen-mode: var(--z-sticky);
+  --z-modal: var(--z-dialog);
+
+  /* Accent triplet: ThemeController mirrors the live accent here. */
+  --accent-color: 91, 91, 214;
+  --accent-color-rgb: var(--accent-color);
+  --accent-contrast-text: 255, 255, 255;
+  --accent-foreground: 0 0% 100%;
+}
+
+/* HSL triplets consumed as hsl(var(--x)) by unrebuilt components */
+:root,
+[data-theme='light'] {
+  --background: 40 33.3% 98.2%;
+  --foreground: 40 5.5% 10.8%;
+  --muted-foreground: 40 5.5% 32%;
+  --secondary: 40 17.6% 93.3%;
+  --destructive: 2.6 63.6% 42%;
+  --ed-success: 144.2 50.7% 27.8%;
+  --ed-warning: 35.2 100% 27.1%;
+  --ed-error: 2.6 63.6% 42%;
+  --ed-info: 218.7 68.4% 51.6%;
+}
+
+[data-theme='dark'] {
+  --background: 60 2.2% 8.8%;
+  --foreground: 45 10% 92.2%;
+  --muted-foreground: 38.2 6.1% 64.9%;
+  --secondary: 60 2.9% 6.9%;
+  --destructive: 5 84.6% 72%;
+  --ed-success: 144.7 42.7% 55.5%;
+  --ed-warning: 37 71.3% 57.6%;
+  --ed-error: 5 84.6% 72%;
+  --ed-info: 218.2 66.4% 70.8%;
+}
+
+:root {
+  --ed-success-muted: var(--ed-success) / 0.14;
+  --ed-warning-muted: var(--ed-warning) / 0.14;
+  --ed-error-muted: var(--ed-error) / 0.14;
+  --ed-info-muted: var(--ed-info) / 0.14;
+}
+
+/* Global utility classes still referenced by unrebuilt screens */
+.accent-bg {
+  background-color: var(--accent);
+  color: var(--on-accent);
+}
+.accent-text {
+  color: var(--accent-text);
+}
+.accent-border {
+  border-color: var(--accent);
+}
+.accent-ring {
+  --tw-ring-color: var(--focus);
+}
+.text-on-accent {
+  color: var(--on-accent);
+}
+.ed-accent-muted {
+  background-color: var(--accent-soft);
+}
+.ed-bg-warning {
+  background-color: var(--warning-soft);
+}
+.ed-text-success {
+  color: var(--success);
+}
+.ed-text-warning {
+  color: var(--warning);
+}
+.ed-text-error {
+  color: var(--danger);
+}
+.ed-text-info {
+  color: var(--accent-text);
+}
+.ed-label,
+.chronicle-garnish {
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  line-height: var(--leading-xs);
+  font-weight: 500;
+}
+.chronicle-lifted-surface {
+  border: 1px solid var(--border);
+  background: var(--raised);
+  box-shadow: var(--shadow-raised);
+}
+
+/* Menu entrance used by the old dropdown/context-menu wrappers */
+.menu-item-animate[data-state='open'] {
+  animation: scale-in var(--dur-fast) var(--ease-out);
+}

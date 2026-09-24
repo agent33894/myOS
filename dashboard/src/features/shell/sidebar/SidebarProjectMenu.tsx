@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { statusesFor } from '@shared/spec';
-import { projectSwatches } from '@shared/design-system/tokens';
+import { projectSwatches } from '@shared/design-system/accents';
 import type { ArtifactSummary } from '@shared/types';
 import { ArtifactType } from '@shared/types';
 import { cn } from '../../../lib/utils';

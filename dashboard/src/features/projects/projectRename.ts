@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { toast } from 'sonner';
-import { projectSwatchFor } from '@shared/design-system/tokens';
+import { projectSwatchFor } from '@shared/design-system/accents';
 import type { ArtifactSummary } from '@shared/types';
 import { patchMany, read, save } from '../../data/gateway';
 import { useDataStore } from '../../data/store';

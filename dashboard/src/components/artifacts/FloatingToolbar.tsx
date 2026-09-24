@@ -2,7 +2,6 @@ import { BubbleMenu } from '@tiptap/react/menus';
 import type { Editor } from '@tiptap/react';
 import { Bold, Italic, Underline, Link, Heading1, Heading2, Heading3, Code } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import { useAccentColor } from '../../hooks/useAccentColor';
 import { Button } from '../ui/button'
 
 interface FloatingToolbarProps {
@@ -24,8 +23,6 @@ function FloatingToolbarButton({
   title,
   children,
 }: ToolbarButtonProps) {
-  const { accentText } = useAccentColor();
-
   return (
     <Button
       type="button"
@@ -38,7 +35,7 @@ function FloatingToolbarButton({
         disabled && 'opacity-50 cursor-not-allowed'
       )}
     >
-      <span className={cn('h-4 w-4 block', isActive && accentText)}>
+      <span className={cn('h-4 w-4 block', isActive && 'text-accent-text')}>
         {children}
       </span>
     </Button>

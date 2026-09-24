@@ -8,8 +8,10 @@ import {
 describe('settings persistence', () => {
   it.each([
     ['invalid theme', { themeMode: 'sepia' }, 'themeMode', 'system'],
-    ['unknown accent', { accent: 'vermilion' }, 'accent', 'ultra-violet'],
-    ['legacy accent follow flag', { followSystemAccent: true }, 'accent', 'ultra-violet'],
+    ['unknown accent', { accent: 'vermilion' }, 'accent', 'iris'],
+    ['retired Pantone accent', { accent: 'ultra-violet' }, 'accent', 'iris'],
+    ['invalid reading font', { readingFont: 'comic' }, 'readingFont', 'sans'],
+    ['legacy accent follow flag', { followSystemAccent: true }, 'accent', 'iris'],
   ])('migrates %s to its current default', (_label, input, key, expected) => {
     expect(normalizeStoredSettings(input)[key as keyof ReturnType<typeof getDefaultSettings>]).toBe(expected);
   });
@@ -24,11 +26,11 @@ describe('settings persistence', () => {
     });
   });
 
-  it('accepts Pantone ids, the system accent, and custom hex colors', () => {
-    expect(normalizeStoredSettings({ accent: 'classic-blue' }).accent).toBe('classic-blue');
+  it('accepts curated ids, the system accent, and custom hex colors', () => {
+    expect(normalizeStoredSettings({ accent: 'teal' }).accent).toBe('teal');
     expect(normalizeStoredSettings({ accent: 'system' }).accent).toBe('system');
     expect(normalizeStoredSettings({ accent: '#A1B2C3' }).accent).toBe('#a1b2c3');
-    expect(normalizeStoredSettings({ accent: '#abc' }).accent).toBe('ultra-violet');
+    expect(normalizeStoredSettings({ accent: '#abc' }).accent).toBe('iris');
   });
 
   it('serializes only stored fields', () => {
