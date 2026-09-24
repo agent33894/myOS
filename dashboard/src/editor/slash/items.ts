@@ -1,4 +1,4 @@
-import type { Editor, Range } from '@tiptap/core';
+import type { Editor } from '@tiptap/core';
 import {
   Code2,
   Heading1,
@@ -97,8 +97,4 @@ export function filterItems(query: string): SlashItem[] {
     .filter((entry): entry is { item: SlashItem; order: number; score: number } => entry.score !== null)
     .sort((a, b) => a.score - b.score || a.order - b.order)
     .map((entry) => entry.item);
-}
-
-export function removeQuery(editor: Editor, range: Range) {
-  editor.chain().focus().deleteRange(range).run();
 }
