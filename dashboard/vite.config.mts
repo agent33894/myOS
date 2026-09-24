@@ -65,22 +65,9 @@ export default defineConfig(({ mode }) => {
     define: {
       global: 'globalThis',
     },
+    // No manual chunks: the editor imports Shiki grammars, recharts, and mermaid
+    // lazily, so Rollup already splits each into its own on-demand chunk.
     build: {
-      rollupOptions: {
-        output: {
-          // Shiki is left to Rollup on purpose: its languages and themes are
-          // separate dynamic imports, and grouping them made one 9 MB chunk.
-          manualChunks: (id) => {
-            if (id.includes('mermaid')) {
-              return 'mermaid';
-            }
-            // Group recharts into a separate chunk (no React dependency issues)
-            if (id.includes('recharts') && !id.includes('react')) {
-              return 'recharts';
-            }
-          },
-        },
-      },
       chunkSizeWarningLimit: 2500,
     },
     server: {

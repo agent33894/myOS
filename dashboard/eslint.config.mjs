@@ -29,24 +29,7 @@ const STRICT_SCOPE_FILES = [
 
 const LEGACY_ARBITRARY_COLOR_FILES = [
   'src/components/ErrorBoundary.tsx',
-  'src/components/artifacts/TipTapEditor.tsx',
   'src/components/artifacts/outline/OutlineRail.tsx',
-  'src/components/diff/CommitDiffModal.tsx',
-  'src/components/diff/CommitDiffPopover.tsx',
-  'src/components/diff/DiffFileSection.tsx',
-  'src/components/editor/ChartInsertModal.tsx',
-  'src/components/editor/InlineCalloutBlockEditor.tsx',
-  'src/components/editor/InlineChartBlockEditor.tsx',
-  'src/components/editor/InlineKpiBlockEditor.tsx',
-  'src/components/editor/InlineMermaidBlockEditor.tsx',
-  'src/components/editor/InlineRoadmapBlockEditor.tsx',
-  'src/components/editor/InsertCommandMenu.tsx',
-  'src/components/markdown/CodeBlockWithCopy.tsx',
-  'src/components/markdown/MarkdownCalloutBlock.tsx',
-  'src/components/markdown/MarkdownChartBlock.tsx',
-  'src/components/markdown/MarkdownKpiBlock.tsx',
-  'src/components/markdown/MarkdownMermaidBlock.tsx',
-  'src/components/markdown/MarkdownRoadmapBlock.tsx',
   'src/components/settings/CollapsibleSection.tsx',
   'src/components/settings/GeneralSettings.tsx',
   'src/components/settings/GitActivitySettings.tsx',
@@ -77,6 +60,13 @@ export default tseslint.config(
       'design-tokens/no-legacy-utilities': 'error',
       // enabled in cleanup once features use src/ui
       'design-tokens/no-raw-controls': 'off',
+    },
+  },
+  {
+    // The rebuilt editor already meets the final bar: controls come from src/ui.
+    files: ['src/editor/**/*.{ts,tsx}'],
+    rules: {
+      'design-tokens/no-raw-controls': 'error',
     },
   },
   {

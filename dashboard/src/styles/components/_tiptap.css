@@ -1,16 +1,14 @@
-/* TipTap editor chrome. Typography comes from _prose.css. */
+/* Editor chrome around the prose (_prose.css): caret, placeholders, selection, tables, and rich blocks. */
 
-.tiptap,
-.tiptap .ProseMirror {
+.tiptap {
   outline: none;
   white-space: pre-wrap;
   word-wrap: break-word;
   caret-color: var(--accent);
 }
 
-/* Placeholder (Placeholder extension sets data-placeholder) */
-.tiptap p.is-editor-empty:first-child::before,
-.tiptap[data-placeholder]:empty::before {
+/* Placeholder extension: only the current empty node carries a non-empty data-placeholder. */
+.tiptap .is-empty[data-placeholder]:not([data-placeholder=''])::before {
   height: 0;
   float: left;
   color: var(--text-tertiary);
@@ -47,43 +45,61 @@
   pointer-events: none;
 }
 
-.tiptap table .column-resize-handle {
-  position: absolute;
-  top: 0;
-  right: -2px;
-  bottom: -2px;
-  width: 4px;
-  background: var(--accent);
-  cursor: col-resize;
-  pointer-events: none;
+.tiptap .tableWrapper {
+  overflow-x: auto;
 }
 
-/* Floating formatting toolbar (BubbleMenu) */
-.floating-toolbar {
+/* Find in page */
+.tiptap .find-match {
+  border-radius: 2px;
+  background: var(--warning-soft);
+  box-shadow: 0 0 0 1px var(--warning-soft);
+}
+
+.tiptap .find-match-current {
+  background: color-mix(in oklch, var(--warning) 40%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in oklch, var(--warning) 40%, transparent);
+}
+
+/* Rich blocks: the frame supplies the chrome; charts and diagrams follow tokens. */
+.tiptap .rich-block {
+  white-space: normal;
+}
+
+.chart-block .recharts-cartesian-grid line {
+  stroke: var(--border);
+}
+
+.chart-block .recharts-text {
+  fill: var(--text-tertiary);
+  font-size: var(--text-xs);
+}
+
+.chart-block .recharts-reference-line line:not([stroke]),
+.chart-block .recharts-reference-line line[stroke='undefined'] {
+  stroke: var(--text-tertiary);
+}
+
+.chart-block .recharts-reference-line .recharts-label {
+  fill: var(--text-secondary);
+}
+
+.chart-block .recharts-tooltip-cursor {
+  fill: color-mix(in oklch, var(--text) 5%, transparent);
+  stroke: var(--border-strong);
+}
+
+.chart-block .recharts-surface:focus,
+.chart-block .recharts-wrapper:focus {
+  outline: none;
+}
+
+.mermaid-diagram {
   display: flex;
-  align-items: center;
-  gap: 2px;
-  padding: 4px;
-  border-radius: var(--radius-md);
-  background: var(--overlay);
-  box-shadow: var(--shadow-overlay);
+  justify-content: center;
 }
 
-.floating-toolbar button {
-  padding: 6px;
-  border-radius: var(--radius-sm);
-  color: var(--text-secondary);
-  transition:
-    background-color var(--dur-fast) var(--ease-out),
-    color var(--dur-fast) var(--ease-out);
-}
-
-.floating-toolbar button:hover {
-  background: var(--sunken);
-  color: var(--text);
-}
-
-.floating-toolbar button.is-active {
-  background: var(--accent-soft);
-  color: var(--accent-text);
+.mermaid-diagram svg {
+  max-width: 100%;
+  height: auto;
 }

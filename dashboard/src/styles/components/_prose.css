@@ -1,13 +1,13 @@
 /*
- * Document prose: rendered Markdown and the editor body.
- * Body uses the reading face (Inter, or Literata when <html data-reading-font="serif">);
- * headings always use Inter.
+ * Document prose: the editor body. Body text uses the reading face (Inter, or
+ * Literata when <html data-reading-font="serif">); headings always use Inter.
  *
- * `.prose-editorial` and `.prose-immersive` are the editor's legacy class
- * names; they share these rules until the editor is rebuilt on `.prose`.
+ * Every rule is `:where(.prose) <element>:not(:where(.not-prose *))`: element
+ * specificity, so Tailwind utilities always win, and nothing leaks into rich
+ * blocks (which are marked .not-prose).
  */
 
-:where(.prose, .prose-editorial, .prose-immersive) {
+.prose {
   color: var(--text);
   font-family: var(--font-reading);
   font-size: var(--text-md);
@@ -15,88 +15,78 @@
   overflow-wrap: break-word;
 }
 
-:where(.prose-immersive) {
-  max-width: 70ch;
-  margin: 0 auto;
-  padding: 3rem;
-}
-
 /* Headings */
-:where(.prose, .prose-editorial, .prose-immersive) :is(h1, h2, h3, h4, h5, h6) {
+:where(.prose) :is(h1, h2, h3, h4, h5, h6):not(:where(.not-prose *)) {
   margin: 1.75em 0 0.5em;
   color: var(--text);
   font-family: var(--font-sans);
   font-weight: 600;
 }
 
-:where(.prose, .prose-editorial, .prose-immersive) h1 {
+:where(.prose) h1:not(:where(.not-prose *)) {
   font-size: 1.75rem;
   line-height: 2.25rem;
   letter-spacing: -0.02em;
 }
 
-:where(.prose, .prose-editorial, .prose-immersive) h2 {
+:where(.prose) h2:not(:where(.not-prose *)) {
   font-size: 1.375rem;
   line-height: 1.875rem;
   letter-spacing: -0.015em;
 }
 
-:where(.prose, .prose-editorial, .prose-immersive) h3 {
+:where(.prose) h3:not(:where(.not-prose *)) {
   font-size: 1.125rem;
   line-height: 1.625rem;
   letter-spacing: -0.01em;
 }
 
-:where(.prose, .prose-editorial, .prose-immersive) :is(h4, h5, h6) {
+:where(.prose) :is(h4, h5, h6):not(:where(.not-prose *)) {
   font-size: 1rem;
   line-height: 1.5rem;
 }
 
-:where(.prose, .prose-editorial, .prose-immersive) > :first-child {
+.prose > :first-child {
   margin-top: 0;
 }
 
 /* Blocks */
-:where(.prose, .prose-editorial, .prose-immersive) p {
+:where(.prose) p:not(:where(.not-prose *)) {
   margin: 0 0 0.75em;
 }
 
-:where(.prose, .prose-editorial, .prose-immersive) :is(ul, ol) {
+:where(.prose) :is(ul, ol):not(:where(.not-prose *)) {
   margin: 0.5em 0 0.875em;
   padding-left: 1.5em;
 }
 
-:where(.prose, .prose-editorial, .prose-immersive) ul {
+:where(.prose) ul:not(:where(.not-prose *)) {
   list-style: disc;
 }
 
-:where(.prose, .prose-editorial, .prose-immersive) ol {
+:where(.prose) ol:not(:where(.not-prose *)) {
   list-style: decimal;
 }
 
-:where(.prose, .prose-editorial, .prose-immersive) li {
+:where(.prose) li:not(:where(.not-prose *)) {
   margin: 0.25em 0;
   padding-left: 0.125em;
 }
 
-:where(.prose, .prose-editorial, .prose-immersive) li > p {
+:where(.prose) li > p:not(:where(.not-prose *)) {
   margin: 0;
 }
 
-:where(.prose, .prose-editorial, .prose-immersive) li::marker {
+:where(.prose) li:not(:where(.not-prose *))::marker {
   color: var(--text-tertiary);
 }
 
-:where(.prose, .prose-editorial, .prose-immersive) :is(strong, b) {
+:where(.prose) :is(strong, b):not(:where(.not-prose *)) {
   font-weight: 600;
 }
 
-:where(.prose, .prose-editorial, .prose-immersive) em {
-  font-style: italic;
-}
-
-:where(.prose, .prose-editorial, .prose-immersive) a,
-.tiptap .chronicle-wikilink {
+:where(.prose) a:not(:where(.not-prose *)),
+.prose .wiki-link {
   color: var(--accent-text);
   text-decoration: underline;
   text-decoration-color: color-mix(in oklch, var(--accent-text) 40%, transparent);
@@ -106,36 +96,37 @@
   transition: text-decoration-color var(--dur-fast) var(--ease-out);
 }
 
-:where(.prose, .prose-editorial, .prose-immersive) a:hover {
+:where(.prose) a:not(:where(.not-prose *)):hover,
+.prose .wiki-link:hover {
   text-decoration-color: currentColor;
 }
 
-.tiptap .chronicle-wikilink {
+.prose .wiki-link {
   text-decoration-style: dotted;
 }
 
-:where(.prose, .prose-editorial, .prose-immersive) blockquote {
+:where(.prose) blockquote:not(:where(.not-prose *)) {
   margin: 1.25em 0;
   padding: 0.125em 0 0.125em 1em;
   border-left: 3px solid var(--accent-soft);
   color: var(--text-secondary);
 }
 
-:where(.prose, .prose-editorial, .prose-immersive) hr {
+:where(.prose) hr:not(:where(.not-prose *)) {
   height: 1px;
   margin: 2em 0;
   border: 0;
   background: var(--border);
 }
 
-:where(.prose, .prose-editorial, .prose-immersive) img {
+:where(.prose) img:not(:where(.not-prose *)) {
   max-width: 100%;
   height: auto;
   border-radius: var(--radius-md);
 }
 
-/* Code */
-:where(.prose, .prose-editorial, .prose-immersive) code {
+/* Code: Geist Mono on a sunken well. Syntax colors derive from tokens. */
+:where(.prose) code:not(:where(.not-prose *)) {
   padding: 0.125em 0.375em;
   border-radius: var(--radius-sm);
   background: var(--sunken);
@@ -143,24 +134,44 @@
   font-size: 0.875em;
 }
 
-:where(.prose, .prose-editorial, .prose-immersive) pre {
-  margin: 1.25em 0;
+:where(.prose) pre:not(:where(.not-prose *)) {
+  margin: 0;
   padding: 1em 1.25em;
   overflow-x: auto;
   border-radius: var(--radius-md);
   background: var(--sunken);
   font-size: var(--text-sm);
   line-height: 1.6;
+  white-space: pre;
 }
 
-:where(.prose, .prose-editorial, .prose-immersive) pre code {
+:where(.prose) pre code:not(:where(.not-prose *)) {
   padding: 0;
   background: transparent;
   font-size: inherit;
+  white-space: pre;
+}
+
+.prose .code-block {
+  margin: 1.25em 0;
+}
+
+/* Shiki's css-variables theme (editor code blocks and commit diffs). */
+:root {
+  --code-foreground: var(--text);
+  --code-token-keyword: var(--accent-text);
+  --code-token-function: color-mix(in oklch, var(--accent-text) 55%, var(--text));
+  --code-token-string: var(--success);
+  --code-token-string-expression: var(--success);
+  --code-token-constant: var(--warning);
+  --code-token-comment: var(--text-tertiary);
+  --code-token-parameter: var(--text-secondary);
+  --code-token-punctuation: var(--text-secondary);
+  --code-token-link: var(--accent-text);
 }
 
 /* Tables */
-:where(.prose, .prose-editorial, .prose-immersive) table {
+:where(.prose) table:not(:where(.not-prose *)) {
   width: 100%;
   margin: 1.25em 0;
   border-collapse: collapse;
@@ -168,48 +179,54 @@
   line-height: var(--leading-base);
 }
 
-:where(.prose, .prose-editorial, .prose-immersive) :is(th, td) {
+:where(.prose) :is(th, td):not(:where(.not-prose *)) {
   padding: 0.5em 0.75em;
   border: 1px solid var(--border);
   text-align: left;
   vertical-align: top;
 }
 
-:where(.prose, .prose-editorial, .prose-immersive) th {
+:where(.prose) th:not(:where(.not-prose *)) {
   background: var(--sunken);
   font-family: var(--font-sans);
   font-weight: 500;
 }
 
-/* Task lists: round checkboxes matching the app's task circle. */
-:where(.prose, .prose-editorial, .prose-immersive) ul[data-type='taskList'] {
+:where(.prose) :is(th, td) > p:not(:where(.not-prose *)) {
+  margin: 0;
+}
+
+/* Task lists: round checkboxes matching the app's task circle (ui/Checkbox). */
+:where(.prose) ul[data-type='taskList']:not(:where(.not-prose *)) {
   padding-left: 0;
   list-style: none;
 }
 
-:where(.prose, .prose-editorial, .prose-immersive) ul[data-type='taskList'] li {
+:where(.prose) ul[data-type='taskList'] li:not(:where(.not-prose *)) {
   display: flex;
   align-items: flex-start;
-  gap: 0.625em;
+  gap: 0.5em;
   padding-left: 0;
 }
 
-:where(.prose, .prose-editorial, .prose-immersive) ul[data-type='taskList'] li > label {
-  display: flex;
-  flex: none;
+.prose ul[data-type='taskList'] li > label {
+  display: grid;
+  width: 1.5rem;
   height: 1.625em;
-  align-items: center;
+  flex: none;
+  place-items: center;
+  user-select: none;
 }
 
-:where(.prose, .prose-editorial, .prose-immersive) ul[data-type='taskList'] li > div {
+.prose ul[data-type='taskList'] li > div {
   min-width: 0;
   flex: 1;
 }
 
-:where(.prose, .prose-editorial, .prose-immersive) ul[data-type='taskList'] input[type='checkbox'] {
+.prose ul[data-type='taskList'] input[type='checkbox'] {
   display: grid;
-  width: 18px;
-  height: 18px;
+  width: 1.125rem;
+  height: 1.125rem;
   margin: 0;
   place-content: center;
   border: 1.5px solid var(--text-tertiary);
@@ -222,25 +239,24 @@
     border-color var(--dur-fast) var(--ease-out);
 }
 
-:where(.prose, .prose-editorial, .prose-immersive) ul[data-type='taskList'] input[type='checkbox']:hover {
+.prose ul[data-type='taskList'] input[type='checkbox']:hover {
   border-color: var(--accent);
 }
 
-:where(.prose, .prose-editorial, .prose-immersive) ul[data-type='taskList'] input[type='checkbox']:checked {
+.prose ul[data-type='taskList'] input[type='checkbox']:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.prose ul[data-type='taskList'] input[type='checkbox']:checked {
   border-color: var(--accent);
   background: var(--accent)
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='white' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 8.5l2.5 2.5L12 5.5'/%3E%3C/svg%3E")
     center / 12px no-repeat;
-  animation: check-pop var(--dur-slow) var(--ease-spring);
 }
 
-:where(.prose, .prose-editorial, .prose-immersive) ul[data-type='taskList'] li[data-checked='true'] > div {
+.prose ul[data-type='taskList'] li[data-checked='true'] > div {
   color: var(--text-tertiary);
   text-decoration: line-through;
   text-decoration-color: var(--text-tertiary);
-}
-
-/* Syntax-highlighted code rendered by ShikiCode */
-.shiki-wrapper code {
-  font-family: var(--font-mono);
 }
