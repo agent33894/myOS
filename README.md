@@ -4,7 +4,7 @@ myOS is a local-first Markdown editor and project workspace for macOS and Linux 
 
 No account is required. myOS has no hosted sync service, telemetry, advertising, or bundled model provider. Your files stay in the folder you choose and remain usable in any text editor.
 
-![myOS first-run onboarding](docs/images/myos-onboarding.png)
+![myOS Today: overdue, today, and upcoming tasks with their projects and tags, beside the sidebar of places and projects](docs/images/myos-today.png)
 
 ## What it does
 
