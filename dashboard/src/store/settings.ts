@@ -16,6 +16,7 @@ interface SettingsState extends StoredSettings {
   setAccent: (accent: string) => void;
   setAccentPreview: (accent: string | null) => void;
   setReadingFont: (font: ReadingFont) => void;
+  setRemindDueToday: (value: boolean) => void;
   setHasCompletedOnboarding: (value: boolean) => void;
   resetAllSettings: () => void;
 }
@@ -38,6 +39,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
     },
     setAccentPreview: (accentPreview) => set({ accentPreview }),
     setReadingFont: (readingFont) => persist({ readingFont }),
+    setRemindDueToday: (remindDueToday) => persist({ remindDueToday }),
     setHasCompletedOnboarding: (hasCompletedOnboarding) => persist({ hasCompletedOnboarding }),
     resetAllSettings: () => {
       const defaults = {

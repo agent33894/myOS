@@ -1,192 +1,241 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { projectSwatchFor } from '@shared/design-system/accents';
+import { ArrowLeft, CircleDot, Eye, EyeOff, FileText, Palette, Plus } from 'lucide-react';
+import { projectSwatches } from '@shared/design-system/accents';
+import { ArtifactType } from '@shared/types';
+import { paths, toNoteUrl } from '../../app/navigation';
+import { patch } from '../../data/gateway';
 import type { ProjectWithStats } from '../../data/projects';
-import type { ArtifactSummary } from '@shared/types';
-import { cn } from '../../lib/utils';
-import { toArtifactNavigationUrl } from '../artifact-route/routeContract';
-import { ProjectInspector } from './ProjectInspector';
-import { ProjectItemPage } from './ProjectItemPage';
-import { ProjectMaterialsSection } from './ProjectMaterialsSection';
-import { ProjectOverview } from './ProjectOverview';
-import { ProjectTasksSection } from './ProjectTasksSection';
-import { ProjectWorkbenchBar } from './ProjectWorkbenchBar';
-import { resolveWorkbenchItem } from './workbenchItem';
+import { useDocument } from '../../data/useDocument';
+import { Editor } from '../../editor';
+import {
+  Button,
+  Icon,
+  ListRow,
+  LoadingState,
+  Menu,
+  MenuCheckboxItem,
+  MenuContent,
+  MenuItem,
+  MenuTrigger,
+  Property,
+  PropertyRow,
+  SectionHeader,
+  Textarea,
+} from '../../ui';
+import { createNote } from '../notes/createNote';
+import { documentBody } from '../page/documentBody';
+import { ConflictBanner } from '../page/ConflictBanner';
+import { kindLabel } from '../page/kinds';
+import { PageMenu } from '../page/PageMenu';
+import { SaveState } from '../page/SaveState';
+import { TagEditor } from '../page/TagEditor';
+import { useNewParam } from '../page/useNewParam';
+import { attempt } from '../tasks/actions';
+import { AddTask } from '../tasks/AddTask';
+import { relativeTime } from '../tasks/dates';
+import { ProjectDot } from '../tasks/ProjectDot';
+import { projectColor } from '../tasks/projectRefs';
+import { TaskRow } from '../tasks/TaskRow';
+import { PROJECT_STATUSES, statusLabel } from './projectStatus';
+import { useProjectRename } from './projectRename';
+import { useProjectStatus } from './projectMutations';
 
-const RAIL_KEY = 'chronicle-project-rail-collapsed';
-// Below this workbench width (quarter/third tiles) the rail and inspector
-// become drawers over the page, one at a time, closed by default.
-const NARROW_WORKBENCH_PX = 900;
-const INSPECTOR_KEY = 'chronicle-project-inspector-collapsed';
+function ProjectTitle({ project, autoFocus }: { project: ProjectWithStats; autoFocus: boolean }) {
+  const { rename } = useProjectRename();
+  const [title, setTitle] = useState(project.title);
+  const ref = useRef<HTMLTextAreaElement>(null);
+  useEffect(() => setTitle(project.title), [project.title]);
+  useEffect(() => {
+    if (!autoFocus) return;
+    ref.current?.focus();
+    ref.current?.select();
+  }, [autoFocus]);
 
-interface ProjectHomeProps {
-  project: ProjectWithStats;
-  itemPath: string | null;
-  onSelectItem: (filePath: string) => void;
-  onCloseItem: () => void;
+  const commit = () => {
+    if (title.trim() && title.trim() !== project.title) void rename(project, title);
+    else setTitle(project.title);
+  };
+  return (
+    <Textarea
+      ref={ref}
+      autosize
+      variant="ghost"
+      value={title}
+      onChange={(event) => setTitle(event.target.value.replace(/\n/g, ' '))}
+      onBlur={commit}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          event.currentTarget.blur();
+        }
+      }}
+      placeholder="Project name"
+      aria-label="Project name"
+      className="px-0 text-2xl font-semibold hover:bg-transparent focus-visible:bg-transparent"
+    />
+  );
 }
 
-/**
- * The project as a workbench: a breadcrumb bar carries the hierarchy, the
- * collapsible index rail carries tasks and materials, the center is a page
- * (the project's own overview, or any owned artifact as a Living Page), and
- * the collapsible inspector carries every property. Opening an artifact
- * never leaves this surface. The overview's Brief stays unkeyed on purpose:
- * its controller reloads on artifact change without remounting the editor.
- */
-export function ProjectHome({ project, itemPath, onSelectItem, onCloseItem }: ProjectHomeProps) {
+function ProjectProperties({ project }: { project: ProjectWithStats }) {
+  const { setProjectStatus } = useProjectStatus();
+  const color = projectColor(project);
+  const swatch = projectSwatches.find((option) => option.hex === color);
+  return (
+    <PropertyRow className="-ml-2">
+      <Menu>
+        <MenuTrigger asChild>
+          <Property icon={CircleDot} label="Status">
+            {statusLabel(project.status)}
+          </Property>
+        </MenuTrigger>
+        <MenuContent align="start">
+          {PROJECT_STATUSES.map((option) => (
+            <MenuCheckboxItem
+              key={option.value}
+              checked={project.status === option.value}
+              onCheckedChange={() => setProjectStatus(project.id, option.value)}
+            >
+              {option.label}
+            </MenuCheckboxItem>
+          ))}
+        </MenuContent>
+      </Menu>
+      <Menu>
+        <MenuTrigger asChild>
+          <Property icon={Palette} label="Color">
+            <span className="flex items-center gap-1.5">
+              <ProjectDot color={color} />
+              {swatch?.displayName}
+            </span>
+          </Property>
+        </MenuTrigger>
+        <MenuContent align="start" className="max-h-80 overflow-y-auto">
+          {projectSwatches.map((option) => (
+            <MenuItem
+              key={option.name}
+              onSelect={() => attempt(patch(project.filePath, { swatch: option.name }, `Recolor “${project.title}”`))}
+            >
+              <span className="flex items-center gap-2">
+                <ProjectDot color={option.hex} className="size-3" />
+                {option.displayName}
+              </span>
+            </MenuItem>
+          ))}
+        </MenuContent>
+      </Menu>
+      <TagEditor item={project} />
+      {project.todoProgress ? (
+        <span className="px-2 text-sm text-text-tertiary">
+          {project.todoProgress.done} of {project.todoProgress.total} done
+        </span>
+      ) : null}
+    </PropertyRow>
+  );
+}
+
+/** A project's page: name and properties, a free description, then its tasks and notes. */
+export function ProjectHome({ project }: { project: ProjectWithStats }) {
   const navigate = useNavigate();
-  const projectInk = projectSwatchFor(project.title, project.swatch).hex;
-  const centerRef = useRef<HTMLDivElement>(null);
-  const workbenchRef = useRef<HTMLElement>(null);
-  const [isNarrow, setIsNarrow] = useState(false);
-  const [narrowPanel, setNarrowPanel] = useState<'rail' | 'inspector' | null>(null);
-
-  useEffect(() => {
-    const element = workbenchRef.current;
-    if (!element) return;
-    const observer = new ResizeObserver(([entry]) => {
-      setIsNarrow(entry.contentRect.width < NARROW_WORKBENCH_PX);
-    });
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, []);
-
-  const [railCollapsed, setRailCollapsed] = useState(
-    () => localStorage.getItem(RAIL_KEY) === '1',
-  );
-  const [inspectorCollapsed, setInspectorCollapsed] = useState(
-    () => localStorage.getItem(INSPECTOR_KEY) === '1',
-  );
-  useEffect(() => {
-    localStorage.setItem(RAIL_KEY, railCollapsed ? '1' : '0');
-  }, [railCollapsed]);
-  useEffect(() => {
-    localStorage.setItem(INSPECTOR_KEY, inspectorCollapsed ? '1' : '0');
-  }, [inspectorCollapsed]);
-
-  // Narrow tiles keep their own drawer state so the wide layout preference survives.
-  const isRailHidden = isNarrow ? narrowPanel !== 'rail' : railCollapsed;
-  const isInspectorHidden = isNarrow ? narrowPanel !== 'inspector' : inspectorCollapsed;
-  const toggleRail = useCallback(() => {
-    if (isNarrow) setNarrowPanel((panel) => (panel === 'rail' ? null : 'rail'));
-    else setRailCollapsed((prev) => !prev);
-  }, [isNarrow]);
-  const toggleInspector = useCallback(() => {
-    if (isNarrow) setNarrowPanel((panel) => (panel === 'inspector' ? null : 'inspector'));
-    else setInspectorCollapsed((prev) => !prev);
-  }, [isNarrow]);
-
-  const item = useMemo(() => resolveWorkbenchItem(project, itemPath), [project, itemPath]);
-  const selectedPath = item?.filePath ?? null;
-
-  // Anything the project owns opens in place; anything outside it (a related
-  // artifact from another corner of the vault) opens in the Library pane, or
-  // in its own workbench when it is another project.
-  const openArtifact = useCallback(
-    (artifact: ArtifactSummary) => {
-      setNarrowPanel(null);
-      if (resolveWorkbenchItem(project, artifact.filePath)) {
-        onSelectItem(artifact.filePath);
-      } else {
-        navigate(toArtifactNavigationUrl(artifact));
-      }
-    },
-    [project, onSelectItem, navigate],
-  );
-
-  // Each page gets a fresh top: on project switch and on item switch.
-  useEffect(() => {
-    centerRef.current?.scrollTo({ top: 0 });
-  }, [project.id, item?.id]);
-
-  // `[` and `]` toggle the panels — Docs-style rail, OmniFocus-style inspector.
-  useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.metaKey || event.ctrlKey || event.altKey) return;
-      const target = event.target as HTMLElement | null;
-      if (
-        target &&
-        (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)
-      ) {
-        return;
-      }
-      if (event.key === '[') toggleRail();
-      if (event.key === ']') toggleInspector();
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [toggleRail, toggleInspector]);
+  const doc = useDocument(project.filePath);
+  const isNew = useNewParam(project.filePath);
+  const [showDone, setShowDone] = useState(false);
+  const body = documentBody(doc);
+  const notes = project.materials.filter((item) => item.type !== ArtifactType.INBOX);
+  const tasks = showDone ? [...project.openTodos, ...project.doneTodos] : project.openTodos;
+  const newNote = () => void createNote({ project: project.id }).then((url) => url && navigate(url));
 
   return (
-    <article
-      ref={workbenchRef}
-      className={cn('chronicle-project-workbench', isNarrow && 'is-narrow')}
-      style={{ '--project-ink': projectInk } as React.CSSProperties}
-    >
-      <ProjectWorkbenchBar
-        project={project}
-        item={item}
-        railCollapsed={isRailHidden}
-        inspectorCollapsed={isInspectorHidden}
-        onToggleRail={toggleRail}
-        onToggleInspector={toggleInspector}
-        onCloseItem={onCloseItem}
-      />
-      <div className="chronicle-workbench-body">
-        <nav
-          className={cn(
-            'chronicle-workbench-rail custom-scrollbar',
-            isRailHidden && 'is-collapsed',
-          )}
-          aria-label="Project index"
-          aria-hidden={isRailHidden}
-        >
-          <div className="chronicle-rail-inner">
-            <button
-              className={cn('chronicle-rail-overview', !item && 'is-selected')}
-              onClick={onCloseItem}
-            >
-              <span className="chronicle-project-dot" aria-hidden="true" />
-              Overview
-            </button>
-            <ProjectTasksSection
-              key={project.id}
-              project={project}
-              onOpen={openArtifact}
-              selectedPath={selectedPath}
-            />
-            <ProjectMaterialsSection
-              project={project}
-              onOpen={openArtifact}
-              selectedPath={selectedPath}
-            />
+    <div className="h-full overflow-y-auto bg-canvas">
+      <div className="mx-auto flex max-w-3xl flex-col px-6 pb-24 pt-4">
+        <div className="flex h-10 items-center gap-1">
+          <Button variant="ghost" size="sm" leadingIcon={ArrowLeft} onClick={() => navigate(paths.projects)}>
+            Projects
+          </Button>
+          <div className="ml-auto flex items-center gap-2">
+            <SaveState saving={doc.saving} dirty={doc.dirty} saved={doc.lastSaved !== null} />
+            <PageMenu item={project} flush={doc.saveNow} onDeleted={() => navigate(paths.projects)} />
           </div>
-        </nav>
-        <div
-          ref={centerRef}
-          className="chronicle-workbench-center custom-scrollbar"
-          onPointerDown={isNarrow && narrowPanel ? () => setNarrowPanel(null) : undefined}
-        >
-          {item ? (
-            <ProjectItemPage artifact={item} onDeleted={onCloseItem} />
+        </div>
+
+        {doc.conflict ? (
+          <div className="mt-4">
+            <ConflictBanner onLoadTheirs={doc.loadTheirs} onKeepMine={() => void doc.keepMine()} />
+          </div>
+        ) : null}
+
+        <div className="mt-8 flex items-center gap-3">
+          <ProjectDot color={projectColor(project)} className="size-4" />
+          <ProjectTitle project={project} autoFocus={isNew} />
+        </div>
+        <div className="mt-3">
+          <ProjectProperties project={project} />
+        </div>
+
+        <div className="mt-6">
+          {doc.content !== null ? (
+            <Editor
+              value={body.value}
+              onChange={body.onChange}
+              artifact={{ id: project.id, filePath: project.filePath, type: project.type }}
+              placeholder="What is this project about?"
+            />
           ) : (
-            <ProjectOverview project={project} onOpenItem={openArtifact} />
+            <LoadingState rows={2} />
           )}
         </div>
-        <aside
-          className={cn(
-            'chronicle-workbench-inspector custom-scrollbar',
-            isInspectorHidden && 'is-collapsed',
-          )}
-          aria-label="Properties"
-          aria-hidden={isInspectorHidden}
-        >
-          <div className="chronicle-inspector-inner">
-            <ProjectInspector project={project} item={item} onOpenArtifact={openArtifact} />
+
+        <section aria-label="Tasks" className="-mx-2 mt-10">
+          <SectionHeader
+            title="Tasks"
+            count={project.openTodos.length}
+            className="px-2"
+            action={
+              project.doneTodos.length > 0 ? (
+                <Button variant="ghost" size="sm" leadingIcon={showDone ? EyeOff : Eye} onClick={() => setShowDone((shown) => !shown)}>
+                  {showDone ? 'Hide completed' : `Show completed (${project.doneTodos.length})`}
+                </Button>
+              ) : null
+            }
+          />
+          <div role="list" className="flex flex-col">
+            {tasks.map((task) => (
+              <div role="listitem" key={task.filePath}>
+                <TaskRow task={task} hideProject />
+              </div>
+            ))}
           </div>
-        </aside>
+          <AddTask project={project.id} />
+        </section>
+
+        <section aria-label="Notes" className="-mx-2 mt-10">
+          <SectionHeader
+            title="Notes"
+            count={notes.length}
+            className="px-2"
+            action={
+              <Button variant="ghost" size="sm" leadingIcon={Plus} onClick={newNote}>
+                New note
+              </Button>
+            }
+          />
+          {notes.length === 0 ? (
+            <p className="px-2 py-2 text-sm text-text-tertiary">Meeting notes, ideas, and references for this project live here.</p>
+          ) : (
+            notes.map((note) => (
+              <ListRow
+                key={note.filePath}
+                onActivate={() => navigate(toNoteUrl(note.filePath))}
+                leading={<Icon icon={FileText} className="text-text-tertiary" />}
+                meta={[kindLabel(note.type), relativeTime(note.updated)].filter(Boolean).join(' · ')}
+                className="px-2"
+              >
+                {note.title}
+              </ListRow>
+            ))
+          )}
+        </section>
       </div>
-    </article>
+    </div>
   );
 }

@@ -1,109 +1,102 @@
 import { useMemo, useState } from 'react';
+import { ChevronDown, ChevronRight, FolderKanban, Plus } from 'lucide-react';
 import type { ProjectWithStats } from '../../data/projects';
-import { useListNavigation } from '../../hooks/useListNavigation';
-import type { ProjectGroups, ProjectSort } from './projectGroups';
-import { ProjectCreateRow } from './ProjectCreateRow';
-import { ProjectIndexRow, type ProjectIndexGroup } from './ProjectIndexRow';
-import { ProjectSortMenu } from './ProjectSortMenu';
+import { useDataStatus, useProjects } from '../../data/selectors';
+import { Button, EmptyState, LoadingState, PageHeader, SectionHeader } from '../../ui';
+import { useCreate } from '../shell/useCreate';
+import { ProjectCard } from './ProjectCard';
+import { projectGroup, type ProjectGroup } from './projectStatus';
 
-interface ProjectIndexProps {
-  groups: ProjectGroups;
-  sort: ProjectSort;
-  onSortChange: (sort: ProjectSort) => void;
-  showClosed: boolean;
-  onToggleClosed: () => void;
-  onOpen: (projectId: string) => void;
-  createFocusToken?: number;
+const byRecent = (a: ProjectWithStats, b: ProjectWithStats) =>
+  (b.lastActivity ?? '').localeCompare(a.lastActivity ?? '') || a.title.localeCompare(b.title);
+
+function CardGrid({ projects }: { projects: ProjectWithStats[] }) {
+  return (
+    <div className="grid grid-cols-1 gap-3 px-2 lg:grid-cols-2">
+      {projects.map((project) => (
+        <ProjectCard key={project.filePath} project={project} />
+      ))}
+    </div>
+  );
 }
 
-/**
- * The full-page roster shown at /projects with no selection. j/k walk a local
- * highlight, Enter or click opens that project's home.
- */
-export function ProjectIndex({
-  groups,
-  sort,
-  onSortChange,
-  showClosed,
-  onToggleClosed,
-  onOpen,
-  createFocusToken,
-}: ProjectIndexProps) {
-  const [highlightedId, setHighlightedId] = useState<string | null>(null);
+/** Every project as a card: active first, then someday, with finished ones folded away. */
+export function ProjectIndex() {
+  const projects = useProjects();
+  const status = useDataStatus();
+  const { newProject } = useCreate();
+  const [showClosed, setShowClosed] = useState(false);
 
-  const navigable = useMemo(
-    () => [...groups.active, ...groups.dormant, ...(showClosed ? groups.closed : [])],
-    [groups, showClosed],
-  );
-
-  useListNavigation({
-    items: navigable,
-    selectedId: highlightedId,
-    getId: (project) => project.id,
-    onSelect: (project) => setHighlightedId(project.id),
-    onActivate: (project) => onOpen(project.id),
-    onEscape: () => setHighlightedId(null),
-  });
-
-  const renderRows = (projects: ProjectWithStats[], group: ProjectIndexGroup) =>
-    projects.map((project) => (
-      <ProjectIndexRow
-        key={project.id}
-        project={project}
-        group={group}
-        isHighlighted={highlightedId === project.id}
-        onOpen={onOpen}
-      />
-    ));
-
-  const total = groups.active.length + groups.dormant.length + groups.closed.length;
-  const masthead = [
-    `${groups.active.length} active`,
-    groups.dormant.length ? `${groups.dormant.length} dormant` : null,
-    groups.closed.length ? `${groups.closed.length} closed` : null,
-  ]
-    .filter(Boolean)
-    .join(' · ');
+  const groups = useMemo(() => {
+    const grouped: Record<ProjectGroup, ProjectWithStats[]> = { active: [], someday: [], closed: [] };
+    for (const project of [...projects].sort(byRecent)) grouped[projectGroup(project.status)].push(project);
+    return grouped;
+  }, [projects]);
 
   return (
-    <div className="chronicle-project-index custom-scrollbar">
-      <header className="chronicle-index-masthead">
-        <h1>Projects</h1>
-        <p className="chronicle-detail-meta">{total === 0 ? 'Nothing on the books' : masthead}</p>
-      </header>
-      <section aria-labelledby="projects-heading">
-        <div className="chronicle-list-heading chronicle-list-heading-row">
-          <span id="projects-heading">Active · {groups.active.length}</span>
-          <ProjectSortMenu sort={sort} onSortChange={onSortChange} />
-        </div>
-        {groups.active.length === 0 ? <p className="chronicle-empty-row">No active projects.</p> : null}
-        {renderRows(groups.active, 'active')}
-        <ProjectCreateRow onCreated={onOpen} focusToken={createFocusToken} />
-      </section>
-      {groups.dormant.length > 0 ? (
-        <section aria-labelledby="dormant-heading">
-          <div className="chronicle-list-heading">
-            <span id="dormant-heading">Dormant · {groups.dormant.length}</span>
-          </div>
-          {renderRows(groups.dormant, 'dormant')}
-        </section>
-      ) : null}
-      {groups.closed.length > 0 ? (
-        <section aria-labelledby="closed-heading">
-          <div className="chronicle-list-heading chronicle-list-heading-row">
-            <span id="closed-heading">Closed · {groups.closed.length}</span>
-            <button
-              className="chronicle-heading-action"
-              aria-expanded={showClosed}
-              aria-controls="closed-projects"
-              onClick={onToggleClosed}
-            >
-              {showClosed ? 'Hide' : 'Show'}
-            </button>
-          </div>
-          {showClosed ? <div id="closed-projects">{renderRows(groups.closed, 'closed')}</div> : null}
-        </section>
-      ) : null}
+    <div className="h-full overflow-y-auto bg-canvas">
+      <div className="mx-auto flex max-w-4xl flex-col gap-8 px-6 pb-24 pt-12">
+        <PageHeader
+          title="Projects"
+          subtitle={groups.active.length ? `${groups.active.length} active` : undefined}
+          actions={
+            <Button variant="primary" leadingIcon={Plus} onClick={newProject}>
+              New project
+            </Button>
+          }
+          className="px-2"
+        />
+        {status !== 'ready' ? (
+          <LoadingState rows={4} />
+        ) : projects.length === 0 ? (
+          <EmptyState
+            icon={FolderKanban}
+            title="No projects yet."
+            description="A project gathers the tasks and notes for one goal."
+            action={
+              <Button variant="primary" leadingIcon={Plus} onClick={newProject}>
+                New project
+              </Button>
+            }
+          />
+        ) : (
+          <>
+            {groups.active.length > 0 ? (
+              <section aria-label="Active" className="flex flex-col gap-2">
+                <SectionHeader title="Active" count={groups.active.length} className="px-2" />
+                <CardGrid projects={groups.active} />
+              </section>
+            ) : null}
+            {groups.someday.length > 0 ? (
+              <section aria-label="Someday" className="flex flex-col gap-2">
+                <SectionHeader title="Someday" count={groups.someday.length} className="px-2" />
+                <CardGrid projects={groups.someday} />
+              </section>
+            ) : null}
+            {groups.closed.length > 0 ? (
+              <section aria-label="Completed" className="flex flex-col gap-2">
+                <SectionHeader
+                  title="Completed"
+                  count={groups.closed.length}
+                  className="px-2"
+                  action={
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      leadingIcon={showClosed ? ChevronDown : ChevronRight}
+                      aria-expanded={showClosed}
+                      onClick={() => setShowClosed((shown) => !shown)}
+                    >
+                      {showClosed ? 'Hide' : 'Show'}
+                    </Button>
+                  }
+                />
+                {showClosed ? <CardGrid projects={groups.closed} /> : null}
+              </section>
+            ) : null}
+          </>
+        )}
+      </div>
     </div>
   );
 }

@@ -22,10 +22,6 @@ async function applyEdit(item: ArtifactSummary, changes: ArtifactPatch, descript
   }
 }
 
-export function useArtifactEdit() {
-  return { applyEdit };
-}
-
 /**
  * Shared project lifecycle change: status pill, sidebar menu, delete dialog.
  * Marking a project done stamps completedDate; leaving done clears it.
