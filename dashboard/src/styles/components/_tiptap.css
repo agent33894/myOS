@@ -1,6 +1,8 @@
 /* Editor chrome around the prose (_prose.css): caret, placeholders, selection, tables, and rich blocks. */
 
 .tiptap {
+  /* Height follows content; one line keeps the empty placeholder visible. */
+  min-height: 1.625em;
   outline: none;
   white-space: pre-wrap;
   word-wrap: break-word;

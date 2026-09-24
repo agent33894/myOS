@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import { Editor } from '@tiptap/core';
 import { MarkdownManager } from '@tiptap/markdown';
 import { createExtensions } from './extensions';
-import { needsSync } from './useMarkdownSync';
+import { connectMarkdown, needsSync } from './useMarkdownSync';
 
 const markdown = new MarkdownManager({ extensions: createExtensions({ placeholder: '' }) });
 const roundTrip = (source: string) => markdown.serialize(markdown.parse(source));
@@ -72,6 +73,44 @@ describe('markdown round trip', () => {
     const once = roundTrip(source);
     expect(once).toContain('| a    | 1     |');
     expect(roundTrip(once)).toBe(once);
+  });
+});
+
+describe('editor binding', () => {
+  // Files that the editor normalizes on load: a trailing newline, a doc
+  // ending in a table or code block (TipTap appends a paragraph), tables.
+  const FILES = ['Plain note\n', '| a | b |\n| --- | --- |\n| 1 | 2 |', `Intro\n\n${CHART}\n`, '```ts\nconst x = 1;\n```'];
+
+  const open = (value: string) => {
+    const editor = new Editor({ element: null, extensions: createExtensions({ placeholder: '' }), content: value, contentType: 'markdown' });
+    // Headless editors skip plugins until mounted; add them as mounting would.
+    editor.view.updateState(editor.state.reconfigure({ plugins: editor.extensionManager.plugins }));
+    const changes: string[] = [];
+    const sync = connectMarkdown(editor, { value, documentKey: 'a' }, (markdown) => changes.push(markdown));
+    return { editor, changes, sync };
+  };
+
+  it('never reports a change for a value it was given', () => {
+    for (const file of FILES) {
+      const { editor, changes, sync } = open(file);
+      editor.commands.setTextSelection(1);
+      sync.receive(file, 'a');
+      sync.receive(FILES[0], 'b');
+      sync.receive('Reloaded from disk', 'b');
+      editor.commands.selectAll();
+      expect(changes).toEqual([]);
+      editor.destroy();
+    }
+  });
+
+  it('reports each real edit once', () => {
+    const { editor, changes, sync } = open('Hello');
+    editor.view.dispatch(editor.state.tr.insertText(' world', editor.state.doc.content.size - 1));
+    expect(changes).toEqual(['Hello world']);
+    sync.receive('Hello world', 'a'); // the host echoes it back
+    expect(editor.getMarkdown()).toBe('Hello world');
+    expect(changes).toHaveLength(1);
+    editor.destroy();
   });
 });
 

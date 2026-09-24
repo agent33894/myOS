@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react';
-import type { Editor } from '@tiptap/react';
+import { useEffect, useRef, useState } from 'react';
+import type { Editor } from '@tiptap/core';
 import { EditorState, TextSelection } from '@tiptap/pm/state';
 
 /**
@@ -8,8 +8,17 @@ import { EditorState, TextSelection } from '@tiptap/pm/state';
  * serialization may differ slightly from the file (already equivalent);
  * neither should reset the document under the caret.
  */
-export function needsSync(lastEmitted: string | null, current: () => string, next: string): boolean {
-  return lastEmitted !== next && current() !== next;
+export function needsSync(lastSeen: string | null, current: () => string, next: string): boolean {
+  return lastSeen !== next && current() !== next;
+}
+
+/**
+ * Let plugins normalize the document (trailing paragraph, table fixes) in a
+ * transaction that is neither an edit nor an undo step, so opening a page
+ * never reports a change.
+ */
+function settle(editor: Editor) {
+  editor.view.dispatch(editor.state.tr.setMeta('preventUpdate', true).setMeta('addToHistory', false));
 }
 
 /**
@@ -21,39 +30,55 @@ function load(editor: Editor, markdown: string) {
   const parsed = editor.schema.nodeFromJSON(editor.markdown!.parse(markdown));
   // An empty file parses to a doc with no blocks; the schema needs one.
   const doc = parsed.type.createAndFill(parsed.attrs, parsed.content) ?? parsed;
-  const state = EditorState.create({ doc, plugins: editor.state.plugins, selection: TextSelection.atStart(doc) });
-  editor.view.updateState(state);
-  // Let listeners (menus, find bar) observe the new document.
-  editor.view.dispatch(editor.state.tr.setMeta('addToHistory', false));
+  editor.view.updateState(EditorState.create({ doc, plugins: editor.state.plugins, selection: TextSelection.atStart(doc) }));
+  settle(editor);
 }
 
 /**
- * Keeps the editor and the Markdown `value` in step: emits edits through
- * `onChange`, and loads `value` when it changes from outside (another
- * document, a reload from disk) without echoing it back.
+ * Two-way binding between an editor and a Markdown value. `onChange` fires
+ * only for edits: never for a loaded value, its normalization, or an edit
+ * that serializes to the Markdown already seen.
  */
+export function connectMarkdown(editor: Editor, initial: { value: string; documentKey: string }, onChange: (markdown: string) => void) {
+  let lastSeen = initial.value;
+  let documentKey = initial.documentKey;
+  settle(editor);
+
+  const emit = () => {
+    const markdown = editor.getMarkdown();
+    if (markdown === lastSeen) return;
+    lastSeen = markdown;
+    onChange(markdown);
+  };
+  editor.on('update', emit);
+
+  return {
+    /** A value from the host: another document, a reload from disk, or the echo of our own change. */
+    receive(value: string, key: string) {
+      const switched = key !== documentKey;
+      if (switched || needsSync(lastSeen, () => editor.getMarkdown(), value)) load(editor, value);
+      documentKey = key;
+      lastSeen = value;
+    },
+    disconnect: () => {
+      editor.off('update', emit);
+    },
+  };
+}
+
+/** React binding for `connectMarkdown`. */
 export function useMarkdownSync(editor: Editor, value: string, documentKey: string, onChange: (markdown: string) => void) {
-  const lastEmitted = useRef<string | null>(value);
-  const loadedKey = useRef(documentKey);
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
+  const [sync, setSync] = useState<ReturnType<typeof connectMarkdown> | null>(null);
 
   useEffect(() => {
-    const emit = () => {
-      const markdown = editor.getMarkdown();
-      lastEmitted.current = markdown;
-      onChangeRef.current(markdown);
-    };
-    editor.on('update', emit);
-    return () => {
-      editor.off('update', emit);
-    };
+    const connection = connectMarkdown(editor, { value, documentKey }, (markdown) => onChangeRef.current(markdown));
+    setSync(connection);
+    return connection.disconnect;
   }, [editor]);
 
   useEffect(() => {
-    const switched = loadedKey.current !== documentKey;
-    if (switched || needsSync(lastEmitted.current, () => editor.getMarkdown(), value)) load(editor, value);
-    loadedKey.current = documentKey;
-    lastEmitted.current = value;
-  }, [editor, value, documentKey]);
+    sync?.receive(value, documentKey);
+  }, [sync, value, documentKey]);
 }

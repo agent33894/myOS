@@ -96,13 +96,13 @@ export function Editor({ value, onChange, artifact, placeholder = 'Start writing
   };
 
   return (
-    <div className="relative flex min-h-60 flex-col">
+    <div className="relative flex flex-col">
       {find ? (
         <div className="sticky top-2 z-sticky flex h-0 justify-end overflow-visible">
           <FindBar key={find.opened} editor={editor} initialQuery={find.query} onClose={() => setFind(null)} />
         </div>
       ) : null}
-      <EditorContent editor={editor} className="flex-1 cursor-text pb-24" onMouseDown={continueAtEnd} />
+      <EditorContent editor={editor} className="flex-1 cursor-text" onMouseDown={continueAtEnd} />
       <BubbleToolbar editor={editor} linkRequest={{ open: linkOpen, setOpen: setLinkOpen }} />
       <SlashMenu editor={editor} keyHandler={slashKeys} onAttachFile={attachFile} />
       {links.layer}
