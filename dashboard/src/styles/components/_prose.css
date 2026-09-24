@@ -15,6 +15,11 @@
   overflow-wrap: break-word;
 }
 
+/* Rich blocks are interface, not reading text: they keep the interface face under a serif body. */
+.prose .not-prose {
+  font-family: var(--font-sans);
+}
+
 /* Headings */
 :where(.prose) :is(h1, h2, h3, h4, h5, h6):not(:where(.not-prose *)) {
   margin: 1.75em 0 0.5em;
@@ -48,6 +53,11 @@
 
 .prose > :first-child {
   margin-top: 0;
+}
+
+/* The page, not the last block, decides the space below the body. */
+.prose > :last-child {
+  margin-bottom: 0;
 }
 
 /* Blocks */
@@ -170,26 +180,53 @@
   --code-token-link: var(--accent-text);
 }
 
-/* Tables */
+/* Tables: a rounded card of cells. Separate borders so the corners can round. */
 :where(.prose) table:not(:where(.not-prose *)) {
   width: 100%;
   margin: 1.25em 0;
-  border-collapse: collapse;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  border-collapse: separate;
+  border-spacing: 0;
   font-size: var(--text-base);
   line-height: var(--leading-base);
 }
 
 :where(.prose) :is(th, td):not(:where(.not-prose *)) {
   padding: 0.5em 0.75em;
-  border: 1px solid var(--border);
+  border: 0 solid var(--border);
   text-align: left;
   vertical-align: top;
+}
+
+:where(.prose) tr:not(:last-child) > :is(th, td):not(:where(.not-prose *)) {
+  border-bottom-width: 1px;
+}
+
+:where(.prose) :is(th, td):not(:last-child):not(:where(.not-prose *)) {
+  border-right-width: 1px;
 }
 
 :where(.prose) th:not(:where(.not-prose *)) {
   background: var(--sunken);
   font-family: var(--font-sans);
   font-weight: 500;
+}
+
+:where(.prose) tr:first-child > :first-child:not(:where(.not-prose *)) {
+  border-top-left-radius: calc(var(--radius-md) - 1px);
+}
+
+:where(.prose) tr:first-child > :last-child:not(:where(.not-prose *)) {
+  border-top-right-radius: calc(var(--radius-md) - 1px);
+}
+
+:where(.prose) tr:last-child > :first-child:not(:where(.not-prose *)) {
+  border-bottom-left-radius: calc(var(--radius-md) - 1px);
+}
+
+:where(.prose) tr:last-child > :last-child:not(:where(.not-prose *)) {
+  border-bottom-right-radius: calc(var(--radius-md) - 1px);
 }
 
 :where(.prose) :is(th, td) > p:not(:where(.not-prose *)) {

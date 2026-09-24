@@ -89,20 +89,30 @@ interface BlockFrameProps {
 
 /**
  * Shared chrome for every rich block: focusable frame with a visible ring, a
- * hover toolbar (Preview/Edit and a ⋯ menu), keyboard handling, and an error
- * boundary. Keys: Enter edits, Escape returns to preview, Backspace/Delete
+ * toolbar (Preview/Edit and a ⋯ menu) that floats just above the block on
+ * hover and becomes the header of the edit panel, keyboard handling, and an
+ * error boundary. Keys: Enter edits, Escape returns to preview, Backspace/Delete
  * removes, arrows leave the block.
  */
 export function BlockFrame(props: BlockFrameProps) {
   const { label, mode, onModeChange, editable, selected, focusForm } = props;
   const frame = useRef<HTMLDivElement>(null);
 
+  // Wait a tick so the form has rendered.
+  const focusFirstField = () =>
+    window.setTimeout(() => frame.current?.querySelector<HTMLElement>('input, textarea')?.focus(), 0);
+
   useEffect(() => {
     if (!focusForm) return;
-    // Wait a tick so the form has rendered.
-    const timer = window.setTimeout(() => frame.current?.querySelector<HTMLElement>('input, textarea')?.focus(), 0);
+    const timer = focusFirstField();
     return () => window.clearTimeout(timer);
   }, []);
+
+  /** Enter or double-click: open the form with the caret in its first field, ready to type. */
+  const startEditing = () => {
+    onModeChange('edit');
+    focusFirstField();
+  };
 
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (event.key === 'Escape' && mode !== 'preview') {
@@ -113,7 +123,7 @@ export function BlockFrame(props: BlockFrameProps) {
     }
     if (event.target !== event.currentTarget || event.metaKey || event.ctrlKey || event.altKey) return;
     const actions: Record<string, (() => void) | undefined> = {
-      Enter: editable ? () => onModeChange('edit') : undefined,
+      Enter: editable ? startEditing : undefined,
       Backspace: editable ? props.onDelete : undefined,
       Delete: editable ? props.onDelete : undefined,
       ArrowUp: () => props.onLeave('before'),
@@ -132,9 +142,10 @@ export function BlockFrame(props: BlockFrameProps) {
   };
 
   const editSource = () => onModeChange('source');
+  const editing = mode !== 'preview';
 
   return (
-    <NodeViewWrapper className="rich-block not-prose group/block relative my-6" contentEditable={false}>
+    <NodeViewWrapper className="rich-block not-prose group/block relative mb-6 mt-8" contentEditable={false}>
       <div
         ref={frame}
         tabIndex={0}
@@ -142,21 +153,33 @@ export function BlockFrame(props: BlockFrameProps) {
         aria-label={`${label} block`}
         onKeyDown={onKeyDown}
         onBlur={onBlur}
-        onDoubleClick={() => editable && mode === 'preview' && onModeChange('edit')}
+        onDoubleClick={() => editable && mode === 'preview' && startEditing()}
         className={cn(
           'rounded-lg outline-none ring-offset-4 transition-shadow duration-fast ease-out focus-visible:ring-2 focus-visible:ring-focus',
           selected && 'ring-2 ring-focus',
-          mode !== 'preview' && '-mx-4 bg-sunken p-4',
+          editing && '-mx-4 bg-sunken p-4',
         )}
       >
         {editable ? (
+          // One element in both modes, so focus stays put when switching. In preview it floats just
+          // above the block instead of covering it (the ::after bridges the gap so hover holds); while
+          // editing it is the panel's header.
           <div
             className={cn(
-              'absolute -top-4 right-0 z-10 flex items-center gap-1 rounded-md bg-overlay p-1 shadow-overlay transition-opacity duration-fast',
-              mode === 'preview' && !selected && 'pointer-events-none opacity-0 group-focus-within/block:pointer-events-auto group-focus-within/block:opacity-100 group-hover/block:pointer-events-auto group-hover/block:opacity-100',
+              'flex items-center gap-1',
+              editing
+                ? 'mb-4'
+                : 'absolute bottom-full right-0 z-10 mb-2 rounded-md bg-overlay p-0.5 shadow-overlay transition-opacity duration-fast after:absolute after:inset-x-0 after:top-full after:h-2',
+              !editing &&
+                !selected &&
+                'pointer-events-none opacity-0 group-focus-within/block:pointer-events-auto group-focus-within/block:opacity-100 group-hover/block:pointer-events-auto group-hover/block:opacity-100',
             )}
           >
-            <span className="px-2 text-xs font-medium text-text-secondary">{label}</span>
+            <span
+              className={cn('font-medium', editing ? 'mr-auto text-sm text-text' : 'px-2 text-xs text-text-secondary')}
+            >
+              {label}
+            </span>
             <SegmentedControl
               aria-label={`${label} view`}
               size="sm"
