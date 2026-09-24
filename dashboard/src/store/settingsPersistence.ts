@@ -1,9 +1,12 @@
+import { DEFAULT_ACCENT_ID, isHexColor, pantoneAccentById, SYSTEM_ACCENT } from '@shared/design-system/accents';
+
 export type ThemeMode = 'system' | 'light' | 'dark';
 
 export interface StoredSettings {
   themeMode: ThemeMode;
   showCompletedTasks: boolean;
-  followSystemAccent: boolean;
+  /** A Pantone accent id, `system` to follow the desktop theme, or a custom `#rrggbb`. */
+  accent: string;
   enableAutoSave: boolean;
   hasCompletedOnboarding: boolean;
 }
@@ -12,10 +15,15 @@ const STORAGE_KEY = 'myos-settings';
 const DEFAULT_SETTINGS: StoredSettings = {
   themeMode: 'system',
   showCompletedTasks: false,
-  followSystemAccent: true,
+  accent: DEFAULT_ACCENT_ID,
   enableAutoSave: true,
   hasCompletedOnboarding: false,
 };
+
+export function isAccentChoice(value: unknown): value is string {
+  if (typeof value !== 'string') return false;
+  return value === SYSTEM_ACCENT || isHexColor(value) || pantoneAccentById(value) !== undefined;
+}
 
 function isOneOf<T extends string>(value: unknown, options: readonly T[]): value is T {
   return typeof value === 'string' && options.includes(value as T);
@@ -37,9 +45,9 @@ export function normalizeStoredSettings(value: unknown): StoredSettings {
     showCompletedTasks: typeof parsed.showCompletedTasks === 'boolean'
       ? parsed.showCompletedTasks
       : defaults.showCompletedTasks,
-    followSystemAccent: typeof parsed.followSystemAccent === 'boolean'
-      ? parsed.followSystemAccent
-      : defaults.followSystemAccent,
+    // Legacy `followSystemAccent` is intentionally dropped: its default was on
+    // for everyone, so it never expressed a choice.
+    accent: isAccentChoice(parsed.accent) ? parsed.accent.toLowerCase() : defaults.accent,
     enableAutoSave: typeof parsed.enableAutoSave === 'boolean'
       ? parsed.enableAutoSave
       : defaults.enableAutoSave,
@@ -73,7 +81,7 @@ export function getStorableSettings(state: StoredSettings): StoredSettings {
   return {
     themeMode: state.themeMode,
     showCompletedTasks: state.showCompletedTasks,
-    followSystemAccent: state.followSystemAccent,
+    accent: state.accent,
     enableAutoSave: state.enableAutoSave,
     hasCompletedOnboarding: state.hasCompletedOnboarding,
   };

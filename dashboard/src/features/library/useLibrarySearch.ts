@@ -7,6 +7,7 @@ import {
   mastheadCounts,
   typeMatchCounts,
   type IndexSection,
+  type LibraryGrouping,
   type LibrarySort,
   type SectionId,
 } from './libraryIndex';
@@ -15,7 +16,7 @@ import { buildSearchIndex, searchArtifacts, type SearchScope } from './librarySe
 const TYPE_VALUES = new Set<string>(Object.values(ArtifactType));
 
 /**
- * Binds The Index's state to URL params — q, scope, types, all, sort — and
+ * Binds The Index's state to URL params — q, scope, types, all, sort, group — and
  * derives sections, chip counts, and masthead counts. The query is deferred so
  * typing never blocks on a full-text pass.
  */
@@ -25,7 +26,9 @@ export function useLibrarySearch(artifacts: Artifact[]) {
   const query = params.get('q') ?? '';
   const scopeParam = params.get('scope');
   const scope: SearchScope = scopeParam === 'titles' || scopeParam === 'tags' ? scopeParam : 'full';
-  const sort: LibrarySort = params.get('sort') === 'created' ? 'created' : 'updated';
+  // Defaults (newest created, ungrouped) stay out of the URL.
+  const sort: LibrarySort = params.get('sort') === 'updated' ? 'updated' : 'created';
+  const grouping: LibraryGrouping = params.get('group') === 'type' ? 'type' : 'none';
   const activeTypes = useMemo(() => {
     const listed = (params.get('types') ?? '').split(',').filter((value) => TYPE_VALUES.has(value));
     return new Set(listed as ArtifactType[]);
@@ -49,8 +52,8 @@ export function useLibrarySearch(artifacts: Artifact[]) {
   );
 
   const sections: IndexSection[] = useMemo(
-    () => buildSections(hits, artifacts, activeTypes, expanded, sort),
-    [hits, artifacts, activeTypes, expanded, sort],
+    () => buildSections(hits, artifacts, { types: activeTypes, expanded, sort, grouping }),
+    [hits, artifacts, activeTypes, expanded, sort, grouping],
   );
   const chipCounts = useMemo(() => typeMatchCounts(hits, artifacts), [hits, artifacts]);
   const masthead = useMemo(() => mastheadCounts(artifacts), [artifacts]);
@@ -95,8 +98,17 @@ export function useLibrarySearch(artifacts: Artifact[]) {
   const setSort = useCallback(
     (value: LibrarySort) =>
       update((next) => {
-        if (value === 'updated') next.delete('sort');
+        if (value === 'created') next.delete('sort');
         else next.set('sort', value);
+      }),
+    [update],
+  );
+  const setGrouping = useCallback(
+    (value: LibraryGrouping) =>
+      update((next) => {
+        next.delete('all');
+        if (value === 'none') next.delete('group');
+        else next.set('group', value);
       }),
     [update],
   );
@@ -105,6 +117,7 @@ export function useLibrarySearch(artifacts: Artifact[]) {
     query,
     scope,
     sort,
+    grouping,
     activeTypes,
     isSearching: hits !== null,
     sections,
@@ -115,6 +128,7 @@ export function useLibrarySearch(artifacts: Artifact[]) {
     setQuery,
     setScope,
     setSort,
+    setGrouping,
     toggleType,
     toggleExpanded,
   };

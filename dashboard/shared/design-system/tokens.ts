@@ -6,8 +6,10 @@
  *   - ink text pairs must reach >= 4.5:1 against their paper
  *   - tertiary ink must reach >= 3.0:1
  *   - project swatches (decorative: covers/dots/rings/washes) >= 2.0:1
+ *   - stamp (accent) inks >= 4.5:1 against paper and elevated paper
  * The emitter below produces deterministic CSS for the desktop app.
  */
+import { DEFAULT_ACCENT_ID, fitInkToPapers, pantoneAccentById } from './accents';
 
 interface DS2ColorPair {
   /** Stable lowerCamelCase token identifier. */
@@ -39,11 +41,20 @@ const inkText: DS2ColorPair[] = [
   { name: 'inkTertiary', displayName: 'Ink · Tertiary', light: '#8A857A', dark: '#787369' },
 ];
 
+/** Contrast-fit any accent source into the light/dark stamp inks it paints with. */
+export function stampInksFor(hex: string): { light: string; dark: string } {
+  return {
+    light: fitInkToPapers(hex, [papers[0].light, papers[1].light]),
+    dark: fitInkToPapers(hex, [papers[0].dark, papers[1].dark]),
+  };
+}
+
+const defaultAccent = pantoneAccentById(DEFAULT_ACCENT_ID)!;
+
 const stamp: DS2ColorPair = {
   name: 'stamp',
-  displayName: 'Stamp (Vermilion)',
-  light: '#A63A22',
-  dark: '#E06A4B',
+  displayName: `Stamp (${defaultAccent.name})`,
+  ...stampInksFor(defaultAccent.hex),
 };
 
 export const stampColorPair = stamp;

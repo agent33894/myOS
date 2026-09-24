@@ -19,12 +19,18 @@ export const INDEX_TYPE_ORDER: ArtifactType[] = [
 
 export const SECTION_CAP = 5;
 
-export type SectionId = ArtifactType | 'archive';
+export type SectionId = ArtifactType | 'all' | 'archive';
 export type LibrarySort = 'created' | 'updated';
+export type LibraryGrouping = 'none' | 'type';
 
 export const LIBRARY_SORT_LABELS: Record<LibrarySort, string> = {
-  updated: 'Recently updated',
   created: 'Recently created',
+  updated: 'Recently updated',
+};
+
+export const LIBRARY_GROUPING_LABELS: Record<LibraryGrouping, string> = {
+  none: 'No grouping',
+  type: 'Group by type',
 };
 
 export interface IndexSection {
@@ -43,6 +49,7 @@ const UNCOUNTABLE = new Set<ArtifactType>([
 ]);
 
 function sectionLabel(id: SectionId): string {
+  if (id === 'all') return 'Artifacts';
   if (id === 'archive') return 'Archive';
   const base = id.replace('-', ' ');
   const label = UNCOUNTABLE.has(id) ? base : `${base}s`;
@@ -63,47 +70,60 @@ const byHitDateDesc = (sort: LibrarySort) => (a: SearchHit, b: SearchHit) =>
 const asHits = (artifacts: Artifact[]): SearchHit[] =>
   artifacts.map((artifact) => ({ artifact, score: 0 }));
 
-function toSection(id: SectionId, rows: SearchHit[], expanded: boolean): IndexSection {
-  const capped = !expanded && rows.length > SECTION_CAP;
+function toSection(id: SectionId, rows: SearchHit[], expanded: boolean, cap: number | null = SECTION_CAP): IndexSection {
+  const capped = cap !== null && !expanded && rows.length > cap;
   return {
     id,
     label: sectionLabel(id),
     total: rows.length,
-    rows: capped ? rows.slice(0, SECTION_CAP) : rows,
+    rows: capped ? rows.slice(0, cap ?? undefined) : rows,
     capped,
   };
 }
 
+interface SectionOptions {
+  /** Chip selection; empty means every type. */
+  types?: Set<ArtifactType>;
+  /** Section whose row cap is lifted. */
+  expanded?: SectionId | null;
+  sort?: LibrarySort;
+  grouping?: LibraryGrouping;
+}
+
 /**
- * Group date-sorted hits (or all non-archived artifacts in browse mode) into
- * type sections. `types` filters sections to a chip selection; `expanded`
- * lifts the row cap for one section. Browse mode appends a trailing Archive
- * section so archived artifacts keep a surface.
+ * Arrange date-sorted hits (or all non-archived artifacts in browse mode) into
+ * sections. Ungrouped (the default) yields one uncapped list, newest first;
+ * grouping by type yields capped sections in editorial order. Browse mode
+ * without a chip filter appends a capped Archive section so archived
+ * artifacts keep a surface.
  */
 export function buildSections(
   hits: SearchHit[] | null,
   artifacts: Artifact[],
-  types: Set<ArtifactType>,
-  expanded: SectionId | null,
-  sort: LibrarySort = 'updated',
+  { types = new Set(), expanded = null, sort = 'created', grouping = 'none' }: SectionOptions = {},
 ): IndexSection[] {
   const browsing = hits === null;
+  const inTypes = (type: ArtifactType) => types.size === 0 || types.has(type);
   const source = browsing
     ? asHits(artifacts.filter((artifact) => artifact.status !== 'archived').sort(byArtifactDateDesc(sort)))
     : hits.filter(({ artifact }) => artifact.status !== 'archived').sort(byHitDateDesc(sort));
 
-  const byType = new Map<ArtifactType, SearchHit[]>();
-  for (const hit of source) {
-    const list = byType.get(hit.artifact.type) ?? [];
-    list.push(hit);
-    byType.set(hit.artifact.type, list);
-  }
-
   const sections: IndexSection[] = [];
-  for (const type of INDEX_TYPE_ORDER) {
-    if (types.size > 0 && !types.has(type)) continue;
-    const rows = byType.get(type);
-    if (rows?.length) sections.push(toSection(type, rows, expanded === type));
+  if (grouping === 'none') {
+    const rows = source.filter(({ artifact }) => inTypes(artifact.type));
+    if (rows.length) sections.push(toSection('all', rows, true, null));
+  } else {
+    const byType = new Map<ArtifactType, SearchHit[]>();
+    for (const hit of source) {
+      const list = byType.get(hit.artifact.type) ?? [];
+      list.push(hit);
+      byType.set(hit.artifact.type, list);
+    }
+    for (const type of INDEX_TYPE_ORDER) {
+      if (!inTypes(type)) continue;
+      const rows = byType.get(type);
+      if (rows?.length) sections.push(toSection(type, rows, expanded === type));
+    }
   }
 
   if (browsing && types.size === 0) {

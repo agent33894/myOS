@@ -48,7 +48,7 @@ export function TodayOverview({
       <p className="chronicle-today-dateline">{stats}</p>
       <p className="chronicle-today-scope">
         Today is the work queue and activity record.{" "}
-        <Link to="/library?sort=created">Browse every artifact by created date →</Link>
+        <Link to="/library">Browse every artifact by created date →</Link>
       </p>
       <section aria-labelledby="today-overview-in-play">
         <div className="chronicle-section-label" id="today-overview-in-play">

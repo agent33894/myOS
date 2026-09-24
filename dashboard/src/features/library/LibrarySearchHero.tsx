@@ -3,7 +3,7 @@ import { Search } from 'lucide-react';
 import type { ArtifactType } from '../../types/artifacts';
 import { SegmentedControl } from '../../components/ui/SegmentedControl';
 import { cn } from '../../lib/utils';
-import { INDEX_TYPE_ORDER, type LibrarySort } from './libraryIndex';
+import { INDEX_TYPE_ORDER, type LibraryGrouping, type LibrarySort } from './libraryIndex';
 import { LibrarySortMenu } from './LibrarySortMenu';
 import type { SearchScope } from './librarySearch';
 
@@ -11,12 +11,14 @@ interface LibrarySearchHeroProps {
   query: string;
   scope: SearchScope;
   sort: LibrarySort;
+  grouping: LibraryGrouping;
   chipCounts: Map<ArtifactType, number>;
   activeTypes: Set<ArtifactType>;
   inputRef: RefObject<HTMLInputElement>;
   onQueryChange: (query: string) => void;
   onScopeChange: (scope: SearchScope) => void;
   onSortChange: (sort: LibrarySort) => void;
+  onGroupingChange: (grouping: LibraryGrouping) => void;
   onToggleType: (type: ArtifactType) => void;
 }
 
@@ -25,12 +27,14 @@ export function LibrarySearchHero({
   query,
   scope,
   sort,
+  grouping,
   chipCounts,
   activeTypes,
   inputRef,
   onQueryChange,
   onScopeChange,
   onSortChange,
+  onGroupingChange,
   onToggleType,
 }: LibrarySearchHeroProps) {
   return (
@@ -88,7 +92,12 @@ export function LibrarySearchHero({
             );
           })}
         </div>
-        <LibrarySortMenu sort={sort} onSortChange={onSortChange} />
+        <LibrarySortMenu
+          sort={sort}
+          grouping={grouping}
+          onSortChange={onSortChange}
+          onGroupingChange={onGroupingChange}
+        />
       </div>
     </>
   );

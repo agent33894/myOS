@@ -12,8 +12,8 @@ import { LibraryTypeSection } from './LibraryTypeSection';
 import { useLibrarySearch } from './useLibrarySearch';
 
 /**
- * The Index: /library as a search-first, full-width index. Sections group the
- * vault by type; ?artifact=<filePath> renders the Living Page full-width and
+ * The Index: /library as a search-first, full-width index. The vault lists
+ * newest-created first, optionally grouped by type; ?artifact=<filePath> renders the Living Page full-width and
  * Escape (or the back affordance) returns to the index with state intact.
  * Projects never open as bare Markdown here: they route to their workbench.
  */
@@ -108,12 +108,14 @@ export default function LibraryPage() {
         query={search.query}
         scope={search.scope}
         sort={search.sort}
+        grouping={search.grouping}
         chipCounts={search.chipCounts}
         activeTypes={search.activeTypes}
         inputRef={searchInputRef}
         onQueryChange={search.setQuery}
         onScopeChange={search.setScope}
         onSortChange={search.setSort}
+        onGroupingChange={search.setGrouping}
         onToggleType={search.toggleType}
       />
       {search.sections.length === 0 ? (
@@ -128,6 +130,7 @@ export default function LibraryPage() {
             highlightedId={highlightedId}
             projectInks={search.projectInks}
             sort={search.sort}
+            showType={search.grouping === 'none'}
             onOpen={openArtifact}
             onToggleExpand={search.toggleExpanded}
           />

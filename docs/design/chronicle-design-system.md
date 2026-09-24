@@ -13,7 +13,7 @@ Fonts are bundled so the packaged app retains its identity offline.
 ## Color and material
 
 - Use opaque paper surfaces and ink text in both themes.
-- Vermilion is the restrained stamp accent, not a general background color.
+- The stamp is one restrained, user-chosen accent ink (default Pantone 18-3838 Ultra Violet), not a general background color. Accents come from the curated Pantone set in `dashboard/shared/design-system/accents.ts`, the Omarchy theme, or a custom pick, and are contrast-fitted to at least 4.5:1 on paper in each theme.
 - Use semantic tokens; never add raw component colors that bypass the audit.
 - No decorative gradients, glow, glass, or cold generic shadows.
 - Use only the lifted-paper and floating-control shadow recipes.

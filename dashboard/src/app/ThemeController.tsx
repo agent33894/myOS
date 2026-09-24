@@ -1,52 +1,59 @@
-import { useEffect } from 'react';
-import { designColorPairs, hexToHslTriplet, hexToRgbTriplet } from '@shared/design-system/tokens';
+import { useEffect, useState } from 'react';
+import { DEFAULT_ACCENT_ID, resolveAccent } from '@shared/design-system/accents';
+import { designColorPairs, hexToHslTriplet, hexToRgbTriplet, stampInksFor } from '@shared/design-system/tokens';
 import { useSettingsStore } from '../store/settings';
 import { useSystemAccent } from '../hooks/useSystemAccent';
 
 // The stamp ink and every variable derived from it in ds2.generated.css.
-const ACCENT_PROPERTIES = ['--ds2-stamp', '--accent-color', '--accent', '--ring', '--accent-foreground', '--accent-contrast-text'];
-
-function relativeLuminance(hex: string): number {
-  const channels = hexToRgbTriplet(hex).split(', ').map((channel) => {
-    const value = Number(channel) / 255;
-    return value <= 0.03928 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
-  });
-  return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
-}
+const ACCENT_PROPERTIES = [
+  '--ds2-stamp',
+  '--accent-color',
+  '--accent',
+  '--ring',
+  '--sidebar-ring',
+  '--accent-foreground',
+  '--accent-contrast-text',
+];
 
 export function ThemeController() {
   const mode = useSettingsStore((state) => state.themeMode);
-  const followSystemAccent = useSettingsStore((state) => state.followSystemAccent);
+  const accent = useSettingsStore((state) => state.accentPreview ?? state.accent);
   const systemAccent = useSystemAccent();
+  const [isDark, setIsDark] = useState(() => document.documentElement.dataset.theme === 'dark');
 
   useEffect(() => {
     const media = window.matchMedia('(prefers-color-scheme: dark)');
     const apply = () => {
       const dark = mode === 'dark' || (mode === 'system' && media.matches);
       document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+      setIsDark(dark);
     };
     apply();
     media.addEventListener('change', apply);
     return () => media.removeEventListener('change', apply);
   }, [mode]);
 
-  // Swap the one stamp ink for the desktop theme's accent. Inline properties
-  // on <html> win over both theme blocks, so light/dark keep working.
+  // Swap the one stamp ink for the chosen accent, contrast-fitted to the
+  // active paper. Inline properties on <html> win over both theme blocks; the
+  // default accent simply defers to the generated CSS.
   useEffect(() => {
     const style = document.documentElement.style;
-    if (!followSystemAccent || !systemAccent) {
+    const resolved = resolveAccent(accent, systemAccent);
+    if (resolved.choice === DEFAULT_ACCENT_ID) {
       ACCENT_PROPERTIES.forEach((property) => style.removeProperty(property));
       return;
     }
-    const paper = designColorPairs.paper;
-    const contrast = relativeLuminance(systemAccent) > 0.4 ? paper.dark : paper.light;
-    style.setProperty('--ds2-stamp', systemAccent);
-    style.setProperty('--accent-color', hexToRgbTriplet(systemAccent));
-    style.setProperty('--accent', hexToHslTriplet(systemAccent));
-    style.setProperty('--ring', hexToHslTriplet(systemAccent));
-    style.setProperty('--accent-foreground', hexToHslTriplet(contrast));
-    style.setProperty('--accent-contrast-text', hexToRgbTriplet(contrast));
-  }, [followSystemAccent, systemAccent]);
+    const ink = stampInksFor(resolved.hex)[isDark ? 'dark' : 'light'];
+    // Fitted inks clear 4.5:1 against paper, so paper reads on the ink too.
+    const onInk = isDark ? designColorPairs.paper.dark : designColorPairs.paper.light;
+    style.setProperty('--ds2-stamp', ink);
+    style.setProperty('--accent-color', hexToRgbTriplet(ink));
+    style.setProperty('--accent', hexToHslTriplet(ink));
+    style.setProperty('--ring', hexToHslTriplet(ink));
+    style.setProperty('--sidebar-ring', hexToHslTriplet(ink));
+    style.setProperty('--accent-foreground', hexToHslTriplet(onInk));
+    style.setProperty('--accent-contrast-text', hexToRgbTriplet(onInk));
+  }, [accent, systemAccent, isDark]);
 
   return null;
 }

@@ -20,6 +20,7 @@ interface LibraryIndexRowProps {
   /** Body-match excerpt from full-text search, when the title itself didn't hit. */
   context?: string;
   dateField: LibrarySort;
+  showType?: boolean;
   isHighlighted: boolean;
   projectInk?: string;
   onOpen: (artifact: Artifact) => void;
@@ -30,6 +31,7 @@ export function LibraryIndexRow({
   artifact,
   context,
   dateField,
+  showType = false,
   isHighlighted,
   projectInk,
   onOpen,
@@ -65,6 +67,7 @@ export function LibraryIndexRow({
         ) : null}
       </span>
       <span className="chronicle-index-row-meta">
+        {showType ? <span className="chronicle-index-row-type">{artifact.type.replace('-', ' ')} · </span> : null}
         {dateLabel} {displayDate}
         {showStatus ? (
           <>

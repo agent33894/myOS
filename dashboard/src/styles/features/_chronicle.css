@@ -2643,6 +2643,9 @@ button.chronicle-activity-title:hover {
   text-transform: uppercase;
   white-space: nowrap;
 }
+.chronicle-index-row-type {
+  color: var(--ds2-ink-secondary);
+}
 /* Full-width Living Page mode: quiet back bar above the detail surface. */
 .chronicle-library-full {
   display: flex;
@@ -3367,6 +3370,98 @@ button.chronicle-settings-section-header:hover .chronicle-settings-section-title
 }
 .chronicle-settings-section-body {
   padding-top: 12px;
+}
+/* Accent picker: live specimen over a spectrum of contrast-fitted swatches. */
+.chronicle-accent-picker {
+  display: flex;
+  max-width: 40rem;
+  flex-direction: column;
+  gap: 14px;
+}
+.chronicle-accent-specimen {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.chronicle-accent-proof {
+  display: inline-flex;
+  flex: none;
+  overflow: hidden;
+  border: 0.75px solid var(--rule-standard);
+  border-radius: var(--radius-control);
+}
+.chronicle-accent-proof > span {
+  display: inline-flex;
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 22px;
+  transition: color var(--timing-fast);
+}
+.chronicle-accent-name {
+  display: block;
+  color: var(--ds2-ink);
+  font-family: var(--font-display);
+  font-size: var(--type-reading);
+  line-height: 1.2;
+}
+.chronicle-accent-code {
+  display: block;
+  margin-top: 2px;
+  color: var(--ds2-ink-tertiary);
+  font-family: var(--font-mono);
+  font-size: var(--type-garnish);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.chronicle-accent-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.chronicle-accent-swatch {
+  display: inline-flex;
+  width: 28px;
+  height: 28px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 0.75px var(--rule-standard);
+  color: var(--ds2-paper);
+  cursor: pointer;
+  outline: none;
+  transition:
+    transform var(--timing-fast),
+    box-shadow var(--timing-fast);
+}
+.chronicle-accent-swatch svg {
+  width: 13px;
+  height: 13px;
+}
+.chronicle-accent-swatch:hover {
+  transform: scale(1.12);
+}
+.chronicle-accent-swatch:active {
+  transform: scale(0.96);
+}
+.chronicle-accent-swatch.is-selected,
+.chronicle-accent-swatch:focus-visible,
+.chronicle-accent-custom:focus-within {
+  box-shadow:
+    0 0 0 2px var(--ds2-paper),
+    0 0 0 3.5px var(--ds2-ink);
+}
+.chronicle-accent-custom {
+  border: 0.75px dashed var(--rule-strong);
+  box-shadow: none;
+  color: var(--ds2-ink-secondary);
+}
+.chronicle-accent-custom.is-selected {
+  border-color: transparent;
 }
 
 @media (prefers-reduced-motion: reduce) {

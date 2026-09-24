@@ -69,7 +69,7 @@ chmod +x ~/Applications/myOS.AppImage
 
 The window's Wayland `app_id` and X11 class are both `myos`, so Hyprland rules match `class:^(myos)$`. The layout adapts to Omarchy tiling down to 360×360: below 900px the sidebar becomes an icon rail, list and detail stack below 700px, and project panels become drawers (toggle with `[` and `]`).
 
-On Omarchy, myOS uses the active theme's accent and updates it when you switch themes. Turn this off in **Settings → Appearance → Follow Omarchy theme**.
+On Omarchy, **Settings → Appearance → Accent** offers an Omarchy theme swatch that follows the active theme's accent and updates when you switch themes. Like every accent, it is contrast-adjusted to stay legible on light and dark paper.
 
 ### Terminal and keybindings
 

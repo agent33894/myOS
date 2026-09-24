@@ -9,9 +9,12 @@ import {
 } from './settingsPersistence';
 
 interface SettingsState extends StoredSettings {
+  /** Transient accent shown while the user hovers a swatch; never persisted. */
+  accentPreview: string | null;
   setThemeMode: (mode: ThemeMode) => void;
   setShowCompletedTasks: (show: boolean) => void;
-  setFollowSystemAccent: (follow: boolean) => void;
+  setAccent: (accent: string) => void;
+  setAccentPreview: (accent: string | null) => void;
   setEnableAutoSave: (enable: boolean) => void;
   setHasCompletedOnboarding: (value: boolean) => void;
   resetAllSettings: () => void;
@@ -27,9 +30,14 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
 
   return {
     ...initial,
+    accentPreview: null,
     setThemeMode: (themeMode) => persist({ themeMode }),
     setShowCompletedTasks: (showCompletedTasks) => persist({ showCompletedTasks }),
-    setFollowSystemAccent: (followSystemAccent) => persist({ followSystemAccent }),
+    setAccent: (accent) => {
+      set({ accentPreview: null });
+      persist({ accent });
+    },
+    setAccentPreview: (accentPreview) => set({ accentPreview }),
     setEnableAutoSave: (enableAutoSave) => persist({ enableAutoSave }),
     setHasCompletedOnboarding: (hasCompletedOnboarding) => persist({ hasCompletedOnboarding }),
     resetAllSettings: () => {

@@ -7,16 +7,19 @@ interface LibraryTypeSectionProps {
   highlightedId: string | null;
   projectInks: Map<string, string>;
   sort: LibrarySort;
+  /** Label each row with its type when sections no longer imply it. */
+  showType: boolean;
   onOpen: (artifact: Artifact) => void;
   onToggleExpand: (id: SectionId) => void;
 }
 
-/** One type group: garnish heading with count, capped rows, view-all affordance. */
+/** One index section: garnish heading with count, rows, and a view-all affordance when capped. */
 export function LibraryTypeSection({
   section,
   highlightedId,
   projectInks,
   sort,
+  showType,
   onOpen,
   onToggleExpand,
 }: LibraryTypeSectionProps) {
@@ -45,6 +48,7 @@ export function LibraryTypeSection({
           artifact={artifact}
           context={context}
           dateField={sort}
+          showType={showType}
           isHighlighted={highlightedId === artifact.id}
           projectInk={artifact.project ? projectInkFor(artifact.project, projectInks) : undefined}
           onOpen={onOpen}

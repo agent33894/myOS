@@ -30,24 +30,44 @@ function makeArtifact(overrides: Partial<Artifact>): Artifact {
 const hit = (artifact: Artifact) => ({ artifact, score: 1 });
 
 describe('buildSections', () => {
+  it('defaults to one uncapped list, newest created first, with a trailing archive section', () => {
+    const older = makeArtifact({ type: ArtifactType.TODO, created: '2026-08-01', updated: '2026-08-30T00:00:00.000Z' });
+    const newer = makeArtifact({ type: ArtifactType.DECISION, created: '2026-08-05' });
+    const memos = Array.from({ length: SECTION_CAP + 2 }, () => makeArtifact({ created: '2026-07-01' }));
+    const archived = makeArtifact({ status: ArtifactStatus.ARCHIVED });
+    const sections = buildSections(null, [older, ...memos, newer, archived]);
+    expect(sections.map((section) => section.id)).toEqual(['all', 'archive']);
+    expect(sections[0].capped).toBe(false);
+    expect(sections[0].rows).toHaveLength(SECTION_CAP + 4);
+    expect(sections[0].rows.slice(0, 2).map((row) => row.artifact.id)).toEqual([newer.id, older.id]);
+  });
+
+  it('filters the ungrouped list to chip-selected types', () => {
+    const decision = makeArtifact({ type: ArtifactType.DECISION });
+    const todo = makeArtifact({ type: ArtifactType.TODO });
+    const sections = buildSections(null, [decision, todo], { types: new Set([ArtifactType.TODO]) });
+    expect(sections).toHaveLength(1);
+    expect(sections[0].rows.map((row) => row.artifact.id)).toEqual([todo.id]);
+  });
+
   it('groups browse mode by type in editorial order with a trailing archive section', () => {
     const artifacts = [
       makeArtifact({ type: ArtifactType.TODO }),
       makeArtifact({ type: ArtifactType.DECISION }),
       makeArtifact({ type: ArtifactType.MEMO, status: ArtifactStatus.ARCHIVED }),
     ];
-    const sections = buildSections(null, artifacts, new Set(), null);
+    const sections = buildSections(null, artifacts, { grouping: 'type' });
     expect(sections.map((section) => section.id)).toEqual([ArtifactType.DECISION, ArtifactType.TODO, 'archive']);
   });
 
   it('caps sections at SECTION_CAP and marks them, expanding only the requested one', () => {
     const memos = Array.from({ length: SECTION_CAP + 3 }, () => makeArtifact({ type: ArtifactType.MEMO }));
-    const capped = buildSections(null, memos, new Set(), null)[0];
+    const capped = buildSections(null, memos, { grouping: 'type' })[0];
     expect(capped.capped).toBe(true);
     expect(capped.rows).toHaveLength(SECTION_CAP);
     expect(capped.total).toBe(SECTION_CAP + 3);
 
-    const expanded = buildSections(null, memos, new Set(), ArtifactType.MEMO)[0];
+    const expanded = buildSections(null, memos, { grouping: 'type', expanded: ArtifactType.MEMO })[0];
     expect(expanded.capped).toBe(false);
     expect(expanded.rows).toHaveLength(SECTION_CAP + 3);
   });
@@ -59,8 +79,7 @@ describe('buildSections', () => {
     const sections = buildSections(
       [hit(second), hit(noise), hit(first)],
       [first, second, noise],
-      new Set([ArtifactType.DECISION]),
-      null,
+      { types: new Set([ArtifactType.DECISION]), grouping: 'type' },
     );
     expect(sections).toHaveLength(1);
     expect(sections[0].rows.map((row) => row.artifact.id)).toEqual([second.id, first.id]);
@@ -68,18 +87,18 @@ describe('buildSections', () => {
 
   it('excludes archived artifacts from search results and hides archive while filtering', () => {
     const archived = makeArtifact({ type: ArtifactType.MEMO, status: ArtifactStatus.ARCHIVED });
-    expect(buildSections([hit(archived)], [archived], new Set(), null)).toHaveLength(0);
-    expect(buildSections(null, [archived], new Set([ArtifactType.MEMO]), null)).toHaveLength(0);
+    expect(buildSections([hit(archived)], [archived])).toHaveLength(0);
+    expect(buildSections(null, [archived], { types: new Set([ArtifactType.MEMO]) })).toHaveLength(0);
   });
 
-  it('sorts browse rows by updated desc', () => {
+  it('sorts browse rows by updated desc when requested', () => {
     const older = makeArtifact({ type: ArtifactType.MEMO, updated: '2026-08-01T00:00:00.000Z' });
     const newer = makeArtifact({ type: ArtifactType.MEMO, updated: '2026-08-10T00:00:00.000Z' });
-    const [section] = buildSections(null, [older, newer], new Set(), null);
+    const [section] = buildSections(null, [older, newer], { sort: 'updated' });
     expect(section.rows.map((row) => row.artifact.id)).toEqual([newer.id, older.id]);
   });
 
-  it('sorts browse and search rows by created desc when requested', () => {
+  it('sorts browse and search rows by created desc by default', () => {
     const older = makeArtifact({
       type: ArtifactType.MEMO,
       created: '2026-08-01',
@@ -91,8 +110,8 @@ describe('buildSections', () => {
       updated: '2026-08-11T00:00:00.000Z',
     });
 
-    const [browseSection] = buildSections(null, [older, newer], new Set(), null, 'created');
-    const [searchSection] = buildSections([hit(older), hit(newer)], [older, newer], new Set(), null, 'created');
+    const [browseSection] = buildSections(null, [older, newer]);
+    const [searchSection] = buildSections([hit(older), hit(newer)], [older, newer]);
 
     expect(browseSection.rows.map((row) => row.artifact.id)).toEqual([newer.id, older.id]);
     expect(searchSection.rows.map((row) => row.artifact.id)).toEqual([newer.id, older.id]);
@@ -101,7 +120,7 @@ describe('buildSections', () => {
   it('puts artifacts with invalid dates last', () => {
     const invalid = makeArtifact({ type: ArtifactType.MEMO, created: 'unknown' });
     const dated = makeArtifact({ type: ArtifactType.MEMO, created: '2026-08-01' });
-    const [section] = buildSections(null, [invalid, dated], new Set(), null, 'created');
+    const [section] = buildSections(null, [invalid, dated]);
     expect(section.rows.map((row) => row.artifact.id)).toEqual([dated.id, invalid.id]);
   });
 });

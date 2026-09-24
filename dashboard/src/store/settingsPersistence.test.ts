@@ -8,7 +8,8 @@ import {
 describe('settings persistence', () => {
   it.each([
     ['invalid theme', { themeMode: 'sepia' }, 'themeMode', 'system'],
-    ['non-boolean accent follow', { followSystemAccent: 'yes' }, 'followSystemAccent', true],
+    ['unknown accent', { accent: 'vermilion' }, 'accent', 'ultra-violet'],
+    ['legacy accent follow flag', { followSystemAccent: true }, 'accent', 'ultra-violet'],
   ])('migrates %s to its current default', (_label, input, key, expected) => {
     expect(normalizeStoredSettings(input)[key as keyof ReturnType<typeof getDefaultSettings>]).toBe(expected);
   });
@@ -23,6 +24,13 @@ describe('settings persistence', () => {
       showCompletedTasks: true,
       enableAutoSave: false,
     });
+  });
+
+  it('accepts Pantone ids, the system accent, and custom hex colors', () => {
+    expect(normalizeStoredSettings({ accent: 'classic-blue' }).accent).toBe('classic-blue');
+    expect(normalizeStoredSettings({ accent: 'system' }).accent).toBe('system');
+    expect(normalizeStoredSettings({ accent: '#A1B2C3' }).accent).toBe('#a1b2c3');
+    expect(normalizeStoredSettings({ accent: '#abc' }).accent).toBe('ultra-violet');
   });
 
   it('serializes only stored fields', () => {

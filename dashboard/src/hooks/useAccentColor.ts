@@ -3,10 +3,10 @@ import { projectSwatches, stampColorPair } from '@shared/design-system/tokens';
 import type { Domain, ArtifactType } from '../types/artifacts';
 
 /**
- * The accent is the DS2 vermilion stamp — one ink, theme-aware. On Omarchy it
- * can follow the desktop theme instead (ThemeController sets `--ds2-stamp`
- * inline on <html>); this hook exposes the live value to components that need
- * it imperatively (charts, canvases).
+ * The accent is the DS2 stamp — one user-chosen ink, contrast-fitted per theme.
+ * ThemeController sets `--ds2-stamp` inline on <html> for non-default accents;
+ * this hook exposes the live value to components that need it imperatively
+ * (charts, canvases).
  */
 function hexToRgbTriplet(hex: string): string {
   const value = Number.parseInt(hex.slice(1), 16);
@@ -38,7 +38,6 @@ export function useAccentColor() {
   const pantoneColor = {
     rgb: hexToRgbTriplet(stampHex),
     hex: stampHex,
-    name: systemStamp ? 'Desktop theme' : 'Vermilion',
   };
 
   const accentBgStyle = { backgroundColor: 'var(--ds2-stamp)' };
@@ -79,7 +78,7 @@ export function useAccentColor() {
   ) as Record<ArtifactType, string>;
 
   return {
-    accentColor: 'vermilion',
+    accentColor: 'stamp',
     pantoneColor,
     accentBg: 'accent-bg',
     accentBgStyle,
