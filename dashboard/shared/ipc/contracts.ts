@@ -87,6 +87,7 @@ export interface IpcInvokeMap {
   'vault:get-path': { args: []; result: string };
   'vault:choose-folder': { args: []; result: string | null };
   'vault:create-default': { args: []; result: string };
+  'window:close': { args: []; result: void };
 }
 
 export type IpcInvokeChannel = keyof IpcInvokeMap;
@@ -115,6 +116,7 @@ export const IPC_INVOKE_CHANNELS = [
   'vault:get-path',
   'vault:choose-folder',
   'vault:create-default',
+  'window:close',
 ] as const satisfies readonly IpcInvokeChannel[];
 
 export interface IpcEventMap {

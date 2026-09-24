@@ -67,6 +67,9 @@ export function registerIpcHandlers({ getMainWindow }: RegisterIpcHandlersOption
     shellOperations.openArtifactFile(filePath)
   );
   ipcMain.handle('system:get-accent', () => readOmarchyAccent());
+  ipcMain.handle('window:close', (event) => {
+    BrowserWindow.fromWebContents(event.sender)?.close();
+  });
 
   // Workspace path handlers shared by the renderer and main process.
   ipcMain.handle('vault:set-path', (_event, path: string) => {

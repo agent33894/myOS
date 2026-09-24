@@ -75,6 +75,7 @@ const electronAPI = {
   getVaultPath: () => invokeIpc('vault:get-path'),
   chooseVaultFolder: () => invokeIpc('vault:choose-folder'),
   createDefaultVault: () => invokeIpc('vault:create-default'),
+  closeWindow: () => invokeIpc('window:close'),
 };
 
 export type ElectronAPI = {

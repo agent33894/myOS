@@ -1,6 +1,6 @@
 import { Suspense, useEffect, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
-import { Feather, Search } from 'lucide-react';
+import { Feather, Search, X } from 'lucide-react';
 import { Sidebar } from '../features/shell/Sidebar';
 import { PaneDivider } from '../components/ui/PaneDivider';
 import CommandPalette from '../components/layout/CommandPalette';
@@ -13,7 +13,7 @@ import { useNotificationGenerator } from '../hooks/useNotificationGenerator';
 import { useModalStates, useCommandPaletteActions, useQuickCaptureActions } from '../store/selectors';
 import { useUIStore } from '../store/ui';
 import { getRoute } from './routes';
-import { hasPrimaryModifier, isMac, primaryModifier } from '../utils/platform';
+import { hasPrimaryModifier, isLinux, isMac, primaryModifier } from '../utils/platform';
 
 const SIDEBAR_WIDTH_KEY = 'chronicle-sidebar-width';
 const SIDEBAR_COLLAPSED_KEY = 'chronicle-sidebar-collapsed';
@@ -102,6 +102,16 @@ export default function AppShell() {
           <div className="chronicle-toolbar-actions no-drag">
             <button className="chronicle-search-button active:scale-[0.99]" onClick={openCommandPalette}><Search className="h-4 w-4" /> Search or command… <kbd>{primaryModifier}K</kbd></button>
             <button className="chronicle-capture-button active:scale-[0.96]" onClick={openQuickCapture} aria-label="Quick capture"><Feather className="h-4 w-4" /></button>
+            {isLinux ? (
+              <button
+                className="chronicle-window-close"
+                onClick={() => void window.electronAPI.closeWindow()}
+                aria-label="Close window"
+                title="Close window"
+              >
+                <X className="h-4 w-4" strokeWidth={1.5} />
+              </button>
+            ) : null}
           </div>
         </header>
         <main id="main-content-area" className="chronicle-main">

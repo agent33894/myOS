@@ -192,8 +192,11 @@ const createWindow = () => {
       allowRunningInsecureContent: false,
       webviewTag: false,
     },
+    // macOS keeps its inset traffic lights and Windows its caption overlay.
+    // Linux is frameless: tiling window managers own min/max, and the
+    // renderer draws its own close control so the toolbar stays one surface.
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'hidden',
-    ...(process.platform !== 'darwin'
+    ...(process.platform === 'win32'
       ? { titleBarOverlay: { color: windowBackgroundColor(), height: 52 } }
       : {}),
     backgroundColor: windowBackgroundColor(),
@@ -205,7 +208,7 @@ const createWindow = () => {
 
   const syncWindowBackground = () => {
     mainWindow?.setBackgroundColor(windowBackgroundColor());
-    if (process.platform !== 'darwin') {
+    if (process.platform === 'win32') {
       mainWindow?.setTitleBarOverlay({ color: windowBackgroundColor(), height: 52 });
     }
   };
