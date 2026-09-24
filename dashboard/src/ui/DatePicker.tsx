@@ -13,14 +13,22 @@ interface DatePickerProps {
   /** The trigger: one focusable element, such as a `Property` or `Button`. */
   children: ReactNode;
   align?: 'start' | 'center' | 'end';
+  /** Control the popover, e.g. to open it from a menu or shortcut. */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 const navButton =
   'inline-flex size-7 items-center justify-center rounded-md text-text-secondary transition-colors duration-fast hover:bg-text/5 hover:text-text disabled:opacity-50';
 
 /** A date chooser with quick picks (Today, Tomorrow, Next week, Clear) above a month calendar. */
-export function DatePicker({ value, onChange, children, align = 'start' }: DatePickerProps) {
-  const [open, setOpen] = useState(false);
+export function DatePicker({ value, onChange, children, align = 'start', open: openProp, onOpenChange }: DatePickerProps) {
+  const [openState, setOpenState] = useState(false);
+  const open = openProp ?? openState;
+  const setOpen = (next: boolean) => {
+    setOpenState(next);
+    onOpenChange?.(next);
+  };
   const today = startOfToday();
   const choose = (date: Date | null) => {
     onChange(date);
