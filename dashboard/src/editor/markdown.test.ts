@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { Editor } from '@tiptap/core';
 import { MarkdownManager } from '@tiptap/markdown';
-import { createExtensions } from './extensions';
+import { createExtensions, markdownParser } from './extensions';
 import { connectMarkdown, needsSync } from './useMarkdownSync';
 
-const markdown = new MarkdownManager({ extensions: createExtensions({ placeholder: '' }) });
+const markdown = new MarkdownManager({ marked: markdownParser as never, extensions: createExtensions({ placeholder: '' }) });
 const roundTrip = (source: string) => markdown.serialize(markdown.parse(source));
 
 const fence = (language: string, body: string) => ['```' + language, body, '```'].join('\n');
@@ -40,7 +40,7 @@ describe('markdown round trip', () => {
       '',
       'Some **bold**, *italic*, ~~strike~~, `inline code` and a [link](https://example.com).',
       '',
-      'A wiki link to [[Weekly review]] and [[Roadmap|the roadmap]].',
+      'A wiki link to [[Weekly review]] and [[Roadmap|the roadmap]], plus `Result<T>` and Array<string> as written.',
       '',
       '## Lists',
       '',

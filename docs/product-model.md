@@ -44,7 +44,7 @@ The top of a Task page shows a property row: **Status · Due · Defer · Flag ·
 
 ## Things that are advanced, not gone
 
-Git activity for projects linked to a repository, Git ignore rules, "Open in editor", and "Show in folder" live under **Settings → Advanced** or in a page's ⋯ menu. The interface never mentions frontmatter or YAML.
+Git ignore rules live under **Settings → Advanced**; "Open in editor" and "Show in folder" live in a page's ⋯ menu; commit links in a note preview their changes and open the diff. The interface never mentions frontmatter or YAML.
 
 ## Data safety
 

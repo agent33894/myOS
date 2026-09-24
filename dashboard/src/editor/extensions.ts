@@ -12,6 +12,7 @@ import { Typography } from '@tiptap/extension-typography';
 import { Markdown } from '@tiptap/markdown';
 import { ReactNodeViewRenderer } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
+import { Marked, type Tokens } from 'marked';
 import { CodeBlockView } from './blocks/code/CodeBlockView';
 import { CodeHighlight } from './blocks/code/highlight';
 import { RichBlock } from './blocks/RichBlock';
@@ -55,6 +56,20 @@ interface ExtensionOptions {
   slashKeys?: { current: ((event: KeyboardEvent) => boolean) | null };
 }
 
+/**
+ * Inline tags (`Result<T>`, `<kbd>`) stay literal text. The editor has no node
+ * for arbitrary HTML, and parsing them as HTML silently dropped them on save.
+ */
+const INLINE_TAG = /^(?:<!--[\s\S]*?-->|<\/?[A-Za-z][\w:-]*(?:\s[^<>]*)?\/?>)/;
+export const markdownParser = new Marked({
+  tokenizer: {
+    tag(src) {
+      const match = INLINE_TAG.exec(src);
+      return match ? ({ type: 'text', raw: match[0], text: match[0] } as unknown as Tokens.Tag) : undefined;
+    },
+  },
+});
+
 /** Every extension the editor uses, configured once. Order matters for Markdown: rich blocks claim their fences before code blocks do. */
 export function createExtensions({ placeholder, slashKeys = { current: null } }: ExtensionOptions): AnyExtension[] {
   return [
@@ -84,6 +99,6 @@ export function createExtensions({ placeholder, slashKeys = { current: null } }:
     FindInPage,
     // A function, not the ref: configure() deep-copies plain objects.
     SlashCommand.configure({ onKeyDown: (event) => slashKeys.current?.(event) ?? false }),
-    Markdown,
+    Markdown.configure({ marked: markdownParser as unknown as typeof import('marked').marked }),
   ];
 }
