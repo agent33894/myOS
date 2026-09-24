@@ -66,11 +66,14 @@ function snippetFor(doc: SearchDoc, query: string): Snippet | undefined {
   // Start on a word boundary so the snippet never opens mid-word.
   if (start > 0) start = doc.body.indexOf(' ', start) + 1 || start;
   if (start > at) start = at;
-  const end = Math.min(doc.body.length, start + SNIPPET_LENGTH);
+  const matchEnd = at + target.length;
+  let end = Math.min(doc.body.length, start + SNIPPET_LENGTH);
+  // …and end on one, too.
+  if (end < doc.body.length) end = Math.max(matchEnd, doc.body.lastIndexOf(' ', end));
   return {
     before: `${start > 0 ? '…' : ''}${doc.body.slice(start, at)}`,
-    match: doc.body.slice(at, at + target.length),
-    after: doc.body.slice(at + target.length, end),
+    match: doc.body.slice(at, matchEnd),
+    after: `${doc.body.slice(matchEnd, end)}${end < doc.body.length ? '…' : ''}`,
   };
 }
 
