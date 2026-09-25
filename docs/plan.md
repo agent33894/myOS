@@ -42,3 +42,87 @@ A new issue about myOS Next: the idea, the design, the way it treats your files,
 ## Look and feel
 
 Soft and quiet. The note sits on a slightly raised sheet in the middle of a tinted canvas, with wide margins. The side columns are thin, low-contrast, and fold away. Monospace is used for paths, the status bar, and source mode. Motion is short. Light and dark themes are both first-class. The existing tokens and `src/ui` components carry over; layout and density change.
+
+## Contracts
+
+Wave A is in place. This section is what Wave B builds on. Paths are relative to the open folder and use `/`. Change a contract here first, then in code.
+
+### IPC (`dashboard/shared/ipc/contracts.ts`)
+
+Every call returns `Result<T>`; `src/data/ipc.ts` turns failures into `IpcError { code }` with codes `NOT_FOUND`, `CONFLICT`, `INVALID`, `OUTSIDE_WORKSPACE`, `GIT` (Git's own message), and `INTERNAL`. Writes that take `expectRev` fail with `CONFLICT` when the file changed since that revision.
+
+| Channel | Arguments → value |
+| --- | --- |
+| `files:list` | → `{ folders, notes: NoteSummary[] }` (dot folders and `node_modules` skipped; empty folders included) |
+| `files:read` | `path` → `Note` |
+| `files:create` | `path, content?` → `Note` (never replaces; makes missing folders) |
+| `files:save` | `path, { content?, properties? }, expectRev` → `Note` (properties: `null` removes a key; only changed frontmatter lines are rewritten) |
+| `files:move` | `path, to, expectRev?` → `Note` (rename or move; bytes and history follow) |
+| `files:delete` / `files:restore` | `path, expectRev?` → `Note` snapshot / `snapshot` → `Note` (byte-exact undo) |
+| `files:attach-asset` | `notePath` → `{ canceled } \| { asset: { relativePath, insertMarkdown } }` |
+| `folders:create` / `folders:move` / `folders:delete` | `path` / `path, to` → new path / `path` → removed note paths (a local copy of each note first; system trash when there is one) |
+| `tasks:toggle` | `TaskRef, expectRev?` → `Note` |
+| `tasks:set-date` | `TaskRef, 'due' \| 'scheduled' \| 'start', date \| null, expectRev?` → `Note` |
+| `tasks:edit` | `TaskRef, text, expectRev?` → `Note` |
+| `tasks:append` | `path, line, heading?` → `Note` (file made when missing) |
+| `daily:path` | `date?` (YYYY-MM-DD) → path (the file may not exist) |
+| `daily:capture` | `text, target?` → `Note` (the file written) |
+| `settings:get` / `settings:set` | → `Settings` / `Partial<Settings>` → `Settings` (an unknown key or bad value fails the whole change) |
+| `git:status` | → `{ repo, branch, upstream, ahead, behind, files: { path, from?, change, staged }[] }` |
+| `git:commit` | `message, paths?` → hash (all changes in the folder when `paths` is omitted) |
+| `git:log` | `path?, limit?` → `{ hash, date, author, subject }[]` |
+| `git:show` / `git:diff` | `path, hash` → text at that commit / `path?` → unified diff against HEAD (untracked files show as added) |
+| `git:commit-diff` / `git:commit-summary` | `hash` → diff / `{ files, totals, message, … }` |
+| `git:pull` / `git:push` | → Git's output (`pull --rebase --autostash`; only ever on request) |
+| `history:list` / `history:read` / `history:restore` | local copies of a file (`path`, `id`) |
+| `export:pdf` / `export:html` / `export:reveal` | `path, html` → saved path or null / `savedPath` |
+| `workspace:current` / `workspace:choose` / `workspace:create-starter` | → folder path or null |
+| `shell:reveal` / `shell:open-external` / `shell:open-in-editor`, `system:accent`, `window:close` | as before |
+
+A `TaskRef` is `{ path, line, raw }`: the 1-based line and its exact text as last read (`line: 0` is a `type: todo` file). An edit whose line no longer reads `raw` fails with `CONFLICT`.
+
+Events: `files:changed { path, entry: 'file' | 'folder', kind, rev? }`, `app:capture` (from `myos-next --capture`), `app:open-file { path }` (from `myos-next open` and `myos-next://open?path=`), `system:accent-changed`.
+
+### Shared rules (`dashboard/shared/`)
+
+- `spec/`: `Note`, `NoteSummary` (`path`, `rev`, `title`, `properties`, `propertiesError?`, `tags`, `tasks`, `modified`, `searchText`), `noteTitle`, `noteTags`, `isTodoFile`.
+- `tasks/`: `Task` (`path`, `line`, `raw`, `text`, `status`, `due`, `scheduled`, `start`, `done`, `recurrence`, `priority`, `tags`), `parseTaskLine`, `extractTasks`, `toggleTaskLine`, `setTaskDate`, `setTaskText`, `appendLine`, `todayBucket`.
+- `query.ts`: `runView(kind, text, notes, today) → ViewResult`, `parseQuery`, `viewFromFence(info, body)`. Syntax in [`file-format.md`](file-format.md#views).
+- `daily.ts`, `capture.ts`, `recurrence.ts`, `settings.ts` (`Settings`, `DEFAULT_SETTINGS`, `validSettings`).
+
+### Renderer data (`dashboard/src/data`, `dashboard/src/store`)
+
+- Store and sync: `useDataStore` (`notes`, `folders`, `bodies`, `moves`), `useFileSync()`.
+- Selectors: `useNotes`, `useNote(path)`, `useTree()` (`TreeFolder { path, name, folders, files }`), `useTasks`, `useTodayTasks()` (`{ overdue, today }`), `useView(kind, query)`, `useRecentNotes`, `useDataStatus`.
+- Gateway (every write; records undo): `read`, `save`, `createNote(path, content?)`, `freeName(folder)`, `remove`, `move(path, to)`, `rename(path, name)`, `createFolder`, `moveFolder`, `renameFolder`, `removeFolder`, `toggleTask`, `setTaskDate`, `editTask`, `appendLine`, `capture(text, target?)`, `dailyPath(date?)`, `listVersions`, `readVersion`, `restoreVersion`.
+- Documents: `useDocument(path, { createOnWrite })` → `{ note, content, edit(content), saveNow, dirty, saving, conflict, keepMine, loadTheirs, missing }`.
+- Git: `useGitStore` (`status`, `error`, `syncing`), `useGitSync`, `useGitStatus`, `useGitFile(path)`, `commit`, `pull`, `push`, `log`, `showAt`, `diff`, `commitDiff`, `commitSummary`.
+- Settings: `useSettings` (all `Settings` keys plus `loaded`, `accentPreview`), `loadSettings`, `updateSettings(patch)`, `setAccentPreview`, `addRecentFile`.
+- UI: `useUIStore` (`tabs: { path, mode }[]`, `activeTab`, `split`, `overlay`, `focusMode`, `rightPanel`), `showTab`, `closeTab`, `setActiveTab`, `setTabMode`, `setSplit`, `followMove`, `openOverlay`/`closeOverlay`/`toggleOverlay`, `setFocusMode`, `setRightPanel`, `useActivePath`.
+
+### Settings keys
+
+`dailyFolder`, `dailyPattern`, `captureTarget` (`'daily'` or a `.md` path), `captureHeading` (or null), `editorMode` (`'rendered' | 'source'`), `vimKeys`, `theme`, `accent`, `readingFont`, `pinnedViews` (`{ id, name, query, kind }[]`), `sidebar` (`{ left, right }: { width, collapsed }`), `recentFiles`. Stored in `settings.json` in the app data folder; the daily keys fall back to `.obsidian/daily-notes.json`.
+
+### URLs (`src/app/navigation.ts`)
+
+`/today`, `/tasks?q=`, `/view/:id`, `/note?path=` (`&create=1` makes a missing file on first edit), `/settings`. Build them with `toNoteUrl`, `toTasksUrl`, `toViewUrl`; move with `go(url)` or `openNote(path)` from anywhere.
+
+### Extension points and owners
+
+| Owner | Folders | Exposes |
+| --- | --- | --- |
+| B1 Shell | `src/app/**`, `src/features/{shell,palette,switcher,onboarding,settings}/**` | `Shell`, `Sidebar`, `FileTree`, `RightPanel`, `StatusBar`, `CommandPalette`, `FileSwitcher`, `Welcome`, `SettingsScreen`, `shellCommands` |
+| B2 Editor | `src/editor/**`, `src/features/note/**` | `NoteTab`, `noteCommands`, `OutlinePanel`, `BacklinksPanel`, `PropertiesPanel`, `NoteStatusItem`; renders ```` ```tasks ```` / ```` ```notes ```` fences with `ViewBlock` |
+| B3 Tasks | `src/features/{today,tasks,views,capture}/**` | `TodayScreen`, `TasksScreen`, `ViewScreen`, `QuickCapture`, `taskCommands`, `ViewBlock({ kind, query, sourcePath })`, `TaskRow`, `ViewResults` |
+| B4 Git and safety | `src/features/{git,history,export}/**` | `ChangesPanel`, `HistoryPanel`, `GitStatusBarItem`, `useFileGitStatus(path)`, `gitCommands`, `exportCommands` |
+
+Registries, each a small table in `src/app/`:
+
+- `commands.ts`: `Command { id, group, label, icon?, shortcut?, keywords?, run }` and `CommandSource = ({ activePath, inRepo }) => Command[]`. `useCommands()` joins `shellCommands`, `noteCommands`, `taskCommands`, `gitCommands`, and `exportCommands`. Each owner binds its own shortcuts.
+- `panels.ts`: `PANELS: { id, label, icon, component: (props: { path }) }[]` for Outline, Backlinks, Properties (B2) and Changes, History (B4).
+- `statusbar.ts`: `STATUS_ITEMS: { id, side, component }[]` for the Git item (B4) and the note's words and save state (B2).
+
+### Terminal
+
+`myos-next add <text>`, `today`, `tasks [query]`, `find <words>`, `open <path>`, `--capture`, `--install-desktop-entry`. The headless commands never take the single-instance lock; `open` and `--capture` go to the running window.

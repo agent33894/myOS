@@ -1,101 +1,45 @@
-# myOS
+# myOS Next
 
-myOS is a local-first Markdown editor and project workspace for macOS and Linux (including Omarchy). It turns an ordinary folder of `.md` files into a focused place for daily planning, project context, notes, and lightweight task management.
-
-No account is required. myOS has no hosted sync service, telemetry, advertising, or bundled model provider. Your files stay in the folder you choose and remain usable in any text editor.
-
-![myOS Today: carried-over, today, and upcoming tasks with their projects and tags, beside the sidebar of places and projects](docs/images/myos-today.png)
+myOS Next is a quiet editor for a folder of Markdown files, for macOS and Linux. It opens the folder as it is: your notes, docs, to-dos, or Obsidian vault. It needs no special layout, no special fields, and no account, and it adds nothing to your files that you did not type.
 
 ## What it does
 
-- **Capture** anything with ⌘N. Type and press Enter; `tomorrow`, `every tue`, `~30m`, `#tag`, `@project`, and `!` are optional, and `@` and `#` autocomplete.
-- **Inbox** holds captures until you sort them, one at a time, into tasks, notes, or projects.
-- **Today** shows what was carried over, what is due or planned today, your projects' next steps, and a quiet look at the week ahead, with an honest "About 3 h planned · 6 h available" line.
-- **Plan my day** and **Close the day** are short, optional rituals; a **Weekly review** appears on the day you choose, and **What moved** looks back at the week without scores or streaks.
-- **Tasks** lists everything without a date, later tasks, and Someday, by project or area. Tasks can repeat, carry an estimate and a "when" cue, and `- [ ]` lines in any note count as tasks too.
-- **Notes** is a search-first home for everything you write, with a calm editor, `/` blocks, `[[links]]` with backlinks and unlinked mentions, tag pages, templates, spaced review, and a focus mode.
-- **Journal** keeps one page per day.
-- **Projects** gather a short description, a next step, tasks, checklist items from their notes, and notes in one place.
-- Every page edits its properties inline and autosaves. Areas (Work, Personal, Learning, Creative) keep files in tidy folders, and file names follow titles.
-- Your files stay yours: saves change only what you changed, **Version history** keeps earlier copies outside your folder, and pages export as PDF or HTML. Edits made in another editor or by Git are picked up live, and myOS asks instead of overwriting.
-- Light and dark themes, a choice of accent colors, and an optional serif reading font.
+- **Files as they are.** The sidebar shows the folder's real folders and files. Create, rename, move, and delete them in the app or anywhere else; changes on disk show up right away.
+- **Tasks in any note.** `- [ ] Fix the login redirect 📅 2026-10-02 #auth` is a task. Obsidian Tasks dates and repeats work, and so does a plain `due:2026-10-02`.
+- **Today and Tasks.** Today shows today's daily note and the tasks that are due, scheduled, or late. Tasks lists every open task, narrowed with a one-line view such as `open due<=today #work group:file`.
+- **Views.** Save a view to the sidebar, or put one in a note as a fenced ```` ```tasks ```` block that updates live.
+- **Capture.** ⌘N (or `myos-next add "…"`) adds a line to today's daily note. A date, a repeat, `!`, or `[ ]` makes it a task.
+- **Git.** If the folder is a Git repository, see changed files, commit, read a file's history, and pull or push when you choose.
+- **Safe edits.** Saves check that the file hasn't changed on disk, undo is exact, a local copy is kept before each save, and editing one block never rewrites the rest of the file.
+
+The details are in [`docs/product-model.md`](docs/product-model.md) and [`docs/file-format.md`](docs/file-format.md).
 
 ## Install
 
-Download the latest release from [GitHub Releases](https://github.com/agent33894/myOS/releases). On macOS, use the `.dmg` or `.zip` and drag **myOS** to Applications. On Linux x64, download the `.AppImage`, make it executable, launch it, and run it once with `--install-desktop-entry` to add it to your launcher. A `.tar.gz` archive is also available. For a local Linux source build, `npm run install:local` builds and installs myOS in your home directory without sudo or FUSE. See [building and updating](docs/building-and-updating.md) for Omarchy integration, the `myos` terminal commands, and a Quick Capture keybinding.
-
-The first launch asks you to choose a Markdown folder. Selecting a folder never uploads or relocates it. If you are starting fresh, myOS can create a small example workspace for you.
-
-## Markdown compatibility
-
-Plain Markdown files work without frontmatter. myOS derives a title from the first heading or filename and uses the containing folders as context.
-
-Optional frontmatter enables richer project and task behavior:
-
-```markdown
----
-title: Ship the onboarding refresh
-type: todo
-status: active
-project: my-project
-priority: high
-due: 2026-09-01
-tags: [onboarding, release]
----
-
-Keep the task body in ordinary Markdown.
-```
-
-The canonical artifact rules live in [`dashboard/shared/spec/`](dashboard/shared/spec/).
-
-## Development
-
-Requirements: macOS or Linux x64, Node.js 22+, and npm.
+From source on Linux:
 
 ```bash
 cd dashboard
-npm install
-npm run electron:dev
-```
-
-Validate a change:
-
-```bash
-npm run typecheck
-npm run lint
-npm test
-npm run audit:ipc
-npm run audit:dead-code
-```
-
-Build an Apple Silicon installer:
-
-```bash
-npm run build:installer
-```
-
-On Linux x64, build and install locally without sudo, or build distribution artifacts:
-
-```bash
+npm ci
 npm run install:local
-npm run build:linux
-npm run build:arch
 ```
 
-Artifacts are written to `dashboard/release/`. See [`docs/building-and-updating.md`](docs/building-and-updating.md) for architecture builds and local installation.
+This installs to `~/Applications/myOS Next`, adds a launcher entry, and links the `myos-next` command. myOS 3.0, if installed, stays as it is. See [building and updating](docs/building-and-updating.md) for macOS builds and packages.
 
-## Project structure
+## Develop
 
-```text
-myOS/
-├── dashboard/   Electron, React, local filesystem bridge, and tests
-├── docs/        Architecture, artifact, design, and build documentation
-└── vault/       Empty example folder structure; personal content is ignored
+```bash
+cd dashboard
+npm ci
+npm run dev
+npm run typecheck && npm run lint && npm test
 ```
 
-## Privacy and integrations
+The code layout is in [`docs/architecture-overview.md`](docs/architecture-overview.md).
 
-myOS reads and writes only the workspace folder you select, plus small local preferences in the operating system's application data directory. Network access is not required for core operation. Cloud synchronization and AI/model integrations are deliberately outside this repository; add your own local or organizational integration in a private fork if needed.
+## Privacy
+
+myOS Next reads and writes only the folder you open. Its settings and local copies stay in the app's data folder. The network is used only when you click Pull or Push. There is no account, telemetry, or bundled AI.
 
 ## License
 

@@ -1,105 +1,73 @@
-# Building and updating myOS
+# Building and updating myOS Next
 
-Run commands from `dashboard/` with Node.js 22+. macOS release builds require macOS; Linux release builds require Linux x64. GitHub Actions validates macOS and Linux on pushes and pull requests, builds Linux artifacts in CI, and attaches installers for both platforms to tagged releases.
+Run commands from `dashboard/` with Node.js 22+. macOS builds need macOS; Linux builds need Linux x64. GitHub Actions checks macOS and Linux on pushes and pull requests and attaches installers to tagged releases.
+
+myOS Next is its own app. It installs beside myOS 3.0 and shares nothing with it: a different name, app id, command, protocol, desktop entry, and app data folder.
 
 ## Development
 
 ```bash
-npm install
-npm run electron:dev
+npm ci
+npm run dev
 ```
 
-## Validation
+Some shells set `ELECTRON_RUN_AS_NODE=1`; if no window opens, run `env -u ELECTRON_RUN_AS_NODE npm run dev`. In development the app opens `../vault` unless a folder was chosen before.
+
+## Checks
 
 ```bash
 npm run typecheck
 npm run lint
 npm test
-npm run audit:ipc
-npm run audit:dead-code
+npx knip --no-progress   # unused files, exports, and dependencies
+npm run audit:ipc        # every channel has one handler; only src/data/ipc.ts uses the bridge
+npm run audit:docs       # local links in the docs resolve
 ```
 
-## Packaging
-
-Apple Silicon app, DMG, and ZIP:
+For changes to IPC, files on disk, packaging, onboarding, or visual design, also run the packaged smoke test on Linux:
 
 ```bash
-npm run build:installer
+npm run build:local
+npm run smoke:linux
 ```
 
-Outputs are written to `dashboard/release/`.
+It starts the packaged app with a temporary home, creates the starter folder, and checks files, folders, tasks, daily notes, settings, Git status, the watcher, the app data folder, the terminal commands, and the desktop entry.
 
-Linux x64 AppImage and tar.gz (on Linux):
-
-```bash
-npm run build:linux
-```
-
-For a local Linux build, install the packaged app without sudo or FUSE:
+## Local install on Linux
 
 ```bash
 npm run install:local
 ```
 
-This builds only the unpacked app and installs it to `~/Applications/myOS`, registers `~/.local/share/applications/myos.desktop`, and links `~/.local/bin/myos`. It skips AppImage and tar.gz compression. Repeating the command replaces the previous local build after verifying the copied app. To install an already built `release/linux-unpacked` without rebuilding, use `npm run install:local:built`.
+This builds the unpacked app, copies it to `~/Applications/myOS Next` (replacing an earlier local build only after the copy is verified), writes `~/.local/share/applications/myos-next.desktop` with a Capture action, registers `myos-next://` links, and links `~/.local/bin/myos-next`. No sudo, no FUSE. `npm run install:local:built` installs an existing `release/linux-unpacked` without rebuilding.
 
-If an older system package provides `/usr/bin/myos` and that directory precedes `~/.local/bin` on your `PATH`, invoke `~/.local/bin/myos` explicitly or put `~/.local/bin` first on `PATH`. The desktop launcher uses the local build directly.
-
-Arch/Omarchy system package (needs `makepkg` and administrator access):
-
-```bash
-npm run build:arch
-sudo pacman -U release/arch/myos-bin-*.pkg.tar.zst
-```
-
-`packaging/arch/PKGBUILD` repackages the release tar.gz into `/opt/myOS` with `/usr/bin/myos`, the icon, and a `myos.desktop` entry. It is also the AUR `myos-bin` recipe: bump `pkgver` and run `updpkgsums` against the published release. Update by building the new version and running `pacman -U` again.
-
-Packaged Linux smoke test (onboarding, watcher, IPC, terminal commands, desktop entry) against `release/linux-unpacked`:
-
-```bash
-npm run smoke:linux
-```
-
-### Installing on Omarchy
-
-For local development, use `npm run install:local` above. To use a downloaded AppImage instead, install the [`fuse2` package](https://archlinux.org/packages/extra/x86_64/fuse2/) (stock Omarchy reports a missing `libfuse.so.2` without it), keep the AppImage at a stable path, and let it register itself:
-
-```bash
-sudo pacman -S fuse2
-mkdir -p ~/Applications
-cp release/myOS-*.AppImage ~/Applications/myOS.AppImage
-chmod +x ~/Applications/myOS.AppImage
-~/Applications/myOS.AppImage --install-desktop-entry
-```
-
-`--install-desktop-entry` writes `~/.local/share/applications/myos.desktop` (icon, `myos:` links, and a Quick Capture action), makes it the `myos:` handler, and links `~/.local/bin/myos` to the launched build. It replaces the `com.myos.markdown.desktop` entry that earlier docs asked you to create. Keep one user launcher active at a time; the latest local or AppImage registration wins. To update the AppImage, close myOS, replace the file at the same path, and reopen it. The selected workspace and preferences stay where they are.
-
-The window's Wayland `app_id` and X11 class are both `myos`, so Hyprland rules match `class:^(myos)$`. The layout adapts to Omarchy tiling down to 360×360: below 900px the sidebar becomes an icon rail, list and detail stack below 700px, and project panels become drawers (toggle with `[` and `]`).
-
-On Omarchy, **Settings → Appearance → Accent** offers an Omarchy theme swatch that follows the active theme's accent and updates when you switch themes. Like every accent, it is contrast-adjusted to stay legible on light and dark paper.
+The window's Wayland `app_id` and X11 class are `myos-next`, so Hyprland rules match `class:^(myos-next)$`.
 
 ### Terminal and keybindings
 
-The `myos` command works whether or not the window is open:
-
 ```bash
-myos capture "Call the landlord #home"   # or: echo "…" | myos capture
-myos today                               # In Play and Next, plain text
-myos search omarchy tiling               # title, tag and text; tab-separated
-myos --capture                           # open Quick Capture in the running app
+myos-next add "Ship the parser fix tomorrow #release"   # or: echo "…" | myos-next add
+myos-next today
+myos-next tasks "open #release"
+myos-next find "rate limit"
+myos-next open notes/api.md
+myos-next --capture                                      # quick capture in the running app
 ```
 
-Bind Quick Capture to a key in `~/.config/hypr/bindings.lua` (current Omarchy; `SUPER + ALT + N` is unused by the defaults):
+Bind capture to a key in `~/.config/hypr/bindings.lua` on Omarchy:
 
 ```lua
-o.bind("SUPER + ALT + N", "myOS capture", "myos --capture")
+o.bind("SUPER + ALT + N", "myOS Next capture", "myos-next --capture")
 ```
 
-On older Omarchy releases with `bindings.conf`, use `bindd = SUPER ALT, N, myOS capture, exec, myos --capture`.
+## Packaging
 
-**Open in default editor** on a note uses `gio open`, which picks the handler for `text/markdown`. If a terminal editor opens instead of your Markdown app, run `xdg-mime default <app>.desktop text/markdown`.
+```bash
+npm run build:installer   # Apple Silicon .dmg and .zip
+npm run build:linux       # Linux x64 AppImage and tar.gz
+```
 
-To build another architecture without changing package scripts:
+Outputs go to `dashboard/release/`. An AppImage registers itself with `myOS-Next-*.AppImage --install-desktop-entry`. For another macOS architecture:
 
 ```bash
 npm run clean
@@ -107,27 +75,13 @@ npx vite build
 node scripts/package-macos.mjs --arch=x64 --installer
 ```
 
-## Local installation verification
-
-Copy the built app into a clean destination; do not merge app bundles.
+## Checking a macOS build
 
 ```bash
 mkdir -p "$HOME/Applications"
-ditto "release/mac-arm64/myOS.app" "$HOME/Applications/myOS.app"
-codesign --verify --deep --strict "$HOME/Applications/myOS.app"
-defaults read "$HOME/Applications/myOS.app/Contents/Info.plist" CFBundleIdentifier
-defaults read "$HOME/Applications/myOS.app/Contents/Info.plist" CFBundleShortVersionString
-shasum -a 256 \
-  "release/mac-arm64/myOS.app/Contents/Resources/app.asar" \
-  "$HOME/Applications/myOS.app/Contents/Resources/app.asar"
+ditto "release/mac-arm64/myOS Next.app" "$HOME/Applications/myOS Next.app"
+codesign --verify --deep --strict "$HOME/Applications/myOS Next.app"
+defaults read "$HOME/Applications/myOS Next.app/Contents/Info.plist" CFBundleIdentifier
 ```
 
-The bundle identifier must be `com.myos.markdown`, the version must match `package.json`, and the two `app.asar` hashes must match.
-
-If a local unsigned build is blocked, open it once from Finder with Control-click → Open. Do not disable Gatekeeper globally.
-
-## Signing and notarization
-
-The repository build applies a consistent ad-hoc signature so local builds and community CI artifacts run correctly, but they are not Apple-notarized. Gatekeeper may require Control-click → Open on first launch.
-
-Official notarization requires a Developer ID Application certificate and Apple notarization credentials. A release maintainer can replace the ad-hoc signing step in `scripts/package-macos.mjs` in a private release environment; never commit certificates or credentials.
+The bundle identifier must be `com.myos.next` and the version must match `package.json`. Builds are signed ad hoc and not notarized; open a local build once with Control-click → Open. Notarization needs a Developer ID certificate in a private release environment; never commit certificates or credentials.
