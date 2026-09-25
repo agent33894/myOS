@@ -66,5 +66,7 @@ describe('completion summary', () => {
     const weekly = ['2026-09-01', '2026-09-09', '2026-09-22'];
     expect(completionSummary(weekly, rule('every tue'), '2026-09-23')).toEqual({ done: 3, of: 4 });
     expect(completionSummary([], rule('every tue'), '2026-09-23')).toEqual({ done: 0, of: 0 });
+    // Due today and not done yet: today is not a miss.
+    expect(completionSummary(['2026-09-17', '2026-09-20'], rule('every 3 days'), '2026-09-23')).toEqual({ done: 2, of: 2 });
   });
 });

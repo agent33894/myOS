@@ -47,6 +47,9 @@ export type SettingsTab = 'general' | 'appearance' | 'advanced';
 export const toSettingsUrl = (tab: SettingsTab = 'general') =>
   tab === 'general' ? paths.settings : `${paths.settings}?tab=${tab}`;
 
+/** Today with a flow open: Plan my day (`?plan=1`) or Re-plan carried over (`?replan=1`). */
+export const toTodayUrl = (flow?: 'plan' | 'replan') => (flow ? `${paths.today}?${flow}=1` : paths.today);
+
 /** Where an item opens: projects get their home, notes open beside the Notes list, everything else full-page. */
 export function toItemUrl(item: { type: string; id: string; filePath: string }): string {
   if (item.type === ArtifactType.PROJECT) return toProjectUrl(item.id);

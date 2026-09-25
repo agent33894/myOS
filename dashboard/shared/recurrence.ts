@@ -167,7 +167,10 @@ export function completionSummary(completions: readonly string[], rule: RepeatRu
     firstHit = Math.min(firstHit, nearest);
   }
 
-  const due = occurrences.map((_, index) => index).filter((index) => index >= firstHit && occurrences[index] <= today);
+  // Today's occurrence counts once it is done; until then it is not missed.
+  const due = occurrences
+    .map((_, index) => index)
+    .filter((index) => index >= firstHit && (occurrences[index] < today || (occurrences[index] === today && hit.has(index))));
   const counted = due.slice(-WINDOW);
   return { done: counted.filter((index) => hit.has(index)).length, of: counted.length };
 }

@@ -47,4 +47,18 @@ export const SHORTCUT_GROUPS: ShortcutGroup[] = [
       { keys: 'right', label: 'Skip' },
     ],
   },
+  {
+    title: 'Task rows',
+    items: [
+      { keys: 'x', label: 'Complete (or Space)' },
+      { keys: 'enter', label: 'Open' },
+      { keys: 'd', label: 'Set a date' },
+      { keys: 'f', label: 'Flag' },
+      { keys: 't', label: 'Plan for today' },
+      { keys: 's', label: 'Someday' },
+      { keys: 'alt+up', label: 'Move up in today’s plan' },
+      { keys: 'alt+down', label: 'Move down in today’s plan' },
+      { keys: 'backspace', label: 'Delete' },
+    ],
+  },
 ];

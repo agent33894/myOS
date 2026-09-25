@@ -38,7 +38,9 @@ import { AddTask } from '../tasks/AddTask';
 import { relativeTime } from '../tasks/dates';
 import { ProjectDot } from '../tasks/ProjectDot';
 import { projectColor } from '../tasks/projectRefs';
+import { EntryList } from '../tasks/EntryList';
 import { TaskRow } from '../tasks/TaskRow';
+import { NextStepProperty } from './NextStepProperty';
 import { PROJECT_STATUSES, statusLabel } from './projectStatus';
 import { useProjectRename } from './projectRename';
 import { useProjectStatus } from './projectMutations';
@@ -103,6 +105,7 @@ function ProjectProperties({ project }: { project: ProjectWithStats }) {
           ))}
         </MenuContent>
       </Menu>
+      <NextStepProperty project={project} />
       <Menu>
         <MenuTrigger asChild>
           <Property icon={Palette} label="Color">
@@ -213,6 +216,14 @@ export function ProjectHome({ project }: { project: ProjectWithStats }) {
         </div>
         <AddTask project={project.id} />
       </section>
+
+      {project.checks.length > 0 ? (
+        <section aria-label="From notes" className="-mx-2 mt-10">
+          <SectionHeader title="From notes" count={project.checks.length} className="px-2" />
+          <p className="px-2 pb-1 text-sm text-text-tertiary">Open checklist items in this project’s notes. Checking one off ticks it in the note.</p>
+          <EntryList entries={project.checks} hideProject />
+        </section>
+      ) : null}
 
       <section aria-label="Notes" className="-mx-2 mt-10">
         <SectionHeader

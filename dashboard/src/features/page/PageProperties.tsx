@@ -3,7 +3,7 @@ import { ArtifactType, TodoStatus, type ArtifactSummary } from '@shared/types';
 import { defer, moveToProject, retype, setDue, setFlag } from '../../data/gateway';
 import { Button, Checkbox, DatePicker, Pill, Property, PropertyRow, cn } from '../../ui';
 import { attempt, completeTask, toastWithUndo } from '../tasks/actions';
-import { dayLabel, dayOf, dueTone, fromDate, toDate } from '../tasks/dates';
+import { dayLabel, dayOf, fromDate, toDate } from '../tasks/dates';
 import { ProjectDot } from '../tasks/ProjectDot';
 import { ProjectPicker } from '../tasks/ProjectPicker';
 import { useProjectRefs } from '../tasks/projectRefs';
@@ -44,7 +44,7 @@ function TaskProperties({ task }: { task: ArtifactSummary }) {
         {done ? 'Done' : task.status === TodoStatus.IN_PROGRESS ? 'In progress' : 'To do'}
       </span>
       <DatePicker value={toDate(due)} onChange={(date) => attempt(setDue(task, fromDate(date)))}>
-        <Property icon={CalendarDays} label="Due" placeholder="Due" tone={due && !done && dueTone(due) === 'overdue' ? 'danger' : 'default'}>
+        <Property icon={CalendarDays} label="Due" placeholder="Due">
           {due ? dayLabel(due) : null}
         </Property>
       </DatePicker>

@@ -54,3 +54,27 @@ export function quickDates(now = new Date()) {
 
 export const toDate = (stamp?: string | null) => (stamp ? atMidnight(stamp.slice(0, 10)) : null);
 export const fromDate = (date: Date | null) => (date ? formatLocalDate(date) : null);
+
+/** "~30m", "~1h", "~1h 30m": an estimate as it reads on a row, and as it is typed in capture. */
+export function formatEstimate(minutes: number): string {
+  const hours = Math.floor(minutes / 60);
+  const rest = Math.round(minutes % 60);
+  if (hours === 0) return `~${rest}m`;
+  return rest ? `~${hours}h ${rest}m` : `~${hours}h`;
+}
+
+/** "45 min", "1 h", "3.5 h": whole hours and halves, for honest totals. */
+export function formatHours(minutes: number): string {
+  if (minutes < 60) return `${Math.max(5, Math.round(minutes / 5) * 5)} min`;
+  const halves = Math.round(minutes / 30) / 2;
+  return `${Number.isInteger(halves) ? halves : halves.toFixed(1)} h`;
+}
+
+/** Where a repeating task goes next, for "Done · next Tue". */
+export function nextLabel(stamp: string, now = new Date()): string {
+  const date = atMidnight(stamp);
+  const diff = differenceInCalendarDays(date, now);
+  if (diff <= 0) return 'again today';
+  if (diff === 1) return 'again tomorrow';
+  return `next ${format(date, diff < 7 ? 'EEE' : 'MMM d')}`;
+}
