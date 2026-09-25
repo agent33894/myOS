@@ -1,21 +1,21 @@
 import { useEffect, useState } from 'react';
 import { ArrowRight, FileCode } from 'lucide-react';
 import type { CommitSummary } from '@shared/ipc/contracts';
-import { invoke } from '../../data/ipc';
+import { commitSummary } from '../../data/git';
 import { Button, Icon, LoadingState } from '../../ui';
 import { DiffStat } from './DiffView';
 
 const summaries = new Map<string, Promise<CommitSummary>>();
 
-/** A commit's summary, fetched once per repository and hash. */
-export function useCommitSummary(projectPath: string, hash: string, enabled: boolean) {
+/** A commit's summary, fetched once per hash. */
+export function useCommitSummary(hash: string, enabled: boolean) {
   const [state, setState] = useState<{ summary?: CommitSummary; error?: string }>({});
   useEffect(() => {
-    if (!enabled || !projectPath || !hash) return;
-    const key = `${projectPath}\u0000${hash}`;
+    if (!enabled || !hash) return;
+    const key = hash;
     let request = summaries.get(key);
     if (!request) {
-      request = invoke('git:commit-summary', projectPath, hash);
+      request = commitSummary(hash);
       summaries.set(key, request);
       request.catch(() => summaries.delete(key));
     }
@@ -27,7 +27,7 @@ export function useCommitSummary(projectPath: string, hash: string, enabled: boo
     return () => {
       current = false;
     };
-  }, [enabled, projectPath, hash]);
+  }, [enabled, hash]);
   return state;
 }
 

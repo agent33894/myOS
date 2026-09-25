@@ -1,12 +1,10 @@
-// Contract between the page and the editor. The page owns the title,
+// Contract between the note tab and the editor. The tab owns the name,
 // properties, and saving; the editor owns the body.
 import { useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react';
 import type { EditorView } from '@tiptap/pm/view';
 import { createPortal } from 'react-dom';
 import { EditorContent, useEditor } from '@tiptap/react';
-import type { ArtifactType } from '@shared/types';
 import { hasPrimaryModifier } from '../lib/platform';
-import { useSettingsStore } from '../store/settings';
 import { useUIStore } from '../store/ui';
 import { cn } from '../ui';
 import { BubbleToolbar } from './bubble/BubbleToolbar';
@@ -21,16 +19,16 @@ import { useMarkdownSync } from './useMarkdownSync';
 import './editor.css';
 
 export interface EditorProps {
-  /** Markdown body. Swapping `artifact` swaps the document without remounting. */
+  /** Markdown body. Swapping `note` swaps the document without remounting. */
   value: string;
   onChange: (markdown: string) => void;
-  artifact: { id: string; filePath: string; type: ArtifactType };
+  note: { path: string };
   placeholder?: string;
-  /** Put the caret in the body once the document is loaded and empty. */
+  /** Put the caret in the body once the note is loaded and empty. */
   autoFocusWhenEmpty?: boolean;
-  /** Where the find bar docks: the page's pinned top bar (null until it mounts). */
+  /** Where the find bar docks: the note's pinned top bar (null until it mounts). */
   findSlot: HTMLElement | null;
-  /** Show the document without editing it (a note revealed during review, a template preview). */
+  /** Show the document without editing it. */
   readOnly?: boolean;
 }
 
@@ -40,7 +38,7 @@ const isTyping = (element: Element | null) =>
 export function Editor({
   value,
   onChange,
-  artifact,
+  note,
   placeholder = 'Start writing, or press / for blocks',
   autoFocusWhenEmpty,
   findSlot,
@@ -49,7 +47,8 @@ export function Editor({
   const [slashKeys] = useState<{ current: ((event: KeyboardEvent) => boolean) | null }>({ current: null });
   const [linkKeys] = useState<{ current: ((event: KeyboardEvent) => boolean) | null }>({ current: null });
   const focusMode = useUIStore((state) => state.focusMode) && !readOnly;
-  const dimParagraphs = useSettingsStore((state) => state.focusDimParagraphs);
+  // Focus mode also dims paragraphs other than the one being written.
+  const dimParagraphs = true;
   const [initialContent] = useState(value);
   const [linkOpen, setLinkOpen] = useState(false);
   const [find, setFind] = useState<{ query: string; opened: number } | null>(null);
@@ -58,7 +57,7 @@ export function Editor({
   const extensions = useMemo(() => createExtensions({ placeholder, slashKeys, linkKeys }), []);
   const editorProps = useMemo(
     () => ({
-      attributes: { class: 'prose', role: 'textbox', 'aria-multiline': 'true', 'aria-label': 'Page body' },
+      attributes: { class: 'prose', role: 'textbox', 'aria-multiline': 'true', 'aria-label': 'Note body' },
       handleClick: (_view: EditorView, _pos: number, event: MouseEvent) => clickRef.current(event),
       handleKeyDown: (view: EditorView, event: KeyboardEvent) => {
         if (!hasPrimaryModifier(event) || event.altKey) return false;
@@ -91,10 +90,10 @@ export function Editor({
     editorProps,
   });
 
-  useMarkdownSync(editor, value, artifact.id, onChange);
-  const links = useLinks(editor, artifact);
+  useMarkdownSync(editor, value, note.path, onChange);
+  const links = useLinks(editor, note.path);
   clickRef.current = links.handleClick;
-  const attachFile = useAttachFile(editor, artifact);
+  const attachFile = useAttachFile(editor, note.path);
 
   useEffect(() => {
     const reset = () => setLinkOpen(false);
@@ -114,7 +113,7 @@ export function Editor({
     if (!autoFocusWhenEmpty || readOnly || value.trim() || editor.isFocused || isTyping(document.activeElement)) return;
     const timer = window.setTimeout(() => editor.commands.focus('start'), 0);
     return () => window.clearTimeout(timer);
-  }, [editor, artifact.id, autoFocusWhenEmpty, value === '']);
+  }, [editor, note.path, autoFocusWhenEmpty, value === '']);
 
   const findBar = find ? (
     <FindBar key={find.opened} editor={editor} initialQuery={find.query} onClose={() => setFind(null)} />
@@ -135,7 +134,7 @@ export function Editor({
         <>
           <BubbleToolbar editor={editor} linkRequest={{ open: linkOpen, setOpen: setLinkOpen }} />
           <SlashMenu editor={editor} keyHandler={slashKeys} onAttachFile={attachFile} />
-          <LinkSuggestMenu editor={editor} filePath={artifact.filePath} keyHandler={linkKeys} />
+          <LinkSuggestMenu editor={editor} filePath={note.path} keyHandler={linkKeys} />
         </>
       )}
       {links.layer}

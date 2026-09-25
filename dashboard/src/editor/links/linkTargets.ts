@@ -1,8 +1,4 @@
-import { ArtifactType, type ArtifactDraft, type ArtifactSummary } from '@shared/types';
-
-/** Pages a `[[link]]` can point at: notes, tasks, and projects (not Inbox captures, journal days, or templates). */
-const LINKABLE = (item: ArtifactSummary) =>
-  item.type !== ArtifactType.INBOX && item.type !== ArtifactType.JOURNAL && item.type !== ArtifactType.TEMPLATE && Boolean(item.title.trim());
+import type { NoteSummary } from '@shared/spec';
 
 /**
  * How well `title` matches `query`: exact, prefix, word start, contains, then
@@ -31,41 +27,30 @@ export function fuzzyScore(title: string, query: string): number {
 }
 
 /**
- * Suggestions for `[[query`: best match first, and among equals the pages
- * opened most recently, then the ones edited most recently.
+ * Suggestions for `[[query`: best match first, and among equals the notes
+ * opened most recently, then the ones changed most recently.
  */
 export function rankLinkTargets(
-  items: readonly ArtifactSummary[],
+  notes: readonly NoteSummary[],
   query: string,
   { recentPaths = [], exclude, limit = 8 }: { recentPaths?: readonly string[]; exclude?: string; limit?: number } = {},
-): ArtifactSummary[] {
-  const recency = (item: ArtifactSummary) => {
-    const index = recentPaths.indexOf(item.filePath);
+): NoteSummary[] {
+  const recency = (note: NoteSummary) => {
+    const index = recentPaths.indexOf(note.path);
     return index < 0 ? recentPaths.length : index;
   };
-  return items
-    .filter((item) => LINKABLE(item) && item.filePath !== exclude)
-    .map((item) => ({ item, score: fuzzyScore(item.title, query) }))
+  return notes
+    .filter((note) => note.path !== exclude)
+    .map((note) => ({ note, score: Math.max(fuzzyScore(note.title, query), fuzzyScore(note.path, query) - 0.5) }))
     .filter(({ score }) => score > 0)
-    .sort(
-      (a, b) =>
-        b.score - a.score || recency(a.item) - recency(b.item) || b.item.updated.localeCompare(a.item.updated),
-    )
+    .sort((a, b) => b.score - a.score || recency(a.note) - recency(b.note) || b.note.modified.localeCompare(a.note.modified))
     .slice(0, limit)
-    .map(({ item }) => item);
+    .map(({ note }) => note);
 }
 
-/**
- * A note made from a link (`[[Missing page]]` or Create “…”) lives near the
- * page that links to it: the same area, and the same project when that page
- * is in one (or is the project itself). Otherwise it takes the default area.
- */
-export function linkedNoteDraft(title: string, from: ArtifactSummary | undefined): ArtifactDraft {
-  const project = from?.type === ArtifactType.PROJECT ? from.id : from?.project;
-  return {
-    type: ArtifactType.MEMO,
-    title,
-    ...(from?.domain && from.type !== ArtifactType.JOURNAL ? { domain: from.domain } : {}),
-    ...(project ? { project } : {}),
-  };
+/** A note made from a link (`[[Missing note]]` or Create “…”) goes in the linking note's folder. */
+export function linkedNotePath(title: string, fromPath: string): string {
+  const name = title.replace(/[\\/:*?"<>|#^[\]]+/g, ' ').replace(/\s+/g, ' ').trim() || 'Untitled';
+  const folder = fromPath.includes('/') ? fromPath.slice(0, fromPath.lastIndexOf('/') + 1) : '';
+  return `${folder}${name}.md`;
 }

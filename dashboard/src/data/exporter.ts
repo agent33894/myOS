@@ -1,11 +1,10 @@
-import type { ArtifactSummary } from '@shared/types';
 import { invoke } from './ipc';
 
-/** Save the page as PDF through the native save dialog; resolves to the saved path, or null when cancelled. */
-export const exportPdf = (item: Pick<ArtifactSummary, 'filePath'>, html: string) => invoke('export:pdf', item.filePath, html);
+/** Save the note as PDF through the native save dialog; resolves to the saved path, or null when cancelled. */
+export const exportPdf = (path: string, html: string) => invoke('export:pdf', path, html);
 
-/** Save the page as a single self-contained HTML file; resolves to the saved path, or null when cancelled. */
-export const exportHtml = (item: Pick<ArtifactSummary, 'filePath'>, html: string) => invoke('export:html', item.filePath, html);
+/** Save the note as a single self-contained HTML file; resolves to the saved path, or null when cancelled. */
+export const exportHtml = (path: string, html: string) => invoke('export:html', path, html);
 
 // The reading styles of the light theme (src/styles/tokens.css, _prose.css), inlined so the file stands alone.
 const READING_CSS = `

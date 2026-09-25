@@ -1,4 +1,4 @@
-import type { ArtifactSummary } from '@shared/types';
+import type { NoteSummary } from '@shared/spec';
 
 /** Markdown reduced to the words a person reads, for matching and snippets. */
 export function plainText(markdown: string): string {
@@ -15,15 +15,15 @@ export function plainText(markdown: string): string {
 }
 
 export interface SearchDoc {
-  item: ArtifactSummary;
+  item: NoteSummary;
   title: string;
   body: string;
   bodyLower: string;
 }
 
-export function buildIndex(items: readonly ArtifactSummary[]): SearchDoc[] {
+export function buildIndex(items: readonly NoteSummary[]): SearchDoc[] {
   return items.map((item) => {
-    const body = plainText(item.searchText ?? '');
+    const body = plainText(item.searchText);
     return { item, title: item.title.toLowerCase(), body, bodyLower: body.toLowerCase() };
   });
 }
@@ -78,13 +78,13 @@ function snippetFor(doc: SearchDoc, query: string): Snippet | undefined {
 }
 
 export interface Hit {
-  item: ArtifactSummary;
+  item: NoteSummary;
   score: number;
   /** Present for matches found in the body rather than the title. */
   snippet?: Snippet;
 }
 
-/** Title matches first (prefix, word, contains), then full-text matches; ties go to the most recently edited. */
+/** Title matches first (prefix, word, contains), then full-text matches; ties go to the most recently changed. */
 export function searchDocs(index: readonly SearchDoc[], query: string, limit = 30): Hit[] {
   const tokens = tokensOf(query);
   if (tokens.length === 0) return [];
@@ -102,7 +102,7 @@ export function searchDocs(index: readonly SearchDoc[], query: string, limit = 3
       (a, b) =>
         b.score - a.score ||
         (a.snippet ? 0 : a.item.title.length - b.item.title.length) ||
-        b.item.updated.localeCompare(a.item.updated),
+        b.item.modified.localeCompare(a.item.modified),
     )
     .slice(0, limit);
 }

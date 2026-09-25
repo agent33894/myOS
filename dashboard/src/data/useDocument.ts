@@ -1,27 +1,27 @@
 import { useCallback, useEffect, useReducer, useRef } from 'react';
 import { toast } from 'sonner';
-import type { Artifact } from '@shared/types';
-import { read, save } from './gateway';
+import type { Note } from '@shared/spec';
+import { createNote, read, save } from './gateway';
 import { IpcError, isConflict } from './ipc';
 import { useDataStore } from './store';
 
 const AUTOSAVE_DELAY_MS = 1000;
 
 interface Version {
+  /** Empty for a file that does not exist yet and is made on the first save. */
   rev: string;
-  title: string;
   content: string;
 }
 
 export interface DocumentConflict {
-  theirs: Artifact;
+  theirs: Note;
 }
 
 /** One open document: what's on disk (`base`), local edits (`draft`), and a queue of disk operations. */
 interface Session {
   path: string;
   base: Version | null;
-  draft: { title: string; content: string } | null;
+  draft: string | null;
   conflict: DocumentConflict | null;
   missing: boolean;
   saving: boolean;
@@ -29,11 +29,7 @@ interface Session {
   queue: Promise<void>;
 }
 
-const versionOf = (artifact: Artifact): Version => ({
-  rev: artifact.rev,
-  title: artifact.title,
-  content: artifact.content,
-});
+const versionOf = (note: Note): Version => ({ rev: note.rev, content: note.content });
 
 const openSession = (path: string): Session => ({
   path,
@@ -50,10 +46,12 @@ const openSession = (path: string): Session => ({
  * The editor's view of one file. Autosaves local edits against the rev they
  * were made on; reloads silently when the file changes on disk and nothing is
  * unsaved; otherwise raises `conflict` instead of overwriting. Our own saves
- * are recognised because their rev is the one we just wrote.
+ * are recognised because their rev is the one we just wrote. With
+ * `createOnWrite`, a missing file (today's daily note) opens empty and is
+ * made on the first edit.
  */
-export function useDocument(path: string | null) {
-  const artifact = useDataStore((state) => (path ? state.byPath[path] : undefined));
+export function useDocument(path: string | null, { createOnWrite = false } = {}) {
+  const note = useDataStore((state) => (path ? state.notes[path] : undefined));
   const [, rerender] = useReducer((tick: number) => tick + 1, 0);
   const sessionRef = useRef<Session>(openSession(path ?? ''));
   const timerRef = useRef<number | null>(null);
@@ -71,19 +69,14 @@ export function useDocument(path: string | null) {
 
   /** Compare the file on disk with what the editor was built on. */
   const reconcile = useCallback(
-    async (session: Session, theirs?: Artifact) => {
+    async (session: Session, theirs?: Note) => {
       if (!session.base) return;
-      if (!theirs && useDataStore.getState().byPath[session.path]?.rev === session.base.rev) return;
+      if (!theirs && useDataStore.getState().notes[session.path]?.rev === session.base.rev) return;
       const disk = theirs ?? (await read(session.path));
       if (disk.rev === session.base.rev) return;
-      if (session.draft && disk.content !== session.base.content) {
-        session.conflict = { theirs: disk };
-      } else {
-        // Only frontmatter moved (a status toggle, a rename elsewhere): local body edits still
-        // apply, and a title the user hasn't touched follows the file.
-        if (session.draft?.title === session.base.title) session.draft = { ...session.draft, title: disk.title };
-        session.base = versionOf(disk);
-      }
+      // Only properties moved (a task checked from a list, a property set elsewhere): local body edits still apply.
+      if (session.draft !== null && disk.content !== session.base.content) session.conflict = { theirs: disk };
+      else session.base = versionOf(disk);
       update(session);
     },
     [update],
@@ -92,14 +85,12 @@ export function useDocument(path: string | null) {
   const persist = useCallback(
     async (session: Session): Promise<void> => {
       const { draft, base } = session;
-      if (!draft || !base || session.conflict) return;
+      if (draft === null || !base || session.conflict) return;
       session.saving = true;
       update(session);
       let rebased = false;
       try {
-        const title = draft.title.trim();
-        const fields = title && title !== base.title ? { title } : {};
-        const saved = await save(session.path, { fields, content: draft.content }, base.rev);
+        const saved = base.rev ? await save(session.path, { content: draft }, base.rev) : await createNote(session.path, draft);
         session.base = versionOf(saved);
         if (session.draft === draft) session.draft = null;
         session.lastSaved = new Date();
@@ -112,7 +103,7 @@ export function useDocument(path: string | null) {
         update(session);
       }
       // Retry after a frontmatter-only change on disk, and save edits typed while this save ran.
-      if (rebased || (session.draft && session.draft !== draft)) return persist(session);
+      if (rebased || (session.draft !== null && session.draft !== draft)) return persist(session);
     },
     [reconcile, update],
   );
@@ -132,10 +123,10 @@ export function useDocument(path: string | null) {
   useEffect(() => {
     const session = sessionRef.current;
     if (path && !session.base) {
-      const { bodies, byPath } = useDataStore.getState();
+      const { bodies, notes } = useDataStore.getState();
       const cached = bodies[path];
-      if (cached && cached.rev === byPath[path]?.rev) {
-        session.base = { rev: cached.rev, title: byPath[path].title, content: cached.content };
+      if (cached && cached.rev === notes[path]?.rev) {
+        session.base = { rev: cached.rev, content: cached.content };
         update(session);
       } else {
         void enqueue(session, async () => {
@@ -143,7 +134,8 @@ export function useDocument(path: string | null) {
             session.base = versionOf(await read(path));
           } catch (error) {
             if (!(error instanceof IpcError && error.code === 'NOT_FOUND')) throw error;
-            session.missing = true;
+            if (createOnWrite) session.base = { rev: '', content: '' };
+            else session.missing = true;
           }
           update(session);
         });
@@ -155,10 +147,10 @@ export function useDocument(path: string | null) {
       window.removeEventListener('beforeunload', onBeforeUnload);
       void flush(session);
     };
-  }, [path, enqueue, flush, update]);
+  }, [path, createOnWrite, enqueue, flush, update]);
 
   // The file changed on disk (another app, Git, our own list actions): reconcile after queued work.
-  const diskRev = artifact?.rev;
+  const diskRev = note?.rev;
   useEffect(() => {
     const session = sessionRef.current;
     if (!diskRev || !session.base || diskRev === session.base.rev) return;
@@ -166,11 +158,10 @@ export function useDocument(path: string | null) {
   }, [diskRev, enqueue, reconcile]);
 
   const edit = useCallback(
-    (change: { title?: string; content?: string }) => {
+    (content: string) => {
       const session = sessionRef.current;
-      const current = session.draft ?? session.base;
-      if (!current) return;
-      session.draft = { title: change.title ?? current.title, content: change.content ?? current.content };
+      if (!session.base) return;
+      session.draft = content;
       update(session);
       if (timerRef.current !== null) window.clearTimeout(timerRef.current);
       timerRef.current = window.setTimeout(() => void flush(session), AUTOSAVE_DELAY_MS);
@@ -183,8 +174,7 @@ export function useDocument(path: string | null) {
     const session = sessionRef.current;
     if (!session.conflict || !session.base) return Promise.resolve();
     const { theirs } = session.conflict;
-    const mine = session.draft ?? session.base;
-    session.draft = { title: mine.title === session.base.title ? theirs.title : mine.title, content: mine.content };
+    session.draft = session.draft ?? session.base.content;
     session.base = versionOf(theirs);
     session.conflict = null;
     return flush(session);
@@ -203,13 +193,11 @@ export function useDocument(path: string | null) {
   const saveNow = useCallback(() => flush(), [flush]);
 
   const session = sessionRef.current;
-  const shown = session.draft ?? session.base;
   return {
-    /** Live metadata for the file (undefined once it is gone). */
-    artifact,
-    title: shown?.title ?? artifact?.title ?? '',
+    /** Live metadata for the file (undefined once it is gone, or before a new file is made). */
+    note,
     /** The body; null while loading or when the file no longer exists. */
-    content: shown?.content ?? null,
+    content: session.draft ?? session.base?.content ?? null,
     missing: session.missing,
     dirty: session.draft !== null,
     saving: session.saving,

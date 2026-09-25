@@ -1,7 +1,7 @@
-const ABSOLUTE_URL_PATTERN = /^(myos|file|https?):\/\//i;
+const ABSOLUTE_URL_PATTERN = /^(myos-next|file|https?):\/\//i;
 const NON_FILE_SCHEME_PATTERN = /^(mailto|tel|data):/i;
 
-/** Workspace asset paths (`assets/…`) load through the app's `myos://` protocol. */
+/** Attachment paths (`assets/…`) load through the app's `myos-next://` protocol. */
 export function resolveAssetUrl(
   value: string | undefined | null
 ): string | undefined {
@@ -26,5 +26,5 @@ export function resolveAssetUrl(
     return value;
   }
 
-  return `myos://${encodeURI(cleaned)}`;
+  return `myos-next://${encodeURI(cleaned)}`;
 }

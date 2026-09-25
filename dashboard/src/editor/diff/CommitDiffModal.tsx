@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Columns2, Rows3 } from 'lucide-react';
 import type { CommitSummary } from '@shared/ipc/contracts';
-import { invoke } from '../../data/ipc';
+import { commitDiff } from '../../data/git';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, EmptyState, LoadingState, SegmentedControl } from '../../ui';
 import { DiffFileSection, DiffStat, type DiffLayout } from './DiffView';
 import { parseDiff } from './parseDiff';
@@ -11,8 +11,6 @@ interface CommitDiffModalProps {
   onClose: () => void;
   commitHash: string;
   commitMessage?: string;
-  /** Repository the commit lives in. */
-  projectPath: string;
   summary?: CommitSummary | null;
 }
 
@@ -22,22 +20,22 @@ const LAYOUTS = [
 ] as const;
 
 /** Every file a commit changed, as a unified or side-by-side diff. */
-export function CommitDiffModal({ isOpen, onClose, commitHash, commitMessage, projectPath, summary }: CommitDiffModalProps) {
+export function CommitDiffModal({ isOpen, onClose, commitHash, commitMessage, summary }: CommitDiffModalProps) {
   const [diff, setDiff] = useState<{ raw: string } | { error: string } | null>(null);
   const [layout, setLayout] = useState<DiffLayout>('unified');
 
   useEffect(() => {
-    if (!isOpen || !commitHash || !projectPath) return;
+    if (!isOpen || !commitHash) return;
     let current = true;
     setDiff(null);
-    invoke('git:commit-diff', projectPath, commitHash).then(
+    commitDiff(commitHash).then(
       (raw) => current && setDiff({ raw }),
       (error: unknown) => current && setDiff({ error: error instanceof Error ? error.message : 'Couldn’t load this commit' }),
     );
     return () => {
       current = false;
     };
-  }, [isOpen, commitHash, projectPath]);
+  }, [isOpen, commitHash]);
 
   const files = useMemo(() => (diff && 'raw' in diff ? parseDiff(diff.raw) : []), [diff]);
   const totals = files.reduce((sum, file) => ({ additions: sum.additions + file.additions, deletions: sum.deletions + file.deletions }), { additions: 0, deletions: 0 });

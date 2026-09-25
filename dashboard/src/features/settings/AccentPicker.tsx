@@ -2,7 +2,7 @@ import { useRef, type KeyboardEvent } from 'react';
 import { Check, Monitor, Plus } from 'lucide-react';
 import { ACCENTS, isHexColor, resolveAccent, SYSTEM_ACCENT } from '@shared/design-system/accents';
 import { useSystemAccent } from '../../app/useSystemAccent';
-import { useSettingsStore } from '../../store/settings';
+import { setAccentPreview, updateSettings, useSettings } from '../../store/settings';
 import { Button, Icon, Tooltip, cn } from '../../ui';
 
 interface Option {
@@ -15,10 +15,13 @@ const swatch =
 
 /** Accent swatches: hover previews across the app, click or arrow keys choose. */
 export function AccentPicker() {
-  const accent = useSettingsStore((state) => state.accent);
-  const preview = useSettingsStore((state) => state.accentPreview);
-  const setAccent = useSettingsStore((state) => state.setAccent);
-  const setPreview = useSettingsStore((state) => state.setAccentPreview);
+  const accent = useSettings((state) => state.accent);
+  const preview = useSettings((state) => state.accentPreview);
+  const setAccent = (next: string) => {
+    setAccentPreview(null);
+    void updateSettings({ accent: next });
+  };
+  const setPreview = setAccentPreview;
   const systemAccent = useSystemAccent();
   const groupRef = useRef<HTMLDivElement>(null);
 

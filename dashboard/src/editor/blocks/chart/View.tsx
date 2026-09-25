@@ -18,14 +18,14 @@ import {
   YAxis,
 } from 'recharts';
 import { format, isValid, parseISO } from 'date-fns';
-import { projectSwatches } from '@shared/design-system/accents';
+import { chartSwatches } from '@shared/design-system/accents';
 import { useAccent } from '../../../app/useAccent';
 import { formatNumber, formatTick } from '../format';
 import { DEFAULT_HEIGHT, type CartesianChart, type Chart, type PieChart as PieSpec } from './model';
 import { niceTicks, valueRange } from './scale';
 
 // Loaded on demand (recharts is heavy). Axis, grid, and cursor colors come from
-// tokens in _tiptap.css; series use the accent, then the project swatches.
+// tokens in _tiptap.css; series use the accent, then the chart swatches.
 
 interface Entry {
   name?: string | number;
@@ -143,7 +143,7 @@ function Donut({ chart, palette }: { chart: PieSpec; palette: string[] }) {
 
 export default function ChartView({ value: chart }: { value: Chart }) {
   const { hex } = useAccent();
-  const palette = useMemo(() => [hex, ...projectSwatches.map((swatch) => swatch.hex)], [hex]);
+  const palette = useMemo(() => [hex, ...chartSwatches.map((swatch) => swatch.hex)], [hex]);
   return (
     <figure className="chart-block m-0 font-sans">
       {chart.title || chart.description ? (

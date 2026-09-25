@@ -1,26 +1,23 @@
 import { useEffect, useId, useMemo, useState } from 'react';
 import type { Editor } from '@tiptap/react';
-import { FilePlus } from 'lucide-react';
+import { FilePlus, FileText } from 'lucide-react';
 import { toast } from 'sonner';
-import { ArtifactType, type ArtifactSummary } from '@shared/types';
-import { create } from '../../data/gateway';
-import { useArtifacts } from '../../data/selectors';
-import { useDataStore } from '../../data/store';
-import { useUIStore } from '../../store/ui';
+import type { NoteSummary } from '@shared/spec';
+import { createNote } from '../../data/gateway';
+import { useNotes } from '../../data/selectors';
+import { useSettings } from '../../store/settings';
 import { cn, Icon, Popover, PopoverAnchor, PopoverContent } from '../../ui';
-import { itemIcon, kindLabel } from '../../lib/itemKinds';
-import { findWikiLinkedArtifact } from '../../lib/artifactLinks';
-import { linkedNoteDraft, rankLinkTargets } from './linkTargets';
+import { findWikiLinkedNote } from '../../lib/links';
+import { linkedNotePath, rankLinkTargets } from './linkTargets';
 import { closeLinkSuggest, linkSuggestKey, type LinkSuggestState } from './wikiSuggest';
 
-type Option = { kind: 'page'; item: ArtifactSummary } | { kind: 'create'; title: string };
+type Option = { kind: 'page'; item: NoteSummary } | { kind: 'create'; title: string };
 
-const describe = (item: ArtifactSummary) =>
-  item.type === ArtifactType.TODO ? 'Task' : item.type === ArtifactType.PROJECT ? 'Project' : (kindLabel(item.type) ?? 'Note');
+const folderOf = (path: string) => (path.includes('/') ? path.slice(0, path.lastIndexOf('/')) : '');
 
 interface LinkSuggestMenuProps {
   editor: Editor;
-  /** The page being edited, left out of its own suggestions. */
+  /** The note being edited, left out of its own suggestions. */
   filePath: string;
   keyHandler: { current: ((event: KeyboardEvent) => boolean) | null };
 }
@@ -31,8 +28,8 @@ interface LinkSuggestMenuProps {
  * editor; arrows, Enter, Tab, and Escape drive it.
  */
 export function LinkSuggestMenu({ editor, filePath, keyHandler }: LinkSuggestMenuProps) {
-  const artifacts = useArtifacts();
-  const recentPaths = useUIStore((state) => state.recentPaths);
+  const notes = useNotes();
+  const recentPaths = useSettings((state) => state.recentFiles);
   const [state, setState] = useState<LinkSuggestState>({ active: false, from: 0, query: '' });
   const [activeIndex, setActiveIndex] = useState(0);
   const id = useId();
@@ -51,11 +48,11 @@ export function LinkSuggestMenu({ editor, filePath, keyHandler }: LinkSuggestMen
 
   const options = useMemo<Option[]>(() => {
     if (!state.active) return [];
-    const pages: Option[] = rankLinkTargets(artifacts, state.query, { recentPaths, exclude: filePath }).map((item) => ({ kind: 'page', item }));
+    const pages: Option[] = rankLinkTargets(notes, state.query, { recentPaths, exclude: filePath }).map((item) => ({ kind: 'page', item }));
     const title = state.query.trim();
-    const exists = title && findWikiLinkedArtifact(title, artifacts);
+    const exists = title && findWikiLinkedNote(title, notes);
     return title && !exists ? [...pages, { kind: 'create', title }] : pages;
-  }, [state, artifacts, recentPaths, filePath]);
+  }, [state, notes, recentPaths, filePath]);
 
   useEffect(() => setActiveIndex(0), [state.query, state.active]);
 
@@ -80,7 +77,7 @@ export function LinkSuggestMenu({ editor, filePath, keyHandler }: LinkSuggestMen
       return;
     }
     insert(option.title);
-    create(linkedNoteDraft(option.title, useDataStore.getState().byPath[filePath]), `Create “${option.title}”`).catch((error: unknown) =>
+    createNote(linkedNotePath(option.title, filePath)).catch((error: unknown) =>
       toast.error(error instanceof Error ? error.message : 'Could not create the note'),
     );
   };
@@ -153,12 +150,12 @@ export function LinkSuggestMenu({ editor, filePath, keyHandler }: LinkSuggestMen
         onMouseDown={(event) => event.preventDefault()}
       >
         <div className="px-2 pb-1 pt-2 text-xs font-medium text-text-secondary">{state.query.trim() ? 'Link to' : 'Recent'}</div>
-        <div id={`${id}-list`} role="listbox" aria-label="Link to a page" className="max-h-80 overflow-y-auto">
+        <div id={`${id}-list`} role="listbox" aria-label="Link to a note" className="max-h-80 overflow-y-auto">
           {options.map((option, index) => {
             const selected = index === activeIndex;
             return (
               <div
-                key={option.kind === 'page' ? option.item.filePath : 'create'}
+                key={option.kind === 'page' ? option.item.path : 'create'}
                 id={optionId(index)}
                 role="option"
                 aria-selected={selected}
@@ -172,9 +169,9 @@ export function LinkSuggestMenu({ editor, filePath, keyHandler }: LinkSuggestMen
               >
                 {option.kind === 'page' ? (
                   <>
-                    <Icon icon={itemIcon(option.item.type)} className="shrink-0 text-text-tertiary" />
+                    <Icon icon={FileText} className="shrink-0 text-text-tertiary" />
                     <span className="min-w-0 flex-1 truncate text-text">{option.item.title}</span>
-                    <span className="shrink-0 text-xs text-text-tertiary">{describe(option.item)}</span>
+                    <span className="max-w-32 shrink-0 truncate font-mono text-xs text-text-tertiary">{folderOf(option.item.path)}</span>
                   </>
                 ) : (
                   <>

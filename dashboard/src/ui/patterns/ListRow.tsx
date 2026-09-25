@@ -9,7 +9,7 @@ interface ListRowProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
   leading?: ReactNode;
   /** The row's title. */
   children: ReactNode;
-  /** Quiet metadata after the title (date, count, project). */
+  /** Quiet metadata after the title (date, count, path). */
   meta?: ReactNode;
   /** Controls at the end of the row, such as an IconButton. */
   trailing?: ReactNode;

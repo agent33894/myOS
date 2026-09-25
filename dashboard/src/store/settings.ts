@@ -1,56 +1,54 @@
+import { toast } from 'sonner';
 import { create } from 'zustand';
-import {
-  getDefaultSettings,
-  getStorableSettings,
-  loadSettings,
-  saveSettings,
-  type ReadingFont,
-  type StoredSettings,
-  type ThemeMode,
-} from './settingsPersistence';
+import { DEFAULT_SETTINGS, type Settings } from '@shared/settings';
+import { invoke } from '../data/ipc';
 
-interface SettingsState extends StoredSettings {
-  /** Transient accent shown while the user hovers a swatch; never persisted. */
+interface SettingsState extends Settings {
+  /** False until the main process has answered; the shell waits for it. */
+  loaded: boolean;
+  /** An accent shown while the user hovers a swatch; never saved. */
   accentPreview: string | null;
-  setThemeMode: (mode: ThemeMode) => void;
-  setAccent: (accent: string) => void;
-  setAccentPreview: (accent: string | null) => void;
-  setReadingFont: (font: ReadingFont) => void;
-  setRemindDueToday: (value: boolean) => void;
-  setHasCompletedOnboarding: (value: boolean) => void;
-  /** Any stored setting, e.g. `setSetting('defaultArea', Domain.WORK)`. */
-  setSetting: <K extends keyof StoredSettings>(key: K, value: StoredSettings[K]) => void;
-  resetAllSettings: () => void;
 }
 
-export const useSettingsStore = create<SettingsState>((set, get) => {
-  const initial = loadSettings();
-  const persist = (next: Partial<StoredSettings>) => {
-    const state = { ...get(), ...next };
-    set(next);
-    saveSettings(getStorableSettings(state));
-  };
+/** The app's settings, mirrored from the settings file in the app data folder. */
+export const useSettings = create<SettingsState>(() => ({ ...DEFAULT_SETTINGS, loaded: false, accentPreview: null }));
 
-  return {
-    ...initial,
-    accentPreview: null,
-    setThemeMode: (themeMode) => persist({ themeMode }),
-    setAccent: (accent) => {
-      set({ accentPreview: null });
-      persist({ accent });
-    },
-    setAccentPreview: (accentPreview) => set({ accentPreview }),
-    setReadingFont: (readingFont) => persist({ readingFont }),
-    setRemindDueToday: (remindDueToday) => persist({ remindDueToday }),
-    setHasCompletedOnboarding: (hasCompletedOnboarding) => persist({ hasCompletedOnboarding }),
-    setSetting: (key, value) => persist({ [key]: value }),
-    resetAllSettings: () => {
-      const defaults = {
-        ...getDefaultSettings(),
-        hasCompletedOnboarding: get().hasCompletedOnboarding,
-      };
-      set(defaults);
-      saveSettings(defaults);
-    },
-  };
-});
+// The theme is applied before the first paint from this copy (public/theme-init.js).
+const APPEARANCE_KEY = 'myos-next-appearance';
+
+function remember({ theme, readingFont }: Settings) {
+  try {
+    localStorage.setItem(APPEARANCE_KEY, JSON.stringify({ theme, readingFont }));
+  } catch {
+    // Storage unavailable: the first frame may just flash the default theme.
+  }
+}
+
+export async function loadSettings(): Promise<void> {
+  const settings = await invoke('settings:get');
+  useSettings.setState({ ...settings, loaded: true });
+  remember(settings);
+}
+
+/** Change settings now, save them in the background, and roll back if the save fails. */
+export async function updateSettings(patch: Partial<Settings>): Promise<void> {
+  const { loaded: _loaded, accentPreview: _preview, ...before } = useSettings.getState();
+  useSettings.setState(patch);
+  try {
+    const saved = await invoke('settings:set', patch);
+    useSettings.setState(saved);
+    remember(saved);
+  } catch (error) {
+    useSettings.setState(Object.fromEntries(Object.keys(patch).map((key) => [key, before[key as keyof Settings]])));
+    toast.error(error instanceof Error ? error.message : 'Could not save that setting');
+  }
+}
+
+export const setAccentPreview = (accentPreview: string | null) => useSettings.setState({ accentPreview });
+
+/** Put `path` first in the recent files. */
+export function addRecentFile(path: string): void {
+  const recent = useSettings.getState().recentFiles;
+  if (recent[0] === path) return;
+  void updateSettings({ recentFiles: [path, ...recent.filter((item) => item !== path)] });
+}

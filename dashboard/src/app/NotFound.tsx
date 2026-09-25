@@ -10,7 +10,7 @@ export function NotFound() {
       <EmptyState
         icon={Compass}
         title="Nothing here"
-        description="This page may have moved, or the link is out of date."
+        description="This link may be out of date."
         action={
           <Button variant="primary" onClick={() => navigate(paths.today)}>
             Go to Today

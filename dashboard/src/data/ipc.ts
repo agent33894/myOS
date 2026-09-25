@@ -29,7 +29,7 @@ export const isConflict = (error: unknown) => error instanceof IpcError && error
 /** The renderer's only door to the main process: typed, and failures arrive as thrown `IpcError`s. */
 export async function invoke<K extends IpcInvokeChannel>(channel: K, ...args: IpcInvokeArgs<K>): Promise<IpcValue<K>> {
   const bridge = window.electronAPI;
-  if (!bridge) throw new IpcError('INTERNAL', 'myOS is not running inside its desktop shell.');
+  if (!bridge) throw new IpcError('INTERNAL', 'myOS Next is not running inside its desktop shell.');
   const result = await bridge.invoke(channel, ...args);
   if (!result.ok) throw new IpcError(result.error.code, result.error.message);
   return result.value;

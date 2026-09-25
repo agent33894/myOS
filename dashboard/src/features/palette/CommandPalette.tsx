@@ -1,19 +1,14 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Circle, CheckCircle2, FileText, Inbox, Search } from 'lucide-react';
-import { projectSwatchFor } from '@shared/design-system/accents';
-import { ArtifactType, TodoStatus, type ArtifactSummary } from '@shared/types';
-import { toItemUrl } from '../../app/navigation';
-import { useArtifacts } from '../../data/selectors';
-import { useDataStore } from '../../data/store';
-import { useSettingsStore } from '../../store/settings';
-import { useUIStore } from '../../store/ui';
+import { FileText, Search } from 'lucide-react';
+import type { NoteSummary } from '@shared/spec';
+import { useCommands, type Command } from '../../app/commands';
+import { openNote } from '../../app/navigation';
+import { useNotes } from '../../data/selectors';
+import { closeOverlay, useUIStore } from '../../store/ui';
 import { Dialog, DialogContent, DialogTitle, Icon, Input, Kbd, cn } from '../../ui';
-import { kindLabel } from '../../lib/itemKinds';
 import { buildIndex, labelScore, searchDocs, type Snippet } from './search';
-import { usePaletteCommands, type Command } from './usePaletteCommands';
 
-type GroupName = 'Recent' | 'Go to' | 'Actions' | 'Results';
+type GroupName = Command['group'] | 'Notes';
 
 interface Row {
   id: string;
@@ -26,25 +21,7 @@ interface Row {
   run: () => void;
 }
 
-const GROUP_ORDER: GroupName[] = ['Recent', 'Go to', 'Actions', 'Results'];
-function ItemGlyph({ item }: { item: ArtifactSummary }) {
-  if (item.type === ArtifactType.PROJECT) {
-    return (
-      <span className="grid size-4 place-items-center">
-        <span className="size-2 rounded-full" style={{ background: projectSwatchFor(item.title, item.swatch).hex }} />
-      </span>
-    );
-  }
-  const glyph =
-    item.type === ArtifactType.TODO
-      ? item.status === TodoStatus.DONE
-        ? CheckCircle2
-        : Circle
-      : item.type === ArtifactType.INBOX
-        ? Inbox
-        : FileText;
-  return <Icon icon={glyph} className="text-text-tertiary" />;
-}
+const GROUP_ORDER: GroupName[] = ['Go to', 'Note', 'Tasks', 'Git', 'App', 'Notes'];
 
 /** `text` with the first case-insensitive occurrence of `query` emphasized. */
 function Highlight({ text, query }: { text: string; query: string }) {
@@ -60,68 +37,43 @@ function Highlight({ text, query }: { text: string; query: string }) {
 }
 
 function PaletteBody({ onClose }: { onClose: () => void }) {
-  const navigate = useNavigate();
-  const artifacts = useArtifacts();
-  const recentPaths = useUIStore((state) => state.recentPaths);
-  const commands = usePaletteCommands();
+  const notes = useNotes();
+  const commands = useCommands();
   const [query, setQuery] = useState('');
   const [active, setActive] = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
-
-  const includeJournal = useSettingsStore((state) => state.includeJournalInSearch);
-  // Templates are reached through New from template…; journal days only when Settings says so.
-  const index = useMemo(
-    () =>
-      buildIndex(
-        artifacts.filter(
-          (item) => item.type !== ArtifactType.TEMPLATE && (includeJournal || item.type !== ArtifactType.JOURNAL),
-        ),
-      ),
-    [artifacts, includeJournal],
-  );
-  const projectTitles = useMemo(
-    () => new Map(artifacts.filter((item) => item.type === ArtifactType.PROJECT).map((item) => [item.id, item.title])),
-    [artifacts],
-  );
+  const index = useMemo(() => buildIndex(notes), [notes]);
 
   const rows = useMemo<Row[]>(() => {
     const needle = query.trim();
-    const itemRow = (item: ArtifactSummary, group: GroupName, snippet?: Snippet): Row => {
-      const kind = kindLabel(item.type);
-      const project = item.project ? (projectTitles.get(item.project) ?? item.project) : undefined;
-      return {
-        id: `${group}-${item.filePath}`,
-        group,
-        label: item.title,
-        leading: <ItemGlyph item={item} />,
-        meta: [kind, project].filter(Boolean).join(' · ') || undefined,
-        snippet,
-        run: () => navigate(toItemUrl(item)),
-      };
-    };
+    const noteRow = (note: NoteSummary, snippet?: Snippet): Row => ({
+      id: `note-${note.path}`,
+      group: 'Notes',
+      label: note.title,
+      leading: <Icon icon={FileText} className="text-text-tertiary" />,
+      meta: note.path.includes('/') ? note.path.slice(0, note.path.lastIndexOf('/')) : undefined,
+      snippet,
+      run: () => openNote(note.path),
+    });
     const commandRow = (command: Command): Row => ({
       id: command.id,
       group: command.group,
       label: command.label,
-      leading: <Icon icon={command.icon} className="text-text-tertiary" />,
+      leading: command.icon ? <Icon icon={command.icon} className="text-text-tertiary" /> : null,
       shortcut: command.shortcut,
       run: command.run,
     });
 
-    if (!needle) {
-      const byPath = useDataStore.getState().byPath;
-      const recent = recentPaths.flatMap((path) => (byPath[path] ? [itemRow(byPath[path], 'Recent')] : []));
-      return [...recent, ...commands.filter((command) => !command.searchOnly).map(commandRow)];
-    }
+    if (!needle) return commands.map(commandRow).sort((a, b) => GROUP_ORDER.indexOf(a.group) - GROUP_ORDER.indexOf(b.group));
 
     const matched = commands
       .map((command) => ({ command, score: Math.max(labelScore(command.label, needle), labelScore(command.keywords ?? '', needle) - 1) }))
       .filter(({ score }) => score > 0)
       .sort((a, b) => b.score - a.score)
       .map(({ command }) => commandRow(command));
-    const results = searchDocs(index, needle).map((hit) => itemRow(hit.item, 'Results', hit.snippet));
+    const results = searchDocs(index, needle).map((hit) => noteRow(hit.item, hit.snippet));
     return [...matched, ...results].sort((a, b) => GROUP_ORDER.indexOf(a.group) - GROUP_ORDER.indexOf(b.group));
-  }, [query, commands, index, recentPaths, projectTitles, navigate]);
+  }, [query, commands, index]);
 
   useEffect(() => setActive(0), [query]);
   useEffect(() => {
@@ -163,7 +115,7 @@ function PaletteBody({ onClose }: { onClose: () => void }) {
           autoFocus
           variant="ghost"
           role="combobox"
-          aria-label="Search notes, tasks, projects, and commands"
+          aria-label="Search commands and notes"
           aria-expanded="true"
           aria-controls="palette-results"
           aria-autocomplete="list"
@@ -242,18 +194,17 @@ function PaletteBody({ onClose }: { onClose: () => void }) {
   );
 }
 
-/** ⌘K: titles, full text, recent items, and commands in one list. */
+/** ⌘K: every command, and notes by title and full text. */
 export function CommandPalette() {
-  const open = useUIStore((state) => state.isCommandPaletteOpen);
-  const close = useUIStore((state) => state.closeCommandPalette);
+  const open = useUIStore((state) => state.overlay === 'palette');
   return (
-    <Dialog open={open} onOpenChange={(next) => !next && close()}>
+    <Dialog open={open} onOpenChange={(next) => !next && closeOverlay()}>
       <DialogContent
         size="lg"
         aria-describedby={undefined}
         className="mt-16 gap-0 self-start overflow-hidden p-0"
       >
-        {open ? <PaletteBody onClose={close} /> : null}
+        {open ? <PaletteBody onClose={closeOverlay} /> : null}
       </DialogContent>
     </Dialog>
   );

@@ -9,7 +9,7 @@ interface PropertyRowProps {
   className?: string;
 }
 
-/** The inline row of properties at the top of a page (Status · Due · Project · Tags). */
+/** An inline row of properties, such as a note's frontmatter keys. */
 export function PropertyRow({ children, className }: PropertyRowProps) {
   return (
     <div role="group" aria-label="Properties" className={cn('flex flex-wrap items-center gap-1', className)}>

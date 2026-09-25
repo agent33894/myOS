@@ -1,15 +1,11 @@
 import { useMemo } from 'react';
-import { checkEntries } from '@shared/checklist';
 import { formatLocalDate } from '@shared/date';
-import { selectInbox } from '@shared/inbox';
-import { journalDate } from '@shared/journal';
-import { dueForReview } from '@shared/recall';
-import { selectTasks } from '@shared/tasks';
-import { selectToday } from '@shared/today';
-import { ArtifactType, type ArtifactSummary } from '@shared/types';
-import { selectWeek } from '@shared/week';
-import { projectsWithStats } from './projects';
+import { runView, type ViewKind, type ViewResult } from '@shared/query';
+import type { NoteSummary } from '@shared/spec';
+import { todayBucket, type Task } from '@shared/tasks';
+import { useSettings } from '../store/settings';
 import { useDataStore } from './store';
+import { buildTree, type TreeFolder } from './tree';
 
 /** Recompute only when the input (and, for date-aware selectors, the day) changes. */
 function memo<In, Out>(compute: (input: In, day: string) => Out): (input: In) => Out {
@@ -27,72 +23,44 @@ function memo<In, Out>(compute: (input: In, day: string) => Out): (input: In) =>
   };
 }
 
-const listOf = memo((byPath: Record<string, ArtifactSummary>) => Object.values(byPath));
-const checksOf = memo((list: ArtifactSummary[]) => checkEntries(list));
-const todayOf = memo((list: ArtifactSummary[]) => selectToday(list, new Date(), checksOf(list)));
-const tasksOf = memo((list: ArtifactSummary[]) => selectTasks(list));
-const inboxOf = memo((list: ArtifactSummary[]) => selectInbox(list));
-const projectsOf = memo((list: ArtifactSummary[], day: string) => projectsWithStats(list, day));
-
-const NOT_NOTES = new Set<string>([ArtifactType.TODO, ArtifactType.PROJECT, ArtifactType.INBOX, ArtifactType.JOURNAL, ArtifactType.TEMPLATE]);
-const notesOf = memo((list: ArtifactSummary[]) =>
-  list.filter((artifact) => !NOT_NOTES.has(artifact.type)).sort((a, b) => b.updated.localeCompare(a.updated)),
-);
-const reviewOf = memo((list: ArtifactSummary[], day: string) => dueForReview(notesOf(list), day));
-
-const templatesOf = memo((list: ArtifactSummary[]) =>
-  list
-    .filter((artifact) => artifact.type === ArtifactType.TEMPLATE && artifact.status !== 'archived')
-    .sort((a, b) => a.title.localeCompare(b.title)),
-);
-
-export interface JournalEntry {
-  date: string;
-  page: ArtifactSummary;
-}
-const journalOf = memo((list: ArtifactSummary[]) =>
-  list
-    .flatMap((page): JournalEntry[] => {
-      const date = journalDate(page);
-      return date ? [{ date, page }] : [];
-    })
-    .sort((a, b) => b.date.localeCompare(a.date)),
-);
-
-const countsOf = memo((list: ArtifactSummary[]) => {
-  const today = todayOf(list);
-  return { inbox: inboxOf(list).length, today: today.carriedOver.length + today.today.length };
+const listOf = memo((notes: Record<string, NoteSummary>) => Object.values(notes));
+const tasksOf = memo((list: NoteSummary[]) => list.flatMap((note) => note.tasks));
+const todayOf = memo((tasks: Task[], day) => {
+  const byDue = [...tasks].sort((a, b) => (a.due ?? '9999').localeCompare(b.due ?? '9999') || a.path.localeCompare(b.path) || a.line - b.line);
+  return { overdue: byDue.filter((task) => todayBucket(task, day) === 'overdue'), today: byDue.filter((task) => todayBucket(task, day) === 'today') };
 });
+let treeInput: { folders: string[]; notes: Record<string, NoteSummary> } | null = null;
+let tree: TreeFolder = buildTree([], []);
+const treeOf = (folders: string[], notes: Record<string, NoteSummary>) => {
+  if (treeInput?.folders !== folders || treeInput.notes !== notes) {
+    treeInput = { folders, notes };
+    tree = buildTree(folders, listOf(notes));
+  }
+  return tree;
+};
 
-export const useArtifacts = () => useDataStore((state) => listOf(state.byPath));
-export const useArtifact = (path: string | null | undefined) =>
-  useDataStore((state) => (path ? state.byPath[path] : undefined));
+/** Every note in the folder, in no particular order. */
+export const useNotes = () => useDataStore((state) => listOf(state.notes));
+export const useNote = (path: string | null | undefined) => useDataStore((state) => (path ? state.notes[path] : undefined));
+/** @public 'loading' until the first listing arrives. */
 export const useDataStatus = () => useDataStore((state) => state.status);
+/** The folder tree: folders first, then notes, in natural name order. */
+export const useTree = () => useDataStore((state) => treeOf(state.folders, state.notes));
+/** @public Every task line (and `type: todo` file) in the folder. */
+export const useTasks = () => useDataStore((state) => tasksOf(listOf(state.notes)));
+/** Open tasks that are late, and those due, scheduled, or starting today. */
+export const useTodayTasks = () => useDataStore((state) => todayOf(tasksOf(listOf(state.notes))));
 
-/**
- * Carried over, today (due or planned today, flagged, in progress), upcoming
- * (7 days), and done today. Dated checklist lines from notes sit beside tasks
- * (`isCheckEntry`); deferred and Someday tasks stay hidden.
- */
-export const useToday = () => useDataStore((state) => todayOf(listOf(state.byPath)));
-/** @public The Tasks page: Anytime, Upcoming (beyond this week), and Someday. */
-export const useTasks = () => useDataStore((state) => tasksOf(listOf(state.byPath)));
-/** @public Every checklist line in every note, done or not. */
-export const useChecks = () => useDataStore((state) => checksOf(listOf(state.byPath)));
-/** @public Templates (not archived), by title. */
-export const useTemplates = () => useDataStore((state) => templatesOf(listOf(state.byPath)));
-/** @public Journal pages, newest day first. */
-export const useJournal = () => useDataStore((state) => journalOf(listOf(state.byPath)));
-/** @public Notes due for spaced review today, at most ten. */
-export const useReviewQueue = () => useDataStore((state) => reviewOf(listOf(state.byPath)));
-/** @public What moved in the week starting `weekStart` (YYYY-MM-DD). */
-export function useWeek(weekStart: string) {
-  const list = useArtifacts();
-  return useMemo(() => selectWeek(list, weekStart), [list, weekStart]);
+/** Run a view (see shared/query.ts) over the folder; recomputed when files, the text, or the day change. */
+export function useView(kind: ViewKind, query: string): ViewResult {
+  const notes = useNotes();
+  const day = formatLocalDate();
+  return useMemo(() => runView(kind, query, notes, day), [kind, query, notes, day]);
 }
-export const useInbox = () => useDataStore((state) => inboxOf(listOf(state.byPath)));
-export const useProjects = () => useDataStore((state) => projectsOf(listOf(state.byPath)));
-/** @public Every note (memos and older typed files; not journal pages or templates), most recently edited first. */
-export const useNotes = () => useDataStore((state) => notesOf(listOf(state.byPath)));
-/** Sidebar counts; each equals the number of rows its page shows. */
-export const useCounts = () => useDataStore((state) => countsOf(listOf(state.byPath)));
+
+/** Recently opened notes that still exist, newest first. */
+export function useRecentNotes(): NoteSummary[] {
+  const recent = useSettings((state) => state.recentFiles);
+  const notes = useDataStore((state) => state.notes);
+  return useMemo(() => recent.flatMap((path) => (notes[path] ? [notes[path]] : [])), [recent, notes]);
+}

@@ -89,7 +89,7 @@ export function createExtensions({ placeholder, slashKeys = { current: null }, l
     TableHeader,
     TableCell,
     AssetImage.configure({ inline: true, allowBase64: true }),
-    AssetLink.configure({ openOnClick: false, autolink: true, protocols: ['myos'] }),
+    AssetLink.configure({ openOnClick: false, autolink: true, protocols: ['myos-next'] }),
     Placeholder.configure({
       showOnlyCurrent: true,
       includeChildren: false,

@@ -2,7 +2,7 @@ import { Extension } from '@tiptap/core';
 import type { Node as PMNode } from '@tiptap/pm/model';
 import { Plugin, PluginKey, type Transaction } from '@tiptap/pm/state';
 import { Decoration, DecorationSet } from '@tiptap/pm/view';
-import { matchWikiLinks } from '../../lib/artifactLinks';
+import { matchWikiLinks } from '../../lib/links';
 
 // Wiki links stay plain text in the document, so Markdown round-trips
 // byte-for-byte; this extension only decorates them for styling and clicks.

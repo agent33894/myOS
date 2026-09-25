@@ -40,11 +40,11 @@ export class ErrorBoundary extends Component<Props, State> {
         )}
       >
         <ErrorState
-          description="This part of myOS hit a problem. Your files are safe."
+          description="This part of myOS Next hit a problem. Your files are safe."
           onRetry={() => this.setState({ error: null })}
         />
         <Button variant="ghost" size="sm" leadingIcon={RefreshCw} onClick={() => window.location.reload()}>
-          Reload myOS
+          Reload
         </Button>
         <p className="max-w-md text-center font-mono text-xs text-text-tertiary">{error.message}</p>
       </div>

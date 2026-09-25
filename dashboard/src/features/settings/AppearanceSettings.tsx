@@ -1,14 +1,12 @@
 import { Monitor, Moon, Sun } from 'lucide-react';
-import { useSettingsStore } from '../../store/settings';
+import { updateSettings, useSettings } from '../../store/settings';
 import { SegmentedControl } from '../../ui';
 import { AccentPicker } from './AccentPicker';
 import { SettingsGroup, SettingsRow } from './SettingsGroup';
 
 export function AppearanceSettings() {
-  const themeMode = useSettingsStore((state) => state.themeMode);
-  const setThemeMode = useSettingsStore((state) => state.setThemeMode);
-  const readingFont = useSettingsStore((state) => state.readingFont);
-  const setReadingFont = useSettingsStore((state) => state.setReadingFont);
+  const theme = useSettings((state) => state.theme);
+  const readingFont = useSettings((state) => state.readingFont);
 
   return (
     <>
@@ -19,8 +17,8 @@ export function AppearanceSettings() {
           control={
             <SegmentedControl
               aria-label="Appearance"
-              value={themeMode}
-              onValueChange={setThemeMode}
+              value={theme}
+              onValueChange={(next) => void updateSettings({ theme: next })}
               options={[
                 { value: 'system', label: 'System', icon: Monitor },
                 { value: 'light', label: 'Light', icon: Sun },
@@ -42,7 +40,7 @@ export function AppearanceSettings() {
             <SegmentedControl
               aria-label="Reading font"
               value={readingFont}
-              onValueChange={setReadingFont}
+              onValueChange={(next) => void updateSettings({ readingFont: next })}
               options={[
                 { value: 'sans', label: 'Sans' },
                 { value: 'serif', label: 'Serif' },

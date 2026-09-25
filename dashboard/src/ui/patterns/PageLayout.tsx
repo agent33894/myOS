@@ -11,7 +11,7 @@ interface PageLayoutProps {
 
 /**
  * The scrolling canvas and centered column every page shares, so titles and
- * rows line up as you move between Today, Inbox, Projects, a page, and Settings.
+ * rows line up as you move between Today, Tasks, a note, and Settings.
  * List pages run 8px wider on each side: their headers and rows carry `px-2`,
  * so row highlights bleed into the margin while text lines up with a document's.
  */

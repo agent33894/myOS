@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react';
 import { resolveAccent } from '@shared/design-system/accents';
-import { useSettingsStore } from '../store/settings';
+import { useSettings } from '../store/settings';
 import { useSystemAccent } from './useSystemAccent';
 
 const darkQuery = () => window.matchMedia('(prefers-color-scheme: dark)');
@@ -13,7 +13,7 @@ function subscribeToColorScheme(listener: () => void) {
 
 /** Whether the dark theme is active, from Appearance settings and the OS. */
 function useIsDark(): boolean {
-  const mode = useSettingsStore((state) => state.themeMode);
+  const mode = useSettings((state) => state.theme);
   const systemDark = useSyncExternalStore(subscribeToColorScheme, () => darkQuery().matches);
   return mode === 'dark' || (mode === 'system' && systemDark);
 }
@@ -23,7 +23,7 @@ function useIsDark(): boolean {
  * Styling should use the `accent` Tailwind colors instead.
  */
 export function useAccent(): { hex: string; isDark: boolean } {
-  const choice = useSettingsStore((state) => state.accentPreview ?? state.accent);
+  const choice = useSettings((state) => state.accentPreview ?? state.accent);
   const systemAccent = useSystemAccent();
   const isDark = useIsDark();
   return { hex: resolveAccent(choice, systemAccent).hex, isDark };

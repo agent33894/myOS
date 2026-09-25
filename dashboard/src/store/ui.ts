@@ -1,112 +1,78 @@
 import { create } from 'zustand';
+import type { PanelId } from '../app/panels';
+import { useSettings } from './settings';
 
-const SIDEBAR_KEY = 'myos-sidebar';
-const RECENT_KEY = 'myos-recent';
-const RECENT_LIMIT = 8;
+export type TabMode = 'rendered' | 'source';
 
-export const SIDEBAR_MIN_WIDTH = 200;
-export const SIDEBAR_MAX_WIDTH = 320;
-const SIDEBAR_DEFAULT_WIDTH = 240;
-
-function readJson<T>(key: string, fallback: T): T {
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? (JSON.parse(raw) as T) : fallback;
-  } catch {
-    return fallback;
-  }
+/** An open note. Tabs are this session's; they are not saved. */
+export interface Tab {
+  path: string;
+  mode: TabMode;
 }
 
-const writeJson = (key: string, value: unknown) => {
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-  } catch {
-    // Storage full or unavailable: the preference just won't survive a restart.
-  }
-};
-
-const clampWidth = (width: number) =>
-  Math.round(Math.min(SIDEBAR_MAX_WIDTH, Math.max(SIDEBAR_MIN_WIDTH, width)));
-
-interface SidebarPrefs {
-  width: number;
-  collapsed: boolean;
-}
-
-const sidebar = readJson<Partial<SidebarPrefs>>(SIDEBAR_KEY, {});
-const recent = readJson<unknown>(RECENT_KEY, []);
+type Overlay = 'palette' | 'switcher' | 'capture' | 'shortcuts';
 
 interface UIState {
-  isCommandPaletteOpen: boolean;
-  isQuickCaptureOpen: boolean;
-  isKeyboardShortcutsOpen: boolean;
-  /** Unsent capture survives Escape/⌘N so a reflexive close never loses a draft. */
-  quickCaptureDraft: string;
-  sidebarWidth: number;
-  sidebarCollapsed: boolean;
-  /** Workspace paths of recently opened items, newest first. */
-  recentPaths: string[];
-  /** Focus mode (⌘.): no sidebar or page chrome, just the writing. Never persisted. */
+  tabs: Tab[];
+  /** The tab on screen, or null while Today, Tasks, a view, or Settings is shown. */
+  activeTab: number | null;
+  /** The tab shown beside the active one (⌘\), or null. */
+  split: number | null;
+  /** One overlay at a time: the command bar, file switcher, quick capture, or shortcuts sheet. */
+  overlay: Overlay | null;
+  /** Focus mode (⌘.): no side columns or chrome, just the text. */
   focusMode: boolean;
-  setFocusMode: (on: boolean) => void;
-  setQuickCaptureDraft: (draft: string) => void;
-  clearQuickCaptureDraft: () => void;
-  openCommandPalette: () => void;
-  closeCommandPalette: () => void;
-  toggleCommandPalette: () => void;
-  openQuickCapture: () => void;
-  closeQuickCapture: () => void;
-  toggleQuickCapture: () => void;
-  openKeyboardShortcuts: () => void;
-  closeKeyboardShortcuts: () => void;
-  toggleKeyboardShortcuts: () => void;
-  setSidebarWidth: (width: number) => void;
-  toggleSidebar: () => void;
-  addRecent: (path: string) => void;
+  rightPanel: PanelId;
 }
 
-const CLOSED = { isCommandPaletteOpen: false, isQuickCaptureOpen: false, isKeyboardShortcutsOpen: false };
+export const useUIStore = create<UIState>(() => ({
+  tabs: [],
+  activeTab: null,
+  split: null,
+  overlay: null,
+  focusMode: false,
+  rightPanel: 'outline',
+}));
 
-export const useUIStore = create<UIState>((set, get) => {
-  const persistSidebar = () => {
-    const { sidebarWidth: width, sidebarCollapsed: collapsed } = get();
-    writeJson(SIDEBAR_KEY, { width, collapsed });
-  };
+/** Show `path` in its tab, opening one (in the default mode) when it isn't open. */
+export function showTab(path: string): void {
+  useUIStore.setState(({ tabs }) => {
+    const index = tabs.findIndex((tab) => tab.path === path);
+    if (index >= 0) return { activeTab: index };
+    return { tabs: [...tabs, { path, mode: useSettings.getState().editorMode }], activeTab: tabs.length };
+  });
+}
 
-  return {
-    ...CLOSED,
-    quickCaptureDraft: '',
-    sidebarWidth: clampWidth(typeof sidebar.width === 'number' ? sidebar.width : SIDEBAR_DEFAULT_WIDTH),
-    sidebarCollapsed: sidebar.collapsed === true,
-    focusMode: false,
-    setFocusMode: (focusMode) => set({ focusMode }),
-    recentPaths: Array.isArray(recent) ? recent.filter((path): path is string => typeof path === 'string') : [],
-    setQuickCaptureDraft: (draft) => set({ quickCaptureDraft: draft }),
-    clearQuickCaptureDraft: () => set({ quickCaptureDraft: '' }),
-    // Overlays are mutually exclusive: opening one closes the others.
-    openCommandPalette: () => set({ ...CLOSED, isCommandPaletteOpen: true }),
-    closeCommandPalette: () => set({ isCommandPaletteOpen: false }),
-    toggleCommandPalette: () => set((state) => ({ ...CLOSED, isCommandPaletteOpen: !state.isCommandPaletteOpen })),
-    openQuickCapture: () => set({ ...CLOSED, isQuickCaptureOpen: true }),
-    closeQuickCapture: () => set({ isQuickCaptureOpen: false }),
-    toggleQuickCapture: () => set((state) => ({ ...CLOSED, isQuickCaptureOpen: !state.isQuickCaptureOpen })),
-    openKeyboardShortcuts: () => set({ ...CLOSED, isKeyboardShortcutsOpen: true }),
-    closeKeyboardShortcuts: () => set({ isKeyboardShortcutsOpen: false }),
-    toggleKeyboardShortcuts: () =>
-      set((state) => ({ ...CLOSED, isKeyboardShortcutsOpen: !state.isKeyboardShortcutsOpen })),
-    setSidebarWidth: (width) => {
-      set({ sidebarWidth: clampWidth(width) });
-      persistSidebar();
-    },
-    toggleSidebar: () => {
-      set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed }));
-      persistSidebar();
-    },
-    addRecent: (path) => {
-      if (get().recentPaths[0] === path) return;
-      const recentPaths = [path, ...get().recentPaths.filter((item) => item !== path)].slice(0, RECENT_LIMIT);
-      set({ recentPaths });
-      writeJson(RECENT_KEY, recentPaths);
-    },
-  };
-});
+/** @public */
+export function closeTab(index: number): void {
+  useUIStore.setState(({ tabs, activeTab, split }) => {
+    const shift = (at: number | null) => (at === null || at === index ? null : at > index ? at - 1 : at);
+    const next = tabs.filter((_, at) => at !== index);
+    const active = activeTab === index ? (next.length ? Math.min(index, next.length - 1) : null) : shift(activeTab);
+    return { tabs: next, activeTab: active, split: shift(split) };
+  });
+}
+
+export const setActiveTab = (activeTab: number | null) => useUIStore.setState({ activeTab });
+
+export const setTabMode = (index: number, mode: TabMode) =>
+  useUIStore.setState(({ tabs }) => ({ tabs: tabs.map((tab, at) => (at === index ? { ...tab, mode } : tab)) }));
+
+export const setSplit = (split: number | null) => useUIStore.setState({ split });
+
+/** A file or folder moved: tabs showing it (or anything inside it) follow. */
+export function followMove(from: string, to: string): void {
+  const moved = (path: string) => (path === from ? to : path.startsWith(`${from}/`) ? to + path.slice(from.length) : path);
+  useUIStore.setState(({ tabs }) => ({ tabs: tabs.map((tab) => ({ ...tab, path: moved(tab.path) })) }));
+}
+
+export const openOverlay = (overlay: Overlay) => useUIStore.setState({ overlay });
+export const closeOverlay = () => useUIStore.setState({ overlay: null });
+export const toggleOverlay = (overlay: Overlay) => useUIStore.setState((state) => ({ overlay: state.overlay === overlay ? null : overlay }));
+
+export const setFocusMode = (focusMode: boolean) => useUIStore.setState({ focusMode });
+export const setRightPanel = (rightPanel: PanelId) => useUIStore.setState({ rightPanel });
+
+/** The path of the note on screen, or null. */
+export const activePathOf = ({ tabs, activeTab }: Pick<UIState, 'tabs' | 'activeTab'>) => (activeTab === null ? null : tabs[activeTab]?.path ?? null);
+export const useActivePath = () => useUIStore(activePathOf);

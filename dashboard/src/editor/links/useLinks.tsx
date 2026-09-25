@@ -1,26 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import type { Editor } from '@tiptap/react';
-import { ArtifactType } from '@shared/types';
-import { toItemUrl, toNoteUrl } from '../../app/navigation';
-import { create } from '../../data/gateway';
+import { openNote } from '../../app/navigation';
+import { createNote } from '../../data/gateway';
+import { useGitStatus } from '../../data/git';
 import { invoke } from '../../data/ipc';
-import { useArtifacts } from '../../data/selectors';
-import { useDataStore } from '../../data/store';
-import { useWorkspacePath } from '../../data/workspace';
+import { useNotes } from '../../data/selectors';
 import { Popover, PopoverAnchor, PopoverContent } from '../../ui';
-import { findLinkedArtifact, findWikiLinkedArtifact } from '../../lib/artifactLinks';
+import { findLinkedNote, findWikiLinkedNote } from '../../lib/links';
 import { commitHashOf } from '../diff/commitLinks';
 import { CommitDiffModal } from '../diff/CommitDiffModal';
 import { CommitSummaryCard, useCommitSummary } from '../diff/commitSummary';
-import { linkedNoteDraft } from './linkTargets';
+import { linkedNotePath } from './linkTargets';
 import { refreshWikiLinks } from './wikiLinks';
-
-interface LinkContext {
-  filePath: string;
-  type: string;
-}
 
 interface CommitRef {
   hash: string;
@@ -32,37 +24,28 @@ const EXTERNAL = /^(https?:|mailto:)/i;
 
 /**
  * Link behavior inside the editor: wiki links and links to other notes open
- * them in the app, web links open in the browser, and in development notes
- * commit links preview on hover and open their diff on click.
+ * them in the app, web links open in the browser, and when the folder is a
+ * Git repository, commit links preview on hover and open their diff on click.
  */
-export function useLinks(editor: Editor | null, context: LinkContext) {
-  const navigate = useNavigate();
-  const artifacts = useArtifacts();
-  const [workspacePath] = useWorkspacePath();
+export function useLinks(editor: Editor | null, path: string) {
+  const notes = useNotes();
+  const inRepo = useGitStatus()?.repo ?? false;
   const [hovered, setHovered] = useState<CommitRef | null>(null);
   const [opened, setOpened] = useState<CommitRef | null>(null);
 
-  // Commits resolve in the owning project's repository, else the workspace's.
-  const repoPath = useMemo(() => {
-    if (context.type !== ArtifactType.DEVELOPMENT) return null;
-    const ref = artifacts.find((artifact) => artifact.filePath === context.filePath)?.project;
-    const project = ref ? artifacts.find((artifact) => artifact.type === ArtifactType.PROJECT && (artifact.id === ref || artifact.title === ref)) : undefined;
-    return project?.localPath ?? workspacePath;
-  }, [artifacts, context.filePath, context.type, workspacePath]);
+  const latest = useRef({ notes, inRepo, path });
+  latest.current = { notes, inRepo, path };
 
-  const latest = useRef({ artifacts, navigate, repoPath, filePath: context.filePath });
-  latest.current = { artifacts, navigate, repoPath, filePath: context.filePath };
-
-  // Links to pages that don't exist yet look different; restyle whenever pages come and go.
-  const titles = useMemo(() => artifacts.map((artifact) => `${artifact.title}\0${artifact.filePath}`).join('\n'), [artifacts]);
+  // Links to notes that don't exist yet look different; restyle whenever notes come and go.
+  const titles = useMemo(() => notes.map((note) => `${note.title}\0${note.path}`).join('\n'), [notes]);
   useEffect(() => {
     if (!editor || editor.isDestroyed) return;
-    editor.storage.wikiLinks.exists = (target) => findWikiLinkedArtifact(target, latest.current.artifacts) !== null;
+    editor.storage.wikiLinks.exists = (target) => findWikiLinkedNote(target, latest.current.notes) !== null;
     editor.view.dispatch(refreshWikiLinks(editor.state.tr));
   }, [editor, titles]);
 
   const commitAt = (target: EventTarget | null): CommitRef | null => {
-    if (!latest.current.repoPath || !(target instanceof Element)) return null;
+    if (!latest.current.inRepo || !(target instanceof Element)) return null;
     const anchor = target.closest<HTMLAnchorElement>('a[href]');
     const hash = anchor ? commitHashOf(anchor.getAttribute('href') ?? '') : null;
     return anchor && hash ? { hash, message: anchor.textContent?.trim() ?? '', anchor } : null;
@@ -70,19 +53,19 @@ export function useLinks(editor: Editor | null, context: LinkContext) {
 
   /** ProseMirror `handleClick`: returns true when the click was a link it handled. */
   const handleClick = useRef((event: MouseEvent): boolean => {
-    const { artifacts, navigate, filePath } = latest.current;
+    const { notes, path: from } = latest.current;
     const target = event.target instanceof Element ? event.target : null;
     if (!target) return false;
 
     const wiki = target.closest<HTMLElement>('[data-wikilink]');
     if (wiki) {
       const name = wiki.dataset.wikilink ?? '';
-      const linked = findWikiLinkedArtifact(name, artifacts);
-      if (linked) navigate(toItemUrl(linked));
+      const linked = findWikiLinkedNote(name, notes);
+      if (linked) openNote(linked.path);
       else if (name) {
-        // A missing link is an invitation: clicking it makes the note and opens it.
-        create(linkedNoteDraft(name, useDataStore.getState().byPath[filePath]), `Create “${name}”`)
-          .then((note) => navigate(toNoteUrl(note.filePath)))
+        // A missing link is an invitation: clicking it makes the note beside this one and opens it.
+        createNote(linkedNotePath(name, from))
+          .then((note) => openNote(note.path))
           .catch(() => toast.error(`Couldn’t create “${name}”`));
       }
       return true;
@@ -91,9 +74,9 @@ export function useLinks(editor: Editor | null, context: LinkContext) {
     const anchor = target.closest<HTMLAnchorElement>('a[href]');
     if (!anchor) return false;
     const href = anchor.getAttribute('href') ?? '';
-    const linked = findLinkedArtifact(href, filePath, artifacts);
+    const linked = findLinkedNote(href, from, notes);
     if (linked) {
-      navigate(toItemUrl(linked));
+      openNote(linked.path);
       return true;
     }
     const commit = commitAt(anchor);
@@ -130,9 +113,8 @@ export function useLinks(editor: Editor | null, context: LinkContext) {
   }, [editor]);
 
   const layer =
-    repoPath && (hovered || opened) ? (
+    inRepo && (hovered || opened) ? (
       <CommitLayer
-        repoPath={repoPath}
         hovered={hovered}
         opened={opened}
         onCardHover={(inside) => (inside ? window.clearTimeout(hoverTimer.current) : hoverSoon(null))}
@@ -144,8 +126,7 @@ export function useLinks(editor: Editor | null, context: LinkContext) {
   return { handleClick, layer };
 }
 
-function CommitLayer({ repoPath, hovered, opened, onCardHover, onHover, onOpen }: {
-  repoPath: string;
+function CommitLayer({ hovered, opened, onCardHover, onHover, onOpen }: {
   onCardHover: (inside: boolean) => void;
   hovered: CommitRef | null;
   opened: CommitRef | null;
@@ -153,7 +134,7 @@ function CommitLayer({ repoPath, hovered, opened, onCardHover, onHover, onOpen }
   onOpen: (commit: CommitRef | null) => void;
 }) {
   const shown = opened ?? hovered;
-  const { summary, error } = useCommitSummary(repoPath, shown?.hash ?? '', Boolean(shown));
+  const { summary, error } = useCommitSummary(shown?.hash ?? '', Boolean(shown));
   const anchor = useMemo(() => ({ current: hovered?.anchor ?? null }), [hovered]);
   return (
     <>
@@ -180,7 +161,6 @@ function CommitLayer({ repoPath, hovered, opened, onCardHover, onHover, onOpen }
           onClose={() => onOpen(null)}
           commitHash={opened.hash}
           commitMessage={summary?.message || opened.message}
-          projectPath={repoPath}
           summary={summary}
         />
       ) : null}

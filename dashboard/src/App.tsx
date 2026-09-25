@@ -1,15 +1,23 @@
+import { useEffect } from 'react';
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { ErrorBoundary } from './app/ErrorBoundary';
-import { ThemeController } from './app/ThemeController';
-import AppShell from './app/AppShell';
 import { NotFound } from './app/NotFound';
-import { APP_ROUTES, LEGACY_REDIRECTS } from './app/routes';
+import { paths } from './app/navigation';
+import { APP_ROUTES } from './app/routes';
+import { ThemeController } from './app/ThemeController';
+import { useWorkspacePath } from './data/workspace';
 import { Welcome } from './features/onboarding/Welcome';
-import { useSettingsStore } from './store/settings';
+import { Shell } from './features/shell/Shell';
+import { loadSettings, useSettings } from './store/settings';
 import { Toaster, TooltipProvider } from './ui';
 
 export default function App() {
-  const hasCompletedOnboarding = useSettingsStore((state) => state.hasCompletedOnboarding);
+  const [folder, setFolder] = useWorkspacePath();
+  const settingsLoaded = useSettings((state) => state.loaded);
+
+  useEffect(() => {
+    void loadSettings().catch((error: unknown) => console.error('Could not load settings:', error));
+  }, []);
 
   return (
     <ErrorBoundary variant="screen">
@@ -22,22 +30,20 @@ export default function App() {
           Skip to content
         </a>
         <Toaster />
-        {hasCompletedOnboarding ? (
+        {folder === undefined || !settingsLoaded ? null : folder === null ? (
+          <Welcome onOpened={setFolder} />
+        ) : (
           <HashRouter>
             <Routes>
-              <Route element={<AppShell />}>
-                {APP_ROUTES.map(({ id, path, component: Page }) => (
-                  <Route key={id} path={path} element={<Page />} />
-                ))}
-                {LEGACY_REDIRECTS.map(({ from, to }) => (
-                  <Route key={from} path={from} element={<Navigate replace to={to} />} />
+              <Route element={<Shell />}>
+                <Route index element={<Navigate replace to={paths.today} />} />
+                {APP_ROUTES.map(({ path, component: Screen }) => (
+                  <Route key={path} path={path} element={<Screen />} />
                 ))}
                 <Route path="*" element={<NotFound />} />
               </Route>
             </Routes>
           </HashRouter>
-        ) : (
-          <Welcome />
         )}
       </TooltipProvider>
     </ErrorBoundary>

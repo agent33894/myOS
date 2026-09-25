@@ -65,7 +65,7 @@ describe('markdown round trip', () => {
       '',
       '![Diagram](assets/diagram.png)',
       '',
-      '[Attachment](assets/report.pdf) and [a note](../notes/other.md) and [open](myos://artifact?path=notes/a.md)',
+      '[Attachment](assets/report.pdf) and [a note](../notes/other.md) and [open](myos-next://open?path=notes/a.md)',
     ].join('\n');
     expect(roundTrip(document)).toBe(document);
   });
