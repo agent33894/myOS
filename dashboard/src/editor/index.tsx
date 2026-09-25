@@ -6,13 +6,19 @@ import { createPortal } from 'react-dom';
 import { EditorContent, useEditor } from '@tiptap/react';
 import type { ArtifactType } from '@shared/types';
 import { hasPrimaryModifier } from '../lib/platform';
+import { useSettingsStore } from '../store/settings';
+import { useUIStore } from '../store/ui';
+import { cn } from '../ui';
 import { BubbleToolbar } from './bubble/BubbleToolbar';
 import { createExtensions } from './extensions';
 import { FindBar } from './find/FindBar';
+import { setFocusMode } from './focus/focus';
+import { LinkSuggestMenu } from './links/LinkSuggestMenu';
 import { useLinks } from './links/useLinks';
 import { SlashMenu } from './slash/SlashMenu';
 import { useAttachFile } from './slash/useAttachFile';
 import { useMarkdownSync } from './useMarkdownSync';
+import './editor.css';
 
 export interface EditorProps {
   /** Markdown body. Swapping `artifact` swaps the document without remounting. */
@@ -24,6 +30,8 @@ export interface EditorProps {
   autoFocusWhenEmpty?: boolean;
   /** Where the find bar docks: the page's pinned top bar (null until it mounts). */
   findSlot: HTMLElement | null;
+  /** Show the document without editing it (a note revealed during review, a template preview). */
+  readOnly?: boolean;
 }
 
 const isTyping = (element: Element | null) =>
@@ -36,14 +44,18 @@ export function Editor({
   placeholder = 'Start writing, or press / for blocks',
   autoFocusWhenEmpty,
   findSlot,
+  readOnly = false,
 }: EditorProps) {
   const [slashKeys] = useState<{ current: ((event: KeyboardEvent) => boolean) | null }>({ current: null });
+  const [linkKeys] = useState<{ current: ((event: KeyboardEvent) => boolean) | null }>({ current: null });
+  const focusMode = useUIStore((state) => state.focusMode) && !readOnly;
+  const dimParagraphs = useSettingsStore((state) => state.focusDimParagraphs);
   const [initialContent] = useState(value);
   const [linkOpen, setLinkOpen] = useState(false);
   const [find, setFind] = useState<{ query: string; opened: number } | null>(null);
   const clickRef = useRef<(event: MouseEvent) => boolean>(() => false);
 
-  const extensions = useMemo(() => createExtensions({ placeholder, slashKeys }), []);
+  const extensions = useMemo(() => createExtensions({ placeholder, slashKeys, linkKeys }), []);
   const editorProps = useMemo(
     () => ({
       attributes: { class: 'prose', role: 'textbox', 'aria-multiline': 'true', 'aria-label': 'Page body' },
@@ -74,6 +86,7 @@ export function Editor({
     content: initialContent,
     contentType: 'markdown',
     immediatelyRender: true,
+    editable: !readOnly,
     shouldRerenderOnTransaction: false,
     editorProps,
   });
@@ -91,9 +104,14 @@ export function Editor({
     };
   }, [editor]);
 
+  useEffect(() => {
+    if (editor.isDestroyed) return;
+    editor.view.dispatch(setFocusMode(editor.state.tr, { typewriter: focusMode, dim: focusMode && dimParagraphs }));
+  }, [editor, focusMode, dimParagraphs]);
+
   // A new, empty page puts the caret in the body, unless the user is already typing elsewhere (the title).
   useEffect(() => {
-    if (!autoFocusWhenEmpty || value.trim() || editor.isFocused || isTyping(document.activeElement)) return;
+    if (!autoFocusWhenEmpty || readOnly || value.trim() || editor.isFocused || isTyping(document.activeElement)) return;
     const timer = window.setTimeout(() => editor.commands.focus('start'), 0);
     return () => window.clearTimeout(timer);
   }, [editor, artifact.id, autoFocusWhenEmpty, value === '']);
@@ -110,11 +128,16 @@ export function Editor({
   };
 
   return (
-    <div className="relative flex flex-col">
+    <div className={cn('relative flex flex-col', focusMode && 'editor-focus', focusMode && dimParagraphs && 'editor-focus-dim')}>
       {findBar && findSlot ? createPortal(findBar, findSlot) : null}
-      <EditorContent editor={editor} className="flex-1 cursor-text" onMouseDown={continueAtEnd} />
-      <BubbleToolbar editor={editor} linkRequest={{ open: linkOpen, setOpen: setLinkOpen }} />
-      <SlashMenu editor={editor} keyHandler={slashKeys} onAttachFile={attachFile} />
+      <EditorContent editor={editor} className={cn('flex-1', !readOnly && 'cursor-text')} onMouseDown={continueAtEnd} />
+      {readOnly ? null : (
+        <>
+          <BubbleToolbar editor={editor} linkRequest={{ open: linkOpen, setOpen: setLinkOpen }} />
+          <SlashMenu editor={editor} keyHandler={slashKeys} onAttachFile={attachFile} />
+          <LinkSuggestMenu editor={editor} filePath={artifact.filePath} keyHandler={linkKeys} />
+        </>
+      )}
       {links.layer}
     </div>
   );

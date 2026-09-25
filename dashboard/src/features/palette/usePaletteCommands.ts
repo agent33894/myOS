@@ -24,6 +24,8 @@ export interface Command {
   shortcut?: string;
   /** Other words that should find this command. */
   keywords?: string;
+  /** Listed only when the query matches it, never in the resting list (tags: `#tag`). */
+  searchOnly?: boolean;
   run: () => void;
 }
 

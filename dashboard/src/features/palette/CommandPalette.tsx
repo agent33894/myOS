@@ -100,7 +100,7 @@ function PaletteBody({ onClose }: { onClose: () => void }) {
     if (!needle) {
       const byPath = useDataStore.getState().byPath;
       const recent = recentPaths.flatMap((path) => (byPath[path] ? [itemRow(byPath[path], 'Recent')] : []));
-      return [...recent, ...commands.map(commandRow)];
+      return [...recent, ...commands.filter((command) => !command.searchOnly).map(commandRow)];
     }
 
     const matched = commands

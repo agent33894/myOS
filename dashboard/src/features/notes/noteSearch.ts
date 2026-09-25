@@ -12,6 +12,7 @@ const SORTS: Record<NoteSort, (a: ArtifactSummary, b: ArtifactSummary) => number
 const plain = (line: string) =>
   line
     .replace(/^\s{0,3}(#{1,6}\s|>\s?|[-*+]\s(\[.\]\s)?|\d+\.\s)/, '')
+    .replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (_, target: string, label?: string) => label ?? target)
     .replace(/[*_`~]|!?\[([^\]]*)\]\([^)]*\)/g, '$1')
     .trim();
 

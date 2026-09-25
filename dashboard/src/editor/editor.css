@@ -1,0 +1,29 @@
+/* Editor features added in 3.0: missing links and focus mode. Tokens only. */
+
+/* A link to a page that doesn't exist yet: dashed and quiet. Clicking it creates the page. */
+.prose .wiki-link.is-missing {
+  color: var(--text-secondary);
+  text-decoration-color: color-mix(in oklch, var(--text-tertiary) 70%, transparent);
+  text-decoration-style: dashed;
+}
+
+.prose .wiki-link.is-missing:hover {
+  color: var(--text);
+  text-decoration-color: currentColor;
+}
+
+/* Focus mode: room below the last line so typewriter scrolling can center it. */
+.editor-focus .tiptap {
+  padding-bottom: 45vh;
+}
+
+/* Soft dimming: the block you are writing in stays at full strength. */
+.editor-focus-dim .tiptap > * {
+  opacity: 0.32;
+  transition: opacity var(--dur-slow) var(--ease-out);
+}
+
+.editor-focus-dim .tiptap > .is-focused,
+.editor-focus-dim .tiptap:not(.ProseMirror-focused) > * {
+  opacity: 1;
+}

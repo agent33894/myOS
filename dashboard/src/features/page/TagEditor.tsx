@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Hash } from 'lucide-react';
 import type { ArtifactSummary } from '@shared/types';
+import { toTagUrl } from '../../app/navigation';
 import { patch } from '../../data/gateway';
 import { Input, Pill, Property } from '../../ui';
 import { attempt } from '../tasks/actions';
@@ -11,7 +13,7 @@ const parseTags = (text: string) =>
     .map((tag) => tag.replace(/^#/, '').trim().toLowerCase())
     .filter(Boolean);
 
-/** Tags as pills with remove buttons, plus an inline field to add more. */
+/** Tags as pills that open their tag page, with remove buttons, plus an inline field to add more. */
 export function TagEditor({ item }: { item: ArtifactSummary }) {
   const [adding, setAdding] = useState(false);
   const [text, setText] = useState('');
@@ -33,7 +35,12 @@ export function TagEditor({ item }: { item: ArtifactSummary }) {
           removeLabel={`Remove tag ${tag}`}
           className="h-6"
         >
-          #{tag}
+          <Link
+            to={toTagUrl(tag)}
+            className="rounded-sm outline-none transition-colors duration-fast hover:text-text focus-visible:ring-2 focus-visible:ring-focus"
+          >
+            #{tag}
+          </Link>
         </Pill>
       ))}
       {adding ? (

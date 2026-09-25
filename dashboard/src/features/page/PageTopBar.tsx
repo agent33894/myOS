@@ -16,7 +16,8 @@ interface PageTopBarProps {
  */
 export function PageTopBar({ leading, findSlot, children }: PageTopBarProps) {
   return (
-    <div className="sticky top-0 z-sticky flex h-14 items-center gap-1 bg-canvas pt-4">
+    // Focus mode fades the bar until the pointer comes back to it (features/knowledge/focus.css).
+    <div data-focus-hide="reveal" className="sticky top-0 z-sticky flex h-14 items-center gap-1 bg-canvas pt-4">
       {leading}
       <div className="ml-auto flex items-center gap-2">
         <div ref={findSlot} className="contents" />

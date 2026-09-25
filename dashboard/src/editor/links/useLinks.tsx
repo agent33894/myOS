@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import type { Editor } from '@tiptap/react';
 import { ArtifactType } from '@shared/types';
-import { toItemUrl } from '../../app/navigation';
+import { toItemUrl, toNoteUrl } from '../../app/navigation';
+import { create } from '../../data/gateway';
 import { invoke } from '../../data/ipc';
 import { useArtifacts } from '../../data/selectors';
 import { useWorkspacePath } from '../../data/workspace';
@@ -12,6 +13,7 @@ import { findLinkedArtifact, findWikiLinkedArtifact } from '../../lib/artifactLi
 import { commitHashOf } from '../diff/commitLinks';
 import { CommitDiffModal } from '../diff/CommitDiffModal';
 import { CommitSummaryCard, useCommitSummary } from '../diff/commitSummary';
+import { refreshWikiLinks } from './wikiLinks';
 
 interface LinkContext {
   filePath: string;
@@ -49,6 +51,14 @@ export function useLinks(editor: Editor | null, context: LinkContext) {
   const latest = useRef({ artifacts, navigate, repoPath, filePath: context.filePath });
   latest.current = { artifacts, navigate, repoPath, filePath: context.filePath };
 
+  // Links to pages that don't exist yet look different; restyle whenever pages come and go.
+  const titles = useMemo(() => artifacts.map((artifact) => `${artifact.title}\0${artifact.filePath}`).join('\n'), [artifacts]);
+  useEffect(() => {
+    if (!editor || editor.isDestroyed) return;
+    editor.storage.wikiLinks.exists = (target) => findWikiLinkedArtifact(target, latest.current.artifacts) !== null;
+    editor.view.dispatch(refreshWikiLinks(editor.state.tr));
+  }, [editor, titles]);
+
   const commitAt = (target: EventTarget | null): CommitRef | null => {
     if (!latest.current.repoPath || !(target instanceof Element)) return null;
     const anchor = target.closest<HTMLAnchorElement>('a[href]');
@@ -67,7 +77,12 @@ export function useLinks(editor: Editor | null, context: LinkContext) {
       const name = wiki.dataset.wikilink ?? '';
       const linked = findWikiLinkedArtifact(name, artifacts);
       if (linked) navigate(toItemUrl(linked));
-      else toast(`No note called “${name}” yet`);
+      else if (name) {
+        // A missing link is an invitation: clicking it makes the note and opens it.
+        create({ type: ArtifactType.MEMO, title: name }, `Create “${name}”`)
+          .then((note) => navigate(toNoteUrl(note.filePath)))
+          .catch(() => toast.error(`Couldn’t create “${name}”`));
+      }
       return true;
     }
 
