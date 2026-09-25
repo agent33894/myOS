@@ -41,8 +41,9 @@ Neutrals are warm but clean, not cream paper. The accent comes from one variable
 
 | Token | Purpose |
 | --- | --- |
-| `--canvas` | Main content background |
-| `--sidebar` | Navigation surface (one clear step darker or lighter than the canvas) |
+| `--canvas` | The window: a soft neutral tinted by the accent (5% light, 6% dark). Inside a sheet it is the sheet's color |
+| `--sidebar` | The side columns; the same as the canvas, so chrome sits on the window without lines |
+| `--sheet` | The raised page every screen sits on (`PageLayout`), with `--shadow-sheet`; also the fill of the active tab, place, and file row |
 | `--raised` | Cards, inputs, rows on hover |
 | `--overlay` | Popovers, dialogs, menus, toasts |
 | `--sunken` | Wells: code blocks, search field rest state |
@@ -58,10 +59,10 @@ WCAG 2.x ratios for the minimum across canvas, sidebar, raised, overlay, and sun
 
 | Token | Light | Dark |
 | --- | --- | --- |
-| `--canvas` · `--sidebar` · `--raised` · `--overlay` · `--sunken` | `#FCFBF9` · `#F4F2EF` · `#FFFFFF` · `#FFFFFF` · `#F1EFEB` | `#171716` · `#1E1D1C` · `#252423` · `#2B2A28` · `#121211` |
+| `--canvas` (= `--sidebar`) · `--sheet` · `--raised` · `--overlay` · `--sunken` | accent 5% into `#EEECE8` · `#FFFEFC` · `#FFFFFF` · `#FFFFFF` · accent 3% into `#F3F1ED` | accent 6% into `#131314` · accent 3% into `#1C1C1D` · `#262527` · `#2C2B2D` · accent 3% into `#161617` |
 | `--text` | `#1D1C1A` (14.8:1) | `#EDECE9` (12.1:1) |
 | `--text-secondary` | `#56534D` (≥6.7:1) | `#ABA7A0` (≥6.0:1) |
-| `--text-tertiary` | `#67635C` (≥5.2:1) | `#9A968F` (≥4.9:1) |
+| `--text-tertiary` | `#67635C` (≥4.7:1 on the tinted canvas) | `#9A968F` (≥4.7:1) |
 | `--success` · `--warning` · `--danger` | `#236B40` · `#8A5100` · `#AF2D27` (≥4.7:1 on soft) | `#5DBE85` · `#E0A546` · `#F4857B` (≥4.9:1 on soft) |
 | `--accent` (Iris) | `#5B5BD6`, white text 5.4:1 | same |
 | `--accent-text` | accent 80% toward `--text` (6.0:1) | accent 55% toward `--text` (5.7:1) |
@@ -71,11 +72,15 @@ The accent fill is the same in both themes so white text on it always reaches 4.
 
 Project colors come from the `projectSwatches` list in `shared/design-system/accents.ts`. They are decorative (dots, covers) only.
 
+## Layout
+
+The window is the canvas. The file list and the panel sit on it with no dividing line; each tab's screen sits on a sheet, centered, as wide as the text column (Appearance → Line width: 36, 42, or 52rem, set as `--line-width` through `data-line-width`) plus 56px margins (`max-w-sheet`). Active tabs, places, and file rows are small raised pills in the sheet color. Top strips are 44px and double as the window's drag region. Paths, the status bar, and file names being typed use Geist Mono. The file tree and places use 28px rows, the one place denser than the 36px list row, so a docs folder fits on screen.
+
 ## Shape, space, and elevation
 
 - **Spacing:** 4pt grid through Tailwind's default spacing scale (1 = 4px). Avoid odd values.
 - **Radius:** `--radius-sm` 6 for chips and checkboxes, `--radius-md` 10 for controls, inputs, and rows, `--radius-lg` 14 for cards and panels, `--radius-xl` 20 for dialogs and sheets, and `full` for pills.
-- **Elevation:** three soft layered shadows. `--shadow-raised` is barely there (cards), `--shadow-overlay` is for menus and popovers, and `--shadow-dialog` is for dialogs. The dark theme relies more on surface tone than on shadow.
+- **Elevation:** `--shadow-sheet` for the page a screen sits on, and three soft layered shadows. `--shadow-raised` is barely there (cards), `--shadow-overlay` is for menus and popovers, and `--shadow-dialog` is for dialogs. The dark theme relies more on surface tone than on shadow.
 - **Scrim:** a translucent black scrim with a 2px background blur behind dialogs.
 
 ## Iconography

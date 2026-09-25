@@ -25,7 +25,7 @@ import { getSettings, setSettings } from '../settings/settings';
 import { openExternal, openInEditor, reveal } from '../shell/shell';
 import { readOmarchyAccent } from '../utils/omarchy-theme';
 import { watchWorkspace } from '../watch/watcher';
-import { createStarterWorkspace, currentWorkspace, selectWorkspace } from '../workspace/root';
+import { createStarterWorkspace, currentWorkspace, isObsidianVault, selectWorkspace } from '../workspace/root';
 import { handle } from './handle';
 
 export function registerIpc(getWindow: () => BrowserWindow | null): void {
@@ -95,6 +95,7 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
     return root;
   });
 
+  handle('workspace:obsidian', [], isObsidianVault);
   handle('shell:reveal', ['path'], reveal);
   handle('shell:open-external', ['string'], openExternal);
   handle('shell:open-in-editor', ['path'], openInEditor);

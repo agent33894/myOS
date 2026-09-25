@@ -35,6 +35,7 @@ export default {
       black: '#000000',
       canvas: token('canvas'),
       sidebar: token('sidebar'),
+      sheet: token('sheet'),
       raised: token('raised'),
       overlay: token('overlay'),
       sunken: token('sunken'),
@@ -86,6 +87,7 @@ export default {
       raised: 'var(--shadow-raised)',
       overlay: 'var(--shadow-overlay)',
       dialog: 'var(--shadow-dialog)',
+      sheet: 'var(--shadow-sheet)',
     },
     zIndex: {
       auto: 'auto',
@@ -99,6 +101,8 @@ export default {
     },
     extend: {
       spacing: { 4.5: '1.125rem' }, // 18px: the task checkbox
+      // The sheet: the text column (Appearance → Line width) plus its 56px margins.
+      maxWidth: { sheet: 'calc(var(--line-width) + 7rem)' },
       minWidth: { trigger: 'var(--radix-select-trigger-width)' },
       borderWidth: { DEFAULT: '1px', 1.5: '1.5px' },
       backdropBlur: { scrim: '2px' },

@@ -5,21 +5,15 @@ import { IconButton, cn } from '../../ui';
 import { isLinux } from '../../lib/platform';
 
 /**
- * The 40px title strip: a window drag region. Linux windows are frameless,
- * so the strip at the window's right edge carries the close control.
+ * The 44px strip along the top of a column: a window drag region. Linux
+ * windows are frameless, so a closable strip carries the close control.
  */
 export function WindowStrip({ closable = false, className, children }: { closable?: boolean; className?: string; children?: ReactNode }) {
   return (
-    <div className={cn('window-drag-region flex h-10 shrink-0 items-center gap-2 px-2', className)}>
+    <div className={cn('window-drag-region flex h-11 shrink-0 items-center gap-2 px-2', className)}>
       {children}
       {closable && isLinux ? (
-        <IconButton
-          icon={X}
-          label="Close window"
-          size="sm"
-          className="no-drag ml-auto"
-          onClick={() => void invoke('window:close')}
-        />
+        <IconButton icon={X} label="Close window" size="sm" className="no-drag ml-auto" onClick={() => void invoke('window:close')} />
       ) : null}
     </div>
   );

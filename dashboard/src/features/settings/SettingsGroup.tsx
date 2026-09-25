@@ -18,7 +18,7 @@ export function SettingsGroup({ title, description, children }: SettingsGroupPro
         </h2>
         {description ? <p className="text-sm text-text-tertiary">{description}</p> : null}
       </div>
-      <div className="flex flex-col divide-y divide-border rounded-lg bg-raised shadow-raised">{children}</div>
+      <div className="flex flex-col divide-y divide-border rounded-lg bg-sunken">{children}</div>
     </section>
   );
 }

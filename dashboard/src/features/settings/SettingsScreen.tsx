@@ -5,9 +5,12 @@ import type { Settings } from '@shared/settings';
 import { invoke } from '../../data/ipc';
 import { chooseWorkspace, useWorkspacePath } from '../../data/workspace';
 import { updateSettings, useSettings } from '../../store/settings';
-import { Button, Input, PageHeader, PageLayout, SegmentedControl, Switch } from '../../ui';
+import { Button, Input, Kbd, PageHeader, PageLayout, SegmentedControl, Switch } from '../../ui';
+import { reloadForFolder } from '../shell/layout';
+import { SHORTCUT_GROUPS } from '../shell/shortcuts';
 import { AppearanceSettings } from './AppearanceSettings';
 import { SettingsGroup, SettingsRow } from './SettingsGroup';
+import { ViewsSettings } from './ViewsSettings';
 
 const failed = (fallback: string) => (error: unknown) => toast.error(error instanceof Error ? error.message : fallback);
 
@@ -32,43 +35,129 @@ function TextSetting({ name, label, placeholder, toValue = (text) => text }: { n
   );
 }
 
-/** `/settings`: the folder, daily notes, capture, editor, and appearance. */
-export default function SettingsScreen() {
-  const [folder, setFolder] = useWorkspacePath();
+function FolderSettings() {
+  const [folder] = useWorkspacePath();
+  const change = () =>
+    chooseWorkspace()
+      .then((next) => next && reloadForFolder())
+      .catch(failed('That folder could not be opened.'));
+  return (
+    <SettingsGroup title="Folder" description="myOS Next reads and writes the Markdown files in this folder. Settings are kept apart, in the app’s own data folder.">
+      <SettingsRow
+        label="Open folder"
+        description={<span className="block truncate font-mono text-xs">{folder ?? 'No folder open'}</span>}
+        control={
+          <>
+            <Button variant="ghost" leadingIcon={FolderOpen} disabled={!folder} onClick={() => void invoke('shell:reveal', '.').catch(failed('Could not open the file manager.'))}>
+              Open in file manager
+            </Button>
+            <Button onClick={() => void change()}>Change…</Button>
+          </>
+        }
+      />
+    </SettingsGroup>
+  );
+}
+
+function EditorSettings() {
   const editorMode = useSettings((state) => state.editorMode);
   const vimKeys = useSettings((state) => state.vimKeys);
-
-  const changeFolder = () =>
-    chooseWorkspace()
-      .then((next) => {
-        if (next) setFolder(next);
-      })
-      .catch(failed('That folder could not be opened.'));
-
+  const readingFont = useSettings((state) => state.readingFont);
+  const lineWidth = useSettings((state) => state.lineWidth);
   return (
-    <PageLayout className="gap-8 px-6">
+    <SettingsGroup title="Editor">
+      <SettingsRow
+        label="Open notes as"
+        description={
+          <>
+            Each tab can switch with <Kbd shortcut="mod+e" />.
+          </>
+        }
+        control={
+          <SegmentedControl
+            aria-label="Open notes as"
+            value={editorMode}
+            onValueChange={(next) => void updateSettings({ editorMode: next })}
+            options={[
+              { value: 'rendered', label: 'Rendered' },
+              { value: 'source', label: 'Markdown' },
+            ]}
+          />
+        }
+      />
+      <SettingsRow label="Vim keys in Markdown source" control={(id) => <Switch id={id} checked={vimKeys} onCheckedChange={(next) => void updateSettings({ vimKeys: next })} />} />
+      <SettingsRow
+        label="Line width"
+        description="How wide the page a note sits on is."
+        control={
+          <SegmentedControl
+            aria-label="Line width"
+            value={lineWidth}
+            onValueChange={(next) => void updateSettings({ lineWidth: next })}
+            options={[
+              { value: 'narrow', label: 'Narrow' },
+              { value: 'normal', label: 'Normal' },
+              { value: 'wide', label: 'Wide' },
+            ]}
+          />
+        }
+      />
+      <SettingsRow
+        label="Reading font"
+        description="The typeface for the body of your notes."
+        control={
+          <SegmentedControl
+            aria-label="Reading font"
+            value={readingFont}
+            onValueChange={(next) => void updateSettings({ readingFont: next })}
+            options={[
+              { value: 'sans', label: 'Sans' },
+              { value: 'serif', label: 'Serif' },
+            ]}
+          />
+        }
+      >
+        <div aria-hidden="true" className="rounded-md bg-sunken px-5 py-4">
+          <p className="text-lg font-semibold text-text">A quiet morning</p>
+          <p className="mt-1 font-reading text-md text-text-secondary">
+            Write the way you think. Notes stay plain text, so they read the same here, in any editor, and years from now.
+          </p>
+        </div>
+      </SettingsRow>
+    </SettingsGroup>
+  );
+}
+
+function KeyboardSettings() {
+  return (
+    <SettingsGroup title="Keyboard" description={<>Press <Kbd shortcut="?" /> anywhere to see these.</>}>
+      <div className="grid gap-x-10 gap-y-6 px-4 py-4 sm:grid-cols-2">
+        {SHORTCUT_GROUPS.map((group) => (
+          <section key={group.title} aria-label={group.title} className="flex flex-col">
+            <h3 className="pb-1 text-sm font-medium text-text-secondary">{group.title}</h3>
+            {group.items.map((item) => (
+              <div key={item.label} className="flex h-8 items-center justify-between gap-4 text-base text-text">
+                <span>{item.label}</span>
+                <Kbd shortcut={item.keys} />
+              </div>
+            ))}
+          </section>
+        ))}
+      </div>
+    </SettingsGroup>
+  );
+}
+
+/** `/settings`: the folder, daily notes and capture, the editor, appearance, views, and the keyboard. */
+export default function SettingsScreen() {
+  return (
+    <PageLayout className="gap-10">
       <PageHeader title="Settings" />
-      <SettingsGroup title="Folder" description="myOS Next reads and writes the Markdown files in this folder. Settings are kept apart, in the app’s own data folder.">
-        <SettingsRow
-          label="Open folder"
-          description={<span className="block truncate font-mono text-xs">{folder ?? 'No folder open'}</span>}
-          control={
-            <>
-              <Button variant="ghost" leadingIcon={FolderOpen} disabled={!folder} onClick={() => void invoke('shell:reveal', '.').catch(failed('Could not show the folder.'))}>
-                Show
-              </Button>
-              <Button onClick={() => void changeFolder()}>Change…</Button>
-            </>
-          }
-        />
-      </SettingsGroup>
+      <FolderSettings />
 
       <SettingsGroup title="Daily notes" description="Taken from Obsidian’s daily-notes settings when the folder has them.">
         <SettingsRow label="Folder" description="Where daily notes live. Leave empty for the top of the folder." control={<TextSetting name="dailyFolder" label="Daily notes folder" placeholder="daily" />} />
         <SettingsRow label="File name" description="YYYY, MM, DD, and dddd (weekday) are filled in." control={<TextSetting name="dailyPattern" label="Daily note file name" placeholder="YYYY-MM-DD" />} />
-      </SettingsGroup>
-
-      <SettingsGroup title="Capture">
         <SettingsRow
           label="Add captures to"
           description="Type daily for today’s daily note, or a file path such as inbox.md."
@@ -81,25 +170,10 @@ export default function SettingsScreen() {
         />
       </SettingsGroup>
 
-      <SettingsGroup title="Editor">
-        <SettingsRow
-          label="Open notes as"
-          control={
-            <SegmentedControl
-              aria-label="Open notes as"
-              value={editorMode}
-              onValueChange={(next) => void updateSettings({ editorMode: next })}
-              options={[
-                { value: 'rendered', label: 'Rendered' },
-                { value: 'source', label: 'Markdown' },
-              ]}
-            />
-          }
-        />
-        <SettingsRow label="Vim keys in Markdown source" control={(id) => <Switch id={id} checked={vimKeys} onCheckedChange={(next) => void updateSettings({ vimKeys: next })} />} />
-      </SettingsGroup>
-
+      <EditorSettings />
       <AppearanceSettings />
+      <ViewsSettings />
+      <KeyboardSettings />
     </PageLayout>
   );
 }

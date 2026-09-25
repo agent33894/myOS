@@ -78,7 +78,8 @@ Every call returns `Result<T>`; `src/data/ipc.ts` turns failures into `IpcError 
 | `git:pull` / `git:push` | → Git's output (`pull --rebase --autostash`; only ever on request) |
 | `history:list` / `history:read` / `history:restore` | local copies of a file (`path`, `id`) |
 | `export:pdf` / `export:html` / `export:reveal` | `path, html` → saved path or null / `savedPath` |
-| `workspace:current` / `workspace:choose` / `workspace:create-starter` | → folder path or null |
+| `workspace:current` / `workspace:choose` / `workspace:create-starter` | → folder path or null (the starter is `~/Documents/Notes`, or `Notes 2`, … when taken, with `README.md`, `daily/`, and `First steps.md`) |
+| `workspace:obsidian` | → whether the open folder has a `.obsidian` folder |
 | `shell:reveal` / `shell:open-external` / `shell:open-in-editor`, `system:accent`, `window:close` | as before |
 
 A `TaskRef` is `{ path, line, raw }`: the 1-based line and its exact text as last read (`line: 0` is a `type: todo` file). An edit whose line no longer reads `raw` fails with `CONFLICT`.
@@ -100,15 +101,15 @@ Events: `files:changed { path, entry: 'file' | 'folder', kind, rev? }`, `app:cap
 - Documents: `useDocument(path, { createOnWrite })` → `{ note, content, edit(content), saveNow, dirty, saving, conflict, keepMine, loadTheirs, missing }`.
 - Git: `useGitStore` (`status`, `error`, `syncing`), `useGitSync`, `useGitStatus`, `useGitFile(path)`, `commit`, `pull`, `push`, `log`, `showAt`, `diff`, `commitDiff`, `commitSummary`, `initRepo`, `restoreCommit(path, commit)` (undoable).
 - Settings: `useSettings` (all `Settings` keys plus `loaded`, `accentPreview`), `loadSettings`, `updateSettings(patch)`, `setAccentPreview`, `addRecentFile`.
-- UI: `useUIStore` (`tabs: { path, mode }[]`, `activeTab`, `split`, `overlay`, `focusMode`, `rightPanel`), `showTab`, `closeTab`, `setActiveTab`, `setTabMode`, `setSplit`, `followMove`, `openOverlay`/`closeOverlay`/`toggleOverlay`, `setFocusMode`, `setRightPanel`, `useActivePath`.
+- UI: `useUIStore` (`tabs: { id, url, path, mode, group, preview }[]`, `current` per group, `focusedGroup`, the derived `activeTab` and `split` indexes, `overlay`, `focusMode`, `rightPanel`), `openUrl(url, { group, pin })`, `showTab`, `activateTab`, `pinTab`, `closeTab`/`closeTabById`/`closeTabsUnder`, `moveTab`, `toggleSplit`, `setSplit`, `setActiveTab`, `setTabMode`, `followMove`, `openOverlay`/`closeOverlay`/`toggleOverlay`, `setFocusMode`, `setRightPanel`, `useActivePath`. Tabs, the split, and expanded folders are kept per folder in local storage (`store/uiSession.ts`). A screen inside a tab reads its tab with `useShownTab()` (`features/shell/shownTab.ts`).
 
 ### Settings keys
 
-`dailyFolder`, `dailyPattern`, `captureTarget` (`'daily'` or a `.md` path), `captureHeading` (or null), `editorMode` (`'rendered' | 'source'`), `vimKeys`, `theme`, `accent`, `readingFont`, `pinnedViews` (`{ id, name, query, kind }[]`), `sidebar` (`{ left, right }: { width, collapsed }`), `recentFiles`. Stored in `settings.json` in the app data folder; the daily keys fall back to `.obsidian/daily-notes.json`.
+`dailyFolder`, `dailyPattern`, `captureTarget` (`'daily'` or a `.md` path), `captureHeading` (or null), `editorMode` (`'rendered' | 'source'`), `vimKeys`, `theme`, `accent`, `readingFont`, `lineWidth` (`'narrow' | 'normal' | 'wide'`), `pinnedViews` (`{ id, name, query, kind }[]`), `sidebar` (`{ left, right }: { width, collapsed }`), `recentFiles`. Stored in `settings.json` in the app data folder; the daily keys fall back to `.obsidian/daily-notes.json`.
 
 ### URLs (`src/app/navigation.ts`)
 
-`/today`, `/tasks?q=`, `/view/:id`, `/note?path=` (`&create=1` makes a missing file on first edit), `/settings`. Build them with `toNoteUrl`, `toTasksUrl`, `toViewUrl`; move with `go(url)` or `openNote(path)` from anywhere.
+`/today`, `/tasks?q=`, `/view/:id`, `/note?path=` (`&create=1` makes a missing file on first edit), `/settings`. Build them with `toNoteUrl`, `toTasksUrl`, `toViewUrl`; move with `go(url, { group, pin })` or `openNote(path, { create, group, pin })` from anywhere. Each tab routes its own URL, so two groups can show two screens; the window's location is the focused tab's URL. A single click opens in the group's preview tab; `pin`, a double-click, or typing keeps it.
 
 ### Extension points and owners
 

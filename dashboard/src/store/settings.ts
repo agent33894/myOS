@@ -16,9 +16,9 @@ export const useSettings = create<SettingsState>(() => ({ ...DEFAULT_SETTINGS, l
 // The theme is applied before the first paint from this copy (public/theme-init.js).
 const APPEARANCE_KEY = 'myos-next-appearance';
 
-function remember({ theme, readingFont }: Settings) {
+function remember({ theme, readingFont, lineWidth }: Settings) {
   try {
-    localStorage.setItem(APPEARANCE_KEY, JSON.stringify({ theme, readingFont }));
+    localStorage.setItem(APPEARANCE_KEY, JSON.stringify({ theme, readingFont, lineWidth }));
   } catch {
     // Storage unavailable: the first frame may just flash the default theme.
   }
