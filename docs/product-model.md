@@ -40,9 +40,9 @@ Both side columns fold away. With both folded you see only the text.
 - **Today:** today's daily note on top, and below it the tasks that are due, scheduled, or started today, plus anything late. Checking a task off writes `- [x] … ✅ 2026-09-25` in its own file.
 - **Tasks:** every open task in the folder. It can be grouped by file, folder, tag, or date and narrowed with the view syntax.
 - **Write:** each tab can show the note rendered (⌘E toggles) or as plain Markdown source with optional Vim keys. Links (`[[…]]` and relative links), backlinks, `/` blocks, tables, code, and diagrams work in both.
-- **Split:** ⌘\ opens the current tab side by side with another.
+- **Split:** ⌘\ opens the current tab side by side with another. Drag the line between them to share the width.
 - **Git:** if the folder is a Git repository, the file list shows changed files, the Changes panel commits with a message (⌘⇧Enter), each note has a History panel with diffs, and Pull and Push run only when you click them.
-- **Keep work safe:** saves check that the file hasn't changed on disk (if it has, you choose which version to keep), undo is exact, each save keeps a local copy in the app's data folder for thirty days, and editing one block never rewrites the rest of the file.
+- **Keep work safe:** saves check that the file hasn't changed on disk (if it has, you choose which version to keep), undo is exact (a confirmation's Undo reverses that change and no other), each save keeps a local copy in the app's data folder for thirty days, and editing one block never rewrites the rest of the file.
 - **Export:** PDF, HTML, or copy as Markdown or rich text.
 - **Focus:** ⌘. hides everything but the text.
 

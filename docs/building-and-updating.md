@@ -43,12 +43,29 @@ This builds the unpacked app, copies it to `~/Applications/myOS Next` (replacing
 
 The window's Wayland `app_id` and X11 class are `myos-next`, so Hyprland rules match `class:^(myos-next)$`.
 
+### Beside myOS 3.0
+
+Both apps can be installed and running at once. Nothing is shared:
+
+| | myOS 3.0 | myOS Next |
+| --- | --- | --- |
+| App folder | `~/Applications/myOS` | `~/Applications/myOS Next` |
+| Executable | `myos` | `myos-next` (linked in `~/.local/bin`) |
+| Desktop entry | `myos.desktop` | `myos-next.desktop` |
+| Links | `myos://` | `myos-next://` |
+| Settings, open folder, local copies | `~/.config/myOS` | `~/.config/myOS Next` |
+
+Each app remembers its own open folder, so they can show the same folder or different ones. When both show the same folder, each notices the other's saves as changes on disk.
+
+To update, pull the branch and run `npm run install:local` again; settings and the open folder stay. To remove myOS Next, delete `~/Applications/myOS Next`, `~/.local/bin/myos-next`, `~/.local/share/applications/myos-next.desktop`, and, if you want its settings and local copies gone too, `~/.config/myOS Next`. Your notes are never inside any of these.
+
 ### Terminal and keybindings
 
 ```bash
 myos-next add "Ship the parser fix tomorrow #release"   # or: echo "…" | myos-next add
 myos-next today
 myos-next tasks "open #release"
+myos-next tasks "kind:notes #meeting"                    # notes instead of tasks
 myos-next find "rate limit"
 myos-next open notes/api.md
 myos-next --capture                                      # quick capture in the running app

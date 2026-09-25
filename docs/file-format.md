@@ -13,6 +13,7 @@ A note's title is its frontmatter `title`, or else its file name without `.md`.
 Frontmatter is optional YAML between `---` lines at the top of the file. Every key is shown as a property and can be edited.
 
 - Changing a property rewrites only that key's lines. Key order, quoting, list style, and comments stay as they were.
+- A list written one item per line (`tags:` then `- a`) is changed item by item: items that stay keep their line and any comment on or between them, a removed item loses only its line, and a new item goes after the one before it. A list written `[a, b]` stays on one line.
 - Removing the last property removes the block.
 - Frontmatter that isn't valid YAML is left untouched: the note's text can still be edited, but its properties can't until the YAML is fixed.
 - Dates are written unquoted (`due: 2026-10-01`).

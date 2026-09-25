@@ -12,7 +12,7 @@ Frontmatter stays readable and editable as properties. Files with `type: todo` s
 
 ## Build
 
-### Wave A: foundation
+### Wave A: foundation (done)
 - **Folder model.** IPC to list the tree (folders and `.md` files, skipping dot folders and `node_modules`), create file or folder, rename, move, and delete (with a history copy first). The watcher reports folder changes too.
 - **Task lines.** Parse checkbox lines with Obsidian Tasks emoji dates and plain `due:`, tags, and `🔁` repeat. Operations: toggle (adds or removes `✅ date`; on a repeating task, adds the next occurrence as a new line directly above it, like Obsidian Tasks), edit line, and add line to a file. Frontmatter `type: todo` files are tasks too.
 - **Views.** A small query language in `shared/query.ts`, used by the app, by fenced ```` ```view ```` blocks (`kind:notes` for notes; tasks otherwise), and by the CLI:
@@ -27,13 +27,13 @@ Frontmatter stays readable and editable as properties. Files with `type: todo` s
 - **CLI** `myos-next`: `add`, `today`, `tasks [query]`, `find`, `open`.
 - **Side-by-side identity.** Product name *myOS Next*, app id `com.myos.next`, executable `myos-next`, protocol `myos-next://`, its own app data folder, its own desktop entry and icon tint, and an install to `~/Applications/myOS Next` with a `~/.local/bin/myos-next` link. myOS 3.0 stays installed and untouched.
 
-### Wave B: surfaces (in parallel)
+### Wave B: surfaces, in parallel (done)
 1. **Shell.** File sidebar (tree, create, rename, drag to move, Git status dots, Today, Tasks, pinned Views), tabs and split view, file switcher (⌘P), command bar (⌘K), right panel (Outline, Backlinks, Properties), status bar, onboarding (open a folder, with Obsidian vaults detected; or start a small folder), and settings.
 2. **Editor.** Rendered and Markdown source per tab (CodeMirror 6, optional Vim), frontmatter properties editing, live view blocks, task checkbox behavior (completion dates, repeat), date chips, and link and backlink behavior in both modes.
 3. **Today, Tasks, Views, Capture.** Today screen, Tasks screen (query box and grouping), saved and pinned views, quick capture (to the daily note or a chosen file; `[ ]` makes a task), and task row interactions (check, open at line, reschedule, add tag).
 4. **Git and safety.** Changes panel (list, diff, commit message, commit), per-note History (Git log and local copies, diff, restore), Pull and Push with clear status, and export (reused).
 
-### Wave C: review, install, ship
+### Wave C: review, install, ship (review done; install and push are done at release)
 Full walkthrough on a fresh folder, an Obsidian vault, and a code repository's `docs/` folder. Verify files on disk. Update docs. Package and install side by side. Commit and push.
 
 ### Wave D: the magazine
@@ -45,7 +45,7 @@ Soft and quiet. The note sits on a slightly raised sheet in the middle of a tint
 
 ## Contracts
 
-Wave A is in place. This section is what Wave B builds on. Paths are relative to the open folder and use `/`. Change a contract here first, then in code.
+Waves A to C are in place. This section is what the code does now, and what further work builds on. Paths are relative to the open folder and use `/`. Change a contract here first, then in code.
 
 ### IPC (`dashboard/shared/ipc/contracts.ts`)
 
@@ -84,7 +84,7 @@ Every call returns `Result<T>`; `src/data/ipc.ts` turns failures into `IpcError 
 
 A `TaskRef` is `{ path, line, raw }`: the 1-based line and its exact text as last read (`line: 0` is a `type: todo` file). An edit whose line no longer reads `raw` fails with `CONFLICT`.
 
-Events: `files:changed { path, entry: 'file' | 'folder', kind, rev? }`, `app:capture` (from `myos-next --capture`), `app:open-file { path }` (from `myos-next open` and `myos-next://open?path=`), `system:accent-changed`.
+Events: `files:changed { path, entry: 'file' | 'folder', kind, rev? }` (Markdown files and folders only; temporary files are not reported), `app:capture` (from `myos-next --capture`), `app:open-file { path }` (from `myos-next open` and `myos-next://open?path=`), `system:accent-changed`.
 
 ### Shared rules (`dashboard/shared/`)
 
@@ -97,11 +97,13 @@ Events: `files:changed { path, entry: 'file' | 'folder', kind, rev? }`, `app:cap
 
 - Store and sync: `useDataStore` (`notes`, `folders`, `bodies`, `moves`), `useFileSync()`.
 - Selectors: `useNotes`, `useNote(path)`, `useTree()` (`TreeFolder { path, name, folders, files }`), `useTasks`, `useTodayTasks()` (`{ overdue, today }`), `useView(kind, query)`, `useRecentNotes`, `useDataStatus`.
-- Gateway (every write; records undo): `read`, `save`, `createNote(path, content?)`, `freeName(folder)`, `remove`, `move(path, to)`, `rename(path, name)`, `createFolder`, `moveFolder`, `renameFolder`, `removeFolder`, `toggleTask`, `setTaskDate`, `editTask`, `appendLine`, `capture(text, target?)`, `dailyPath(date?)`, `listVersions`, `readVersion`, `restoreVersion`.
-- Documents: `useDocument(path, { createOnWrite })` → `{ note, content, edit(content), saveNow, dirty, saving, conflict, keepMine, loadTheirs, missing }`.
+- Gateway (every write; records undo): `read`, `save`, `createNote(path, content?)`, `freeName(folder)`, `remove`, `move(path, to)`, `rename(path, name)`, `createFolder`, `moveFolder`, `renameFolder`, `removeFolder`, `toggleTask`, `setTaskDate`, `editTask`, `appendLine`, `capture(text, target?)`, `rewrite(path, content, expectRev, label)` (a whole-text change made outside the editor, such as linking a mention), `setProperties(path, patch, label?)`, `dailyPath(date?)`, `listVersions`, `readVersion`, `restoreVersion`.
+- Undo (`data/undo.ts`): `record({ label, paths, undo, redo })` → id, `latestChange()`, `undoChange(id)` (fails with a plain message when a newer change touched the same files), `offerUndo(message, after?)` (a toast whose Undo reverses the change just recorded), and ⌘Z / ⇧⌘Z through `useUndoShortcuts`.
+- Documents: `useDocument(path, { createOnWrite })` → `{ note, content, edit(content), saveNow, dirty, saving, conflict, keepMine, loadTheirs, missing }`; `useUnsaved(path)` for the tab bar's dot.
+- Editors (`src/editor/bridge.ts`): `registerEditor(path, { revealLine(line, { flash? }) })`, `editorFor(path)`, `useCaretLines`, `flashElement`. Lines are 0-based body lines in both modes. The rendered editor's `connectMarkdown(...).taskLine(pos)` gives a task item's exact line.
 - Git: `useGitStore` (`status`, `error`, `syncing`), `useGitSync`, `useGitStatus`, `useGitFile(path)`, `commit`, `pull`, `push`, `log`, `showAt`, `diff`, `commitDiff`, `commitSummary`, `initRepo`, `restoreCommit(path, commit)` (undoable).
 - Settings: `useSettings` (all `Settings` keys plus `loaded`, `accentPreview`), `loadSettings`, `updateSettings(patch)`, `setAccentPreview`, `addRecentFile`.
-- UI: `useUIStore` (`tabs: { id, url, path, mode, group, preview }[]`, `current` per group, `focusedGroup`, the derived `activeTab` and `split` indexes, `overlay`, `focusMode`, `rightPanel`), `openUrl(url, { group, pin })`, `showTab`, `activateTab`, `pinTab`, `closeTab`/`closeTabById`/`closeTabsUnder`, `moveTab`, `toggleSplit`, `setSplit`, `setActiveTab`, `setTabMode`, `followMove`, `openOverlay`/`closeOverlay`/`toggleOverlay`, `setFocusMode`, `setRightPanel`, `useActivePath`. Tabs, the split, and expanded folders are kept per folder in local storage (`store/uiSession.ts`). A screen inside a tab reads its tab with `useShownTab()` (`features/shell/shownTab.ts`).
+- UI: `useUIStore` (`tabs: { id, url, path, mode, group, preview }[]`, `current` per group, `focusedGroup`, the derived `activeTab` and `split` indexes, `overlay`, `focusMode`, `rightPanel`), `openUrl(url, { group, pin })`, `showTab`, `activateTab`, `pinTab`, `closeTab`/`closeTabById`/`closeTabsUnder`, `moveTab`, `toggleSplit`, `setSplit`, `setActiveTab`, `setTabMode`, `followMove`, `openOverlay`/`closeOverlay`/`toggleOverlay`, `setFocusMode`, `setRightPanel`, `useActivePath`. Tabs, the split, and expanded folders are kept per folder in local storage (`store/uiSession.ts`), and the split's width ratio for the app (`readSplitRatio`, `writeSplitRatio`). A screen inside a tab reads its tab with `useShownTab()` (`features/shell/shownTab.ts`).
 
 ### Settings keys
 
@@ -109,7 +111,7 @@ Events: `files:changed { path, entry: 'file' | 'folder', kind, rev? }`, `app:cap
 
 ### URLs (`src/app/navigation.ts`)
 
-`/today`, `/tasks?q=`, `/view/:id`, `/note?path=` (`&create=1` makes a missing file on first edit), `/settings`. Build them with `toNoteUrl`, `toTasksUrl`, `toViewUrl`; move with `go(url, { group, pin })` or `openNote(path, { create, group, pin })` from anywhere. Each tab routes its own URL, so two groups can show two screens; the window's location is the focused tab's URL. A single click opens in the group's preview tab; `pin`, a double-click, or typing keeps it.
+`/today`, `/tasks?q=`, `/view/:id`, `/note?path=` (`&create=1` makes a missing file on first edit; `&line=N` shows file line N, lit up briefly, in either mode), `/settings`. Build them with `toNoteUrl`, `toTasksUrl`, `toViewUrl`; move with `go(url, { group, pin })` or `openNote(path, { create, group, pin })` from anywhere. Each tab routes its own URL, so two groups can show two screens; the window's location is the focused tab's URL. A single click opens in the group's preview tab; `pin`, a double-click, or typing keeps it.
 
 ### Extension points and owners
 
@@ -117,8 +119,10 @@ Events: `files:changed { path, entry: 'file' | 'folder', kind, rev? }`, `app:cap
 | --- | --- | --- |
 | B1 Shell | `src/app/**`, `src/features/{shell,palette,switcher,onboarding,settings}/**` | `Shell`, `Sidebar`, `FileTree`, `RightPanel`, `StatusBar`, `CommandPalette`, `FileSwitcher`, `Welcome`, `SettingsScreen`, `shellCommands` |
 | B2 Editor | `src/editor/**`, `src/features/note/**` | `NoteTab`, `noteCommands`, `OutlinePanel`, `BacklinksPanel`, `PropertiesPanel`, `NoteStatusItem`; renders ```` ```view ```` fences with `ViewBlock` |
-| B3 Tasks | `src/features/{today,tasks,views,capture}/**` | `TodayScreen`, `TasksScreen`, `ViewScreen`, `QuickCapture`, `taskCommands`, `ViewBlock({ kind, query, sourcePath })`, `TaskRow`, `ViewResults` |
-| B4 Git and safety | `src/features/{git,history,export}/**` | `ChangesPanel`, `HistoryPanel`, `GitStatusBarItem` (also binds ⌘⇧Enter), `useFileGitStatus(path)`, `GitDot({ path })`, `gitCommands`, `exportCommands`, `ExportMenuItems({ path, flush? })` |
+| B3 Tasks | `src/features/{today,tasks,views,capture}/**` | `TodayScreen`, `TasksScreen`, `ViewScreen`, `QuickCapture`, `taskCommands`, `ViewBlock({ kind, query, sourcePath, title? })` (place terms read from `sourcePath`), `TaskRow`, `ViewResults` |
+| B4 Git and safety | `src/features/{git,history,export}/**` | `ChangesPanel`, `HistoryPanel`, `GitStatusBarItem` (also binds ⌘⇧Enter), `useFileGitStatus(path)`, `GitDot({ path })` (used by the file tree), `gitCommands`, `exportCommands`, `ExportMenuItems({ path, flush? })` (in the note's ⋯ menu; the rendered editor marks itself `data-export-body data-path`) |
+
+The file list answers a `myos:reveal` window event (`detail.path`, a file or folder), which the note's breadcrumbs send.
 
 Registries, each a small table in `src/app/`:
 

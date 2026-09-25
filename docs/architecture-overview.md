@@ -34,7 +34,7 @@ Pure TypeScript used by both processes and the `myos-next` command.
 | `settings/` | `settings.json` in the app data folder, with daily-note defaults from `.obsidian/daily-notes.json`. |
 | `git/` | `git` through `execFile` in the open folder: status, commit, log, show, diff, pull, and push. Literal pathspecs after `--`, validated hashes, timeouts, no prompts, and Git's own error messages. |
 | `export/` | The save dialog and PDF printing in a hidden window that runs no scripts. |
-| `watch/` | Debounced `files:changed` events for files (with their new rev) and folders. |
+| `watch/` | Debounced `files:changed` events for files (with their new rev) and folders. On Linux each folder is watched on its own (Node's recursive watch there loses a file once another program replaces it); on macOS the native recursive watch is used. Dot folders, `node_modules`, and temporary files are ignored. |
 | `shell/` | Reveal in the file manager, open links, open in another editor. |
 | `ipc/` | `handle(channel, argKinds, impl)`, checked against the channel table; every result is a `Result<T>`. |
 | `cli.ts` | `myos-next add`, `today`, `tasks`, `find` run without a window; `open` and `--capture` go to the running one. |
@@ -45,7 +45,7 @@ Pure TypeScript used by both processes and the `myos-next` command.
 
 ## Renderer (`dashboard/src/`)
 
-- `data/`: the store (notes by path, folders, open bodies, this session's moves), selectors (tree, tasks, today, views, recent files), the gateway (the single write path, which records undo), `useDocument` (autosave against the loaded rev; conflicts raise a banner), Git state, and export helpers.
+- `data/`: the store (notes by path, folders, open bodies, this session's moves), selectors (tree, tasks, today, views, recent files), the gateway (the single write path, which records undo), the undo stack (entries have ids and the paths they touched, so a toast undoes its own change), `useDocument` (autosave against the loaded rev; conflicts raise a banner; unsaved edits mark the tab), Git state, and export helpers.
 - `store/`: settings (mirrored from the main process) and UI state (tabs, split, overlays, focus mode, right panel).
 - `app/`: routes and URLs, and three registries that owners fill in: commands, right-panel sections, and status bar items.
 - `features/`: one folder per owner and surface (shell, palette, switcher, onboarding, settings, note, today, tasks, views, capture, git, history, export).
@@ -54,7 +54,7 @@ Pure TypeScript used by both processes and the `myos-next` command.
 
 ## Conflict handling
 
-The editor keeps the rev it loaded and saves with `expectRev`. When a watcher event brings a new rev, the note reloads silently if there are no unsaved edits, and otherwise shows a banner to keep one version. A `CONFLICT` from a save does the same. The app knows its own saves by their rev, not by timing. Task edits from lists carry the exact line text too, so they never land on the wrong line.
+The editor keeps the rev it loaded and saves with `expectRev`. Checking a task in the rendered editor finds its line exactly, from the Markdown the editor writes for that block, and writes nothing when the line no longer reads as that task. When a watcher event brings a new rev, the note reloads silently if there are no unsaved edits, and otherwise shows a banner to keep one version. A `CONFLICT` from a save does the same. The app knows its own saves by their rev, not by timing. Task edits from lists carry the exact line text too, so they never land on the wrong line.
 
 ## Identity
 
