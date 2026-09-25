@@ -27,8 +27,14 @@ export async function refreshGit(): Promise<void> {
 }
 
 const REFRESH_MS = 400;
+// Branch switches and commits from a terminal touch only `.git`, which is not watched.
+const POLL_MS = 10_000;
 
-/** Keep the status current while the shell is mounted: on start, on file changes, and when the window regains focus. */
+/**
+ * Keep the status current while the shell is mounted: on start, on file
+ * changes, when the window regains focus, and every few seconds while it is
+ * visible (a branch switched or a commit made in a terminal).
+ */
 export function useGitSync(): void {
   useEffect(() => {
     let timer: number | undefined;
@@ -39,8 +45,10 @@ export function useGitSync(): void {
     void refreshGit();
     const unsubscribe = subscribe('files:changed', soon);
     window.addEventListener('focus', soon);
+    const poll = window.setInterval(() => document.visibilityState === 'visible' && soon(), POLL_MS);
     return () => {
       window.clearTimeout(timer);
+      window.clearInterval(poll);
       unsubscribe();
       window.removeEventListener('focus', soon);
     };

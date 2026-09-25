@@ -21,8 +21,8 @@ export function ViewFenceView({ node, editor, getPos, selected, updateAttributes
 
   useEffect(() => {
     if (!editing) return;
-    // After the insert's own focus has settled in the editor.
-    const timer = window.setTimeout(() => field.current?.focus(), 0);
+    // After the insert’s own focus has settled in the editor; typing replaces the starting query.
+    const timer = window.setTimeout(() => field.current?.select(), 0);
     return () => window.clearTimeout(timer);
   }, [editing]);
 

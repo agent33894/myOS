@@ -80,7 +80,7 @@ function EditorSettings() {
             onValueChange={(next) => void updateSettings({ editorMode: next })}
             options={[
               { value: 'rendered', label: 'Rendered' },
-              { value: 'source', label: 'Markdown' },
+              { value: 'source', label: 'Source' },
             ]}
           />
         }
@@ -140,7 +140,7 @@ function KeyboardSettings() {
 export default function SettingsScreen() {
   return (
     <PageLayout className="gap-10">
-      <PageHeader title="Settings" />
+      <PageHeader className="px-2" title="Settings" />
       <FolderSettings />
 
       <SettingsGroup title="Daily notes" description="Taken from Obsidian’s daily-notes settings when the folder has them.">
