@@ -2,17 +2,18 @@ import { ipcMain } from 'electron';
 import type { IpcErrorCode, IpcInvokeArgs, IpcInvokeChannel, IpcValue, Result } from '../../shared/ipc/contracts';
 import { DomainError, isMissingFile } from '../errors';
 
-/** `path`: non-empty string. `line`: a positive integer. A trailing `?` allows undefined. */
-type ArgKind = 'path' | 'string' | 'line' | 'object' | 'array' | 'string?' | 'object?';
+/** `path`: non-empty string. `count`: a positive integer. A trailing `?` allows undefined; `string|null` allows null. */
+type ArgKind = 'path' | 'string' | 'object' | 'string?' | 'path?' | 'count?' | 'strings?' | 'string|null';
 
 const CHECKS: Record<ArgKind, (value: unknown) => boolean> = {
   path: (value) => typeof value === 'string' && value.trim().length > 0,
   string: (value) => typeof value === 'string',
-  line: (value) => Number.isInteger(value) && (value as number) > 0,
   object: (value) => typeof value === 'object' && value !== null && !Array.isArray(value),
-  array: Array.isArray,
   'string?': (value) => value === undefined || typeof value === 'string',
-  'object?': (value) => value === undefined || CHECKS.object(value),
+  'path?': (value) => value === undefined || CHECKS.path(value),
+  'count?': (value) => value === undefined || (Number.isInteger(value) && (value as number) > 0),
+  'strings?': (value) => value === undefined || (Array.isArray(value) && value.every(CHECKS.path)),
+  'string|null': (value) => value === null || typeof value === 'string',
 };
 
 function failure(code: IpcErrorCode, message: string): Result<never> {

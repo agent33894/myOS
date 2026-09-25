@@ -1,27 +1,27 @@
 import { dialog, type BrowserWindow, type OpenDialogOptions } from 'electron';
 import type { IpcEvent, IpcEventMap } from '../../shared/ipc/contracts';
-import {
-  createArtifact,
-  deleteArtifact,
-  listArtifacts,
-  listHistory,
-  moveArtifact,
-  moveToArea,
-  patchArtifact,
-  readArtifact,
-  readHistory,
-  renameArtifact,
-  restoreArtifact,
-  restoreVersion,
-  retypeArtifact,
-  saveArtifact,
-  toggleCheck,
-} from '../documents/artifacts';
-import { exportDocument, revealExport } from '../export/export';
 import { attachAsset } from '../documents/assets';
-import { commitDiff, commitSummary } from '../git/commits';
-import { getArtifactGitRules, setArtifactGitRules } from '../git/rules';
-import { notify, openExternal, openInEditor, reveal } from '../shell/shell';
+import { capture, dailyNotePath } from '../documents/daily';
+import {
+  createFolder,
+  createNote,
+  deleteFolder,
+  deleteNote,
+  listFiles,
+  listHistory,
+  moveFolder,
+  moveNote,
+  readHistory,
+  readNote,
+  restoreNote,
+  restoreVersion,
+  saveNote,
+} from '../documents/files';
+import { appendToFile, editTask, setTaskDateOn, toggleTask } from '../documents/tasks';
+import { exportDocument, revealExport } from '../export/export';
+import { gitCommit, gitCommitDiff, gitCommitSummary, gitDiff, gitLog, gitPull, gitPush, gitShow, gitStatus } from '../git/git';
+import { getSettings, setSettings } from '../settings/settings';
+import { openExternal, openInEditor, reveal } from '../shell/shell';
 import { readOmarchyAccent } from '../utils/omarchy-theme';
 import { watchWorkspace } from '../watch/watcher';
 import { createStarterWorkspace, currentWorkspace, selectWorkspace } from '../workspace/root';
@@ -29,22 +29,40 @@ import { handle } from './handle';
 
 export function registerIpc(getWindow: () => BrowserWindow | null): void {
   const send = <E extends IpcEvent>(event: E, payload: IpcEventMap[E]) => getWindow()?.webContents.send(event, payload);
-  const watch = () => watchWorkspace(currentWorkspace(), (change) => send('artifacts:changed', change));
+  const watch = () => watchWorkspace(currentWorkspace(), (change) => send('files:changed', change));
   watch();
 
-  handle('artifacts:list', [], listArtifacts);
-  handle('artifacts:read', ['path'], readArtifact);
-  handle('artifacts:create', ['object'], createArtifact);
-  handle('artifacts:save', ['path', 'object', 'string'], saveArtifact);
-  handle('artifacts:patch', ['path', 'object', 'string?'], patchArtifact);
-  handle('artifacts:retype', ['path', 'object', 'string?'], retypeArtifact);
-  handle('artifacts:delete', ['path', 'string?'], deleteArtifact);
-  handle('artifacts:restore', ['object'], restoreArtifact);
-  handle('artifacts:attach-asset', ['object'], attachAsset);
-  handle('artifacts:toggle-check', ['path', 'line', 'string', 'string?'], toggleCheck);
-  handle('artifacts:rename', ['path', 'string?'], renameArtifact);
-  handle('artifacts:move', ['path', 'path', 'string?'], moveArtifact);
-  handle('artifacts:move-area', ['path', 'string', 'string?'], moveToArea);
+  handle('files:list', [], listFiles);
+  handle('files:read', ['path'], readNote);
+  handle('files:create', ['path', 'string?'], createNote);
+  handle('files:save', ['path', 'object', 'string'], saveNote);
+  handle('files:move', ['path', 'path', 'string?'], moveNote);
+  handle('files:delete', ['path', 'string?'], deleteNote);
+  handle('files:restore', ['object'], restoreNote);
+  handle('files:attach-asset', ['path'], attachAsset);
+  handle('folders:create', ['path'], createFolder);
+  handle('folders:move', ['path', 'path'], moveFolder);
+  handle('folders:delete', ['path'], deleteFolder);
+
+  handle('tasks:toggle', ['object', 'string?'], (task, expectRev) => toggleTask(task, expectRev));
+  handle('tasks:set-date', ['object', 'string', 'string|null', 'string?'], setTaskDateOn);
+  handle('tasks:edit', ['object', 'string', 'string?'], editTask);
+  handle('tasks:append', ['path', 'string', 'string?'], appendToFile);
+  handle('daily:path', ['string?'], dailyNotePath);
+  handle('daily:capture', ['string', 'path?'], capture);
+
+  handle('settings:get', [], getSettings);
+  handle('settings:set', ['object'], setSettings);
+
+  handle('git:status', [], gitStatus);
+  handle('git:commit', ['string', 'strings?'], gitCommit);
+  handle('git:log', ['path?', 'count?'], gitLog);
+  handle('git:show', ['path', 'string'], gitShow);
+  handle('git:diff', ['path?'], gitDiff);
+  handle('git:commit-diff', ['string'], gitCommitDiff);
+  handle('git:commit-summary', ['string'], gitCommitSummary);
+  handle('git:pull', [], gitPull);
+  handle('git:push', [], gitPush);
 
   handle('history:list', ['path'], listHistory);
   handle('history:read', ['path', 'string'], readHistory);
@@ -57,8 +75,8 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
   handle('workspace:current', [], currentWorkspace);
   handle('workspace:choose', [], async () => {
     const options: OpenDialogOptions = {
-      title: 'Choose a Markdown folder',
-      buttonLabel: 'Use This Folder',
+      title: 'Open a folder of Markdown files',
+      buttonLabel: 'Open Folder',
       properties: ['openDirectory', 'createDirectory'],
     };
     const window = getWindow();
@@ -74,15 +92,9 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
     return root;
   });
 
-  handle('git:rules:get', [], getArtifactGitRules);
-  handle('git:rules:set', ['array'], setArtifactGitRules);
-  handle('git:commit-summary', ['path', 'string'], commitSummary);
-  handle('git:commit-diff', ['path', 'string'], commitDiff);
-
   handle('shell:reveal', ['path'], reveal);
   handle('shell:open-external', ['string'], openExternal);
   handle('shell:open-in-editor', ['path'], openInEditor);
   handle('system:accent', [], readOmarchyAccent);
-  handle('notifications:show', ['object'], (options) => notify(options, getWindow()));
   handle('window:close', [], () => getWindow()?.close());
 }

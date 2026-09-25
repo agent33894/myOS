@@ -8,7 +8,7 @@ import { workspaceRoot } from '../workspace/root';
 
 const MIN_GAP_MS = 10 * 60_000;
 const KEEP = 50;
-const MAX_AGE_MS = 60 * 86_400_000;
+const MAX_AGE_MS = 30 * 86_400_000;
 // Snapshot ids are ISO timestamps with `:` and `.` swapped for `-`, safe in every file system.
 const ID = /^(\d{4}-\d{2}-\d{2})T(\d{2})-(\d{2})-(\d{2})-(\d{3})Z$/;
 
@@ -41,7 +41,7 @@ async function idsFor(path: string): Promise<string[]> {
 /**
  * Keep `raw`, the file as it is before a write. Throttled writes (saves) keep
  * at most one snapshot per ten minutes; an identical newest snapshot is never
- * repeated. Old snapshots are pruned here: the latest 50, none past 60 days.
+ * repeated. Old snapshots are pruned here: the latest 50, none past 30 days.
  */
 export async function snapshotBeforeWrite(path: string, raw: string, { throttle = false } = {}): Promise<void> {
   const folder = folderFor(path);
@@ -63,7 +63,7 @@ export async function snapshotBeforeWrite(path: string, raw: string, { throttle 
   await Promise.all(stale.map((existing) => rm(join(folder, `${existing}.md`), { force: true })));
 }
 
-/** History follows a file that moved (rename, area, type); an existing history at the target stays. */
+/** History follows a file that moved; an existing history at the target stays. */
 export async function moveHistory(from: string, to: string): Promise<void> {
   const target = folderFor(to);
   try {

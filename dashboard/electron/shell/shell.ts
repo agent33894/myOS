@@ -1,10 +1,10 @@
-import { BrowserWindow, Notification, shell } from 'electron';
+import { shell } from 'electron';
 import { spawn } from 'child_process';
 import { statSync } from 'fs';
 import { DomainError } from '../errors';
 import { resolveInWorkspace } from '../workspace/paths';
 
-/** Show a workspace file in the system file manager (folders open directly). */
+/** Show a file from the folder in the system file manager (folders open directly). */
 export async function reveal(path: string): Promise<void> {
   const target = resolveInWorkspace(path);
   if (statSync(target, { throwIfNoEntry: false })?.isDirectory()) await shell.openPath(target);
@@ -16,7 +16,7 @@ export async function openExternal(url: string): Promise<void> {
   await shell.openExternal(url);
 }
 
-/** Open a workspace Markdown file in the user's default editor. */
+/** Open a Markdown file from the folder in the user's default editor. */
 export async function openInEditor(path: string): Promise<void> {
   if (!path.toLowerCase().endsWith('.md')) throw new DomainError('INVALID', 'Only Markdown files open in an editor.');
   const target = resolveInWorkspace(path);
@@ -39,15 +39,4 @@ function openWithGio(path: string): Promise<boolean> {
       done(true);
     });
   });
-}
-
-export function notify(options: { title: string; body: string }, window: BrowserWindow | null): boolean {
-  if (!Notification.isSupported()) return false;
-  const notification = new Notification({ title: options.title, body: options.body });
-  notification.on('click', () => {
-    if (window?.isMinimized()) window.restore();
-    window?.focus();
-  });
-  notification.show();
-  return true;
 }
