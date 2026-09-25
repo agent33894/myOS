@@ -7,6 +7,7 @@ import { formatLocalDate } from '@shared/date';
 import { plannedMinutes } from '@shared/today';
 import type { ArtifactSummary } from '@shared/types';
 import { useDataStatus, useToday } from '../../data/selectors';
+import { CloseDayButton } from '../rituals/CloseDayButton';
 import { Button, EmptyState, LoadingState, PageHeader, PageLayout, SectionHeader, formatShortcut } from '../../ui';
 import { useCapacityLine } from '../planning/capacity';
 import { PlanMyDay } from '../planning/PlanMyDay';
@@ -45,6 +46,8 @@ export default function TodayPage() {
 
   if (flow === 'plan') return <PlanMyDay onClose={() => openFlow(null)} />;
 
+  const evening = new Date().getHours() >= 15;
+
   return (
     <PageLayout className="gap-8">
       <PageHeader
@@ -56,9 +59,22 @@ export default function TodayPage() {
           </>
         }
         actions={
-          <Button leadingIcon={Sunrise} onClick={() => openFlow('plan')}>
-            Plan my day
-          </Button>
+          // Both rituals are always one click away; the time of day only decides which one leads.
+          evening ? (
+            <>
+              <Button variant="ghost" leadingIcon={Sunrise} onClick={() => openFlow('plan')}>
+                Plan my day
+              </Button>
+              <CloseDayButton primary />
+            </>
+          ) : (
+            <>
+              <CloseDayButton />
+              <Button leadingIcon={Sunrise} onClick={() => openFlow('plan')}>
+                Plan my day
+              </Button>
+            </>
+          )
         }
         className="px-2"
       />
