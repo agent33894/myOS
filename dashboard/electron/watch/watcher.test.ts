@@ -39,4 +39,11 @@ it('keeps reporting a file after another program replaces it, and files in new f
   await sleep(400);
   expect(seen).toContainEqual(expect.objectContaining({ path: 'new/b.md', entry: 'file' }));
   expect(seen.some((change) => change.path.includes('.tmp'))).toBe(false);
+
+  // `mkdir -p` and a write right after: the file lands before the new folders are watched.
+  seen.length = 0;
+  mkdirSync(join(root, 'a/b'), { recursive: true });
+  writeFileSync(join(root, 'a/b/c.md'), 'c\n');
+  await sleep(600);
+  expect(seen).toContainEqual(expect.objectContaining({ path: 'a/b/c.md', entry: 'file' }));
 });

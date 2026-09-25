@@ -54,8 +54,12 @@ export function watchWorkspace(root: string | null, onChange: (change: Change) =
     }
   };
 
-  /** Learn (and on Linux, watch) a folder and everything under it. */
-  const addTree = async (folder: string): Promise<void> => {
+  /**
+   * Learn (and on Linux, watch) a folder and everything under it. For a
+   * folder that just appeared, what is already inside is reported too: it
+   * may have been written before the folder's own watch began.
+   */
+  const addTree = async (folder: string, announce = false): Promise<void> => {
     if (closed) return;
     folders.add(folder);
     if (!NATIVE_RECURSIVE && !watchers.has(folder)) {
@@ -71,10 +75,17 @@ export function watchWorkspace(root: string | null, onChange: (change: Change) =
       }
     }
     const entries = await readdir(join(root, folder), { withFileTypes: true }).catch(() => []);
+    const inside = (name: string) => (folder ? `${folder}/${name}` : name);
+    if (announce) {
+      for (const entry of entries) if (entry.isFile() && entry.name.toLowerCase().endsWith('.md')) record(inside(entry.name), 'rename');
+    }
     await Promise.all(
       entries
         .filter((entry) => entry.isDirectory() && !isHiddenName(entry.name))
-        .map((entry) => addTree(folder ? `${folder}/${entry.name}` : entry.name)),
+        .map((entry) => {
+          if (announce) record(inside(entry.name), 'rename');
+          return addTree(inside(entry.name), announce);
+        }),
     );
   };
 
@@ -89,7 +100,7 @@ export function watchWorkspace(root: string | null, onChange: (change: Change) =
           if (closed) return;
           if (stats.isDirectory()) {
             const known = folders.has(path);
-            void addTree(path);
+            void addTree(path, !known);
             onChange({ path, entry: 'folder', kind: known && !renamed ? 'updated' : 'created' });
           } else if (markdown && stats.isFile()) {
             onChange({ path, entry: 'file', kind: renamed ? 'created' : 'updated', rev: revOf(stats) });
