@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import { ArrowRight, CornerDownLeft } from 'lucide-react';
 import { captureLine } from '@shared/capture';
 import { capture, dailyPath } from '../../data/gateway';
-import { undo } from '../../data/undo';
+import { offerUndo } from '../../data/undo';
 import { useSettings } from '../../store/settings';
 import { closeOverlay, useUIStore } from '../../store/ui';
 import { Dialog, DialogContent, DialogDescription, DialogTitle, Icon, Input, Kbd } from '../../ui';
@@ -46,9 +46,7 @@ export function QuickCapture() {
       const note = await capture(text, target ?? undefined);
       setText('');
       if (!keepOpen) closeOverlay();
-      toast.success(`Added to ${note.path}`, {
-        action: { label: 'Undo', onClick: () => void undo().catch(() => toast.error('Could not undo that capture')) },
-      });
+      offerUndo(`Added to ${note.path}`);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Could not add that');
     } finally {

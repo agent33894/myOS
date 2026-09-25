@@ -114,6 +114,7 @@ export async function restoreCommit(path: string, commit: GitCommit): Promise<No
   const restored = await put(invoke('git:restore', path, commit.hash, currentRev(path), commit.path));
   const [replaced] = await invoke('history:list', path);
   record({
+    paths: [path],
     label: `Restore ${path} from commit ${commit.hash.slice(0, 7)}`,
     undo: () => put(invoke('history:restore', path, replaced.id, currentRev(path))),
     redo: () => put(invoke('git:restore', path, commit.hash, currentRev(path), commit.path)),

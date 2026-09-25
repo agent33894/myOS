@@ -7,7 +7,8 @@ import { Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogT
 import { DiffCounts, DiffView } from '../git/DiffView';
 import { EntryRow } from './EntryRow';
 import { compare, relativeDate, type HistoryEntry } from './timeline';
-import { failed, followUndo } from './toasts';
+import { offerUndo } from '../../data/undo';
+import { failed } from './toasts';
 
 interface HistoryDialogProps {
   path: string;
@@ -66,7 +67,7 @@ export function HistoryDialog({ path, entries, selected, onSelect }: HistoryDial
     try {
       if (entry.kind === 'commit') await restoreCommit(path, entry.commit);
       else await restoreVersion(path, entry.version.id);
-      followUndo(entry.kind === 'commit' ? `Restored from commit ${entry.commit.hash.slice(0, 7)}` : 'Restored the local copy');
+      offerUndo(entry.kind === 'commit' ? `Restored from commit ${entry.commit.hash.slice(0, 7)}` : 'Restored the local copy');
       onSelect(null);
     } catch (error) {
       failed(error, 'Could not restore that version');

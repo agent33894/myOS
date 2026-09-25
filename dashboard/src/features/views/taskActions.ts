@@ -4,7 +4,7 @@ import { formatLocalDate, nextMonday, parseLocalDate, shiftDate } from '@shared/
 import type { Task, TaskDateField } from '@shared/tasks';
 import { go, openNote, toNoteUrl } from '../../app/navigation';
 import { editTask, setTaskDate, toggleTask } from '../../data/gateway';
-import { undo } from '../../data/undo';
+import { offerUndo } from '../../data/undo';
 import { setSplit, showTab, useUIStore } from '../../store/ui';
 import { bodyWithTag, cleanTag } from './taskEdits';
 
@@ -15,19 +15,10 @@ import { bodyWithTag, cleanTag } from './taskEdits';
 
 const message = (error: unknown, fallback: string) => (error instanceof Error ? error.message : fallback);
 
-function confirm(text: string) {
-  toast.success(text, {
-    action: {
-      label: 'Undo',
-      onClick: () => void undo().catch((error: unknown) => toast.error(message(error, 'Could not undo that'))),
-    },
-  });
-}
-
 async function write(run: () => Promise<unknown>, done: string, failed: string): Promise<void> {
   try {
     await run();
-    confirm(done);
+    offerUndo(done);
   } catch (error) {
     toast.error(message(error, failed));
   }

@@ -3,7 +3,8 @@ import { Link2 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { NoteSummary } from '@shared/spec';
 import type { PanelProps } from '../../app/panels';
-import { read, save } from '../../data/gateway';
+import { read, rewrite } from '../../data/gateway';
+import { offerUndo } from '../../data/undo';
 import { isConflict } from '../../data/ipc';
 import { useNote, useNotes } from '../../data/selectors';
 import { findBacklinks, findLinkedNote, findWikiLinkedNote, matchWikiLinks } from '../../lib/links';
@@ -76,8 +77,8 @@ export function BacklinksPanel({ path }: PanelProps) {
         toast.error(`${from.title} changed. Try again.`);
         return;
       }
-      await save(from.path, { content: next }, fresh.rev);
-      toast(`Linked in ${from.title}.`);
+      await rewrite(from.path, next, fresh.rev, `Link “${mention.text}” in ${from.title}`);
+      offerUndo(`Linked in ${from.title}`);
     } catch (error) {
       toast.error(isConflict(error) ? `${from.title} changed on disk. Try again.` : error instanceof Error ? error.message : 'Could not add the link');
     } finally {

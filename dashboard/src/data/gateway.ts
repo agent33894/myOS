@@ -1,5 +1,5 @@
 import type { NoteSave, TaskRef } from '@shared/ipc/contracts';
-import type { Note, Properties } from '@shared/spec';
+import type { Note, Properties, PropertiesPatch } from '@shared/spec';
 import type { Task, TaskDateField } from '@shared/tasks';
 import { useSettings } from '../store/settings';
 import { followMove } from '../store/ui';
@@ -43,6 +43,7 @@ export async function createNote(path: string, content?: string): Promise<Note> 
   let snapshot = created;
   record({
     label: `Create ${created.path}`,
+    paths: [created.path],
     undo: async () => {
       snapshot = await deleteFile(created.path);
     },
@@ -65,6 +66,7 @@ export async function remove(path: string): Promise<Note> {
   let snapshot = await deleteFile(path);
   record({
     label: `Delete ${path}`,
+    paths: [path],
     undo: () => restoreFile(snapshot),
     redo: async () => {
       snapshot = await deleteFile(path);
@@ -84,7 +86,7 @@ async function moveFile(from: string, to: string): Promise<Note> {
 /** Move a file to `to` (a full path); undo moves it back. Open tabs follow. */
 export async function move(path: string, to: string): Promise<Note> {
   const moved = await moveFile(path, to);
-  if (moved.path !== path) record({ label: `Move ${path}`, undo: () => moveFile(moved.path, path), redo: () => moveFile(path, moved.path) });
+  if (moved.path !== path) record({ label: `Move ${path}`, paths: [path, moved.path], undo: () => moveFile(moved.path, path), redo: () => moveFile(path, moved.path) });
   return moved;
 }
 
@@ -109,7 +111,7 @@ async function moveFolderTo(from: string, to: string): Promise<string> {
 /** Move or rename a folder with everything in it; undo moves it back. */
 export async function moveFolder(path: string, to: string): Promise<string> {
   const moved = await moveFolderTo(path, to);
-  if (moved !== path) record({ label: `Move ${path}`, undo: () => moveFolderTo(moved, path), redo: () => moveFolderTo(path, moved) });
+  if (moved !== path) record({ label: `Move ${path}`, paths: [path, moved], undo: () => moveFolderTo(moved, path), redo: () => moveFolderTo(path, moved) });
   return moved;
 }
 
@@ -150,6 +152,7 @@ async function undoable(path: string, label: string, write: () => Promise<Note>)
   let removed: Note | null = null;
   record({
     label,
+    paths: [path],
     undo: async () => {
       if (before) await put(before);
       else removed = await deleteFile(path);
@@ -158,6 +161,27 @@ async function undoable(path: string, label: string, write: () => Promise<Note>)
       if (removed) await restoreFile(removed);
       else await put(after);
     },
+  });
+  return after;
+}
+
+/**
+ * Replace a file's text (not typed in its editor: a link added from the
+ * Backlinks panel, a fix from a list). Undo puts the old text back.
+ */
+export const rewrite = (path: string, content: string, expectRev: string, label: string) =>
+  undoable(path, label, () => invoke('files:save', path, { content }, expectRev));
+
+/** Change only these properties (null removes one); undo sets them back as they were. */
+export async function setProperties(path: string, change: PropertiesPatch, label = `Change the properties of ${path}`): Promise<Note> {
+  const before = useDataStore.getState().notes[path]?.properties ?? {};
+  const previous = Object.fromEntries(Object.keys(change).map((key) => [key, key in before ? before[key] : null]));
+  const after = await save(path, { properties: change }, currentRev(path) ?? '');
+  record({
+    label,
+    paths: [path],
+    undo: () => save(path, { properties: previous }, currentRev(path) ?? ''),
+    redo: () => save(path, { properties: change }, currentRev(path) ?? ''),
   });
   return after;
 }
@@ -206,6 +230,6 @@ const restoreTo = (path: string, id: string) => applied(invoke('history:restore'
 export async function restoreVersion(path: string, id: string): Promise<Note> {
   const restored = await restoreTo(path, id);
   const [replaced] = await invoke('history:list', path);
-  record({ label: `Restore an earlier copy of ${path}`, undo: () => restoreTo(path, replaced.id), redo: () => restoreTo(path, id) });
+  record({ label: `Restore an earlier copy of ${path}`, paths: [path], undo: () => restoreTo(path, replaced.id), redo: () => restoreTo(path, id) });
   return restored;
 }

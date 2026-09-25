@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { parseLocalDate } from '@shared/date';
 import type { Properties, PropertiesPatch } from '@shared/spec';
 import type { PanelProps } from '../../app/panels';
-import { currentRev, save } from '../../data/gateway';
+import { setProperties } from '../../data/gateway';
 import { isConflict } from '../../data/ipc';
 import { useNote } from '../../data/selectors';
 import { Button, DatePicker, EmptyState, IconButton, Input, Pill, Property, SectionHeader, Switch, Textarea } from '../../ui';
@@ -17,7 +17,8 @@ const LIST_KEYS = new Set(['tags', 'aliases', 'cssclasses']);
 /** Change only these keys (null removes one); every other line of the frontmatter stays as written. */
 async function patch(path: string, change: PropertiesPatch): Promise<boolean> {
   try {
-    await save(path, { properties: change }, currentRev(path) ?? '');
+    const keys = Object.keys(change);
+    await setProperties(path, change, keys.length === 1 ? `Change ${keys[0]} in ${path}` : undefined);
     return true;
   } catch (error) {
     toast.error(isConflict(error) ? 'This note changed on disk. Try again.' : error instanceof Error ? error.message : 'Could not change that property');
