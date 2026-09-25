@@ -13,7 +13,7 @@ export function useFileGitStatus(path: string | null | undefined): GitChange | n
 }
 
 /**
- * @public A small dot in the change's color (modified, new, deleted, conflict),
+ * A small dot in the change's color (modified, new, deleted, conflict),
  * or nothing for an unchanged file. For the file tree (B1).
  */
 export function GitDot({ path, className }: { path: string; className?: string }) {

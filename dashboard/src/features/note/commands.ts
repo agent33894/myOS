@@ -12,7 +12,7 @@ import { offerUndo } from '../../data/undo';
 const failed = (error: unknown) => toast.error(error instanceof Error ? error.message : 'That did not work');
 
 /** Show a panel in the right column, opening the column if it was folded. */
-function showPanel(panel: PanelId) {
+export function showPanel(panel: PanelId) {
   const { sidebar } = useSettings.getState();
   if (sidebar.right.collapsed) void updateSettings({ sidebar: { ...sidebar, right: { ...sidebar.right, collapsed: false } } });
   setRightPanel(panel);

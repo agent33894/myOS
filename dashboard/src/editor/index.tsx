@@ -74,7 +74,8 @@ export function Editor({
   const extensions = useMemo(() => createExtensions({ placeholder, slashKeys, linkKeys }), []);
   const editorProps = useMemo(
     () => ({
-      attributes: { class: 'prose', role: 'textbox', 'aria-multiline': 'true', 'aria-label': 'Note body' },
+      // `data-export-body` lets export copy what is on screen (features/export/capture.ts).
+      attributes: { class: 'prose', role: 'textbox', 'aria-multiline': 'true', 'aria-label': 'Note body', 'data-export-body': '', 'data-path': note.path },
       handleClick: (_view: EditorView, _pos: number, event: MouseEvent) => clickRef.current(event),
       handleKeyDown: (view: EditorView, event: KeyboardEvent) => {
         if (!hasPrimaryModifier(event) || event.altKey) return false;

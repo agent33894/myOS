@@ -3,7 +3,7 @@ import { MenuItem, MenuLabel, MenuSeparator } from '../../ui';
 import { EXPORT_ACTIONS, type Flush } from './actions';
 
 /**
- * @public Export items for a note's ⋯ menu (B2 mounts it inside `MenuContent`, after a `MenuSeparator`):
+ * Export items for a note's ⋯ menu (mounted inside `MenuContent`, after a `MenuSeparator`):
  * PDF, HTML, and copy as Markdown or rich text. Pass the editor's `saveNow`
  * as `flush` so unsaved typing is included.
  */

@@ -70,6 +70,15 @@ export function expandTo(path: string): void {
 
 export const selectRow = (selected: string | null) => useTreeStore.setState({ selected });
 
+/** Show a file or folder in the file list: open the column and its folders (a folder opens too), select it, and focus the list. */
+export function revealInFileList(path: string): void {
+  showColumn('left');
+  expandTo(path);
+  if (useDataStore.getState().folders.includes(path)) toggleFolder(path, true);
+  selectRow(path);
+  window.setTimeout(() => document.querySelector<HTMLElement>('[role="tree"]')?.focus(), 50);
+}
+
 /** Start typing a new note or folder name inside `parent`. */
 export function startDraft(parent: string, kind: Draft['kind']): void {
   if (parent) expandTo(`${parent}/x`);

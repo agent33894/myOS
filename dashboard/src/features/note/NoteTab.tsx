@@ -140,7 +140,7 @@ export function NoteTab({ path, mode, createOnWrite = false, line }: NoteTabProp
 
   return (
     <PageLayout document>
-      <NoteHeader path={path} mode={mode} onModeChange={(next) => switchMode(path, next)} findSlot={setFindSlot} saveLabel={saveLabel} />
+      <NoteHeader path={path} mode={mode} onModeChange={(next) => switchMode(path, next)} findSlot={setFindSlot} saveLabel={saveLabel} flush={doc.saveNow} />
       {doc.conflict ? (
         <div className="mt-4">
           <ConflictBanner onLoadTheirs={doc.loadTheirs} onKeepMine={() => void doc.keepMine()} />

@@ -26,7 +26,7 @@ import {
   cn,
   formatShortcut,
 } from '../../ui';
-import { useFileGitStatus } from '../git/useFileGitStatus';
+import { GitDot } from '../git/useFileGitStatus';
 import { SHORTCUTS } from './shortcuts';
 import {
   baseName,
@@ -42,6 +42,7 @@ import {
   toggleFolder,
   useTreeStore,
   type Draft,
+  revealInFileList,
 } from './layout';
 
 type Kind = 'file' | 'folder';
@@ -70,14 +71,6 @@ function flatten(folder: TreeFolder, expanded: Set<string>, depth = 0, rows: Row
 }
 
 const indent = (depth: number) => ({ paddingLeft: `${depth * 14 + 8}px` });
-
-/** A quiet dot for a file with uncommitted changes, colored by the kind of change. */
-function GitDot({ path }: { path: string }) {
-  const change = useFileGitStatus(path);
-  if (!change) return null;
-  const tone = change === 'untracked' || change === 'added' ? 'bg-success' : change === 'deleted' || change === 'conflicted' ? 'bg-danger' : 'bg-warning';
-  return <span role="img" aria-label={`Git: ${change}`} title={change} className={cn('ml-auto size-1.5 shrink-0 rounded-full', tone)} />;
-}
 
 /** Type a name: a new note or folder, or a new name for an existing one. Enter keeps it, Escape leaves it. */
 function NameField({ initial, label, depth, icon, onDone }: { initial: string; label: string; depth: number; icon: typeof FileText; onDone: (name: string | null) => void }) {
@@ -136,6 +129,16 @@ export function FileTree() {
 
   const rows = useMemo(() => flatten(tree, expanded), [tree, expanded]);
   const selectedIndex = rows.findIndex((row) => row.path === selected);
+
+  // Breadcrumbs and commands ask for a file or folder with a `myos:reveal` event.
+  useEffect(() => {
+    const onReveal = (event: Event) => {
+      const path = (event as CustomEvent<{ path?: unknown }>).detail?.path;
+      if (typeof path === 'string') revealInFileList(path);
+    };
+    window.addEventListener('myos:reveal', onReveal);
+    return () => window.removeEventListener('myos:reveal', onReveal);
+  }, []);
 
   // Reveal the file on screen: open its folders, select it, and scroll to it.
   useEffect(() => {
@@ -428,7 +431,7 @@ export function FileTree() {
                         <span className="size-3.5 shrink-0" />
                         <Icon icon={FileText} size="sm" className={cn('shrink-0', isActive ? 'text-accent-text' : 'text-text-tertiary')} />
                         <span className="truncate">{stem(row.name)}</span>
-                        <GitDot path={row.path} />
+                        <GitDot path={row.path} className="ml-auto" />
                       </>
                     )}
                   </div>

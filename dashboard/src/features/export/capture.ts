@@ -246,7 +246,7 @@ export interface CapturedBody {
 export function findEditor(path: string): HTMLElement | null {
   const marked = Array.from(document.querySelectorAll<HTMLElement>('[data-export-body]')).find((element) => element.dataset.path === path);
   if (marked) return marked;
-  const editors = document.querySelectorAll<HTMLElement>('.ProseMirror[aria-label="Page body"]');
+  const editors = document.querySelectorAll<HTMLElement>('.ProseMirror[aria-label="Note body"]');
   return editors.length === 1 ? editors[0] : null;
 }
 

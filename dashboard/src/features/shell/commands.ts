@@ -7,7 +7,7 @@ import { chooseWorkspace } from '../../data/workspace';
 import { updateSettings, useSettings } from '../../store/settings';
 import { closeTabById, openOverlay, toggleSplit, useUIStore } from '../../store/ui';
 import { toggleFocusMode } from './focus/FocusMode';
-import { expandTo, parentOf, reloadForFolder, selectedFolder, selectRow, showColumn, startDraft, toggleColumn } from './layout';
+import { parentOf, reloadForFolder, revealInFileList, selectedFolder, startDraft, toggleColumn } from './layout';
 import { SHORTCUTS } from './shortcuts';
 
 /** ⌘⌥N: name a new note in the file list, in the selected folder; with the files hidden, make "Untitled" beside the note on screen. */
@@ -31,14 +31,6 @@ export function closeActiveTab(): void {
   if (id) closeTabById(id);
 }
 
-/** Show the file on screen in the file list. */
-function revealInSidebar(path: string) {
-  showColumn('left');
-  expandTo(path);
-  selectRow(path);
-  setTimeout(() => document.querySelector<HTMLElement>('[role="tree"]')?.focus(), 50);
-}
-
 const THEMES = [
   { id: 'light', label: 'Use the light theme', icon: Sun },
   { id: 'dark', label: 'Use the dark theme', icon: Moon },
@@ -54,7 +46,7 @@ export const shellCommands: CommandSource = ({ activePath }) => {
     { id: 'shell.new-note-here', group: 'Note', label: 'New note', icon: FilePlus, shortcut: SHORTCUTS.newNote, keywords: 'create file page untitled in this folder', run: () => setTimeout(newNoteHere, 0) },
     { id: 'shell.new-folder', group: 'Note', label: 'New folder', icon: FolderPlus, keywords: 'create directory', run: () => setTimeout(() => startDraft(selectedFolder(), 'folder'), 0) },
     ...(activePath
-      ? [{ id: 'shell.reveal', group: 'Note' as const, label: 'Show in the file list', icon: Crosshair, keywords: 'reveal locate sidebar tree', run: () => revealInSidebar(activePath) }]
+      ? [{ id: 'shell.reveal', group: 'Note' as const, label: 'Show in the file list', icon: Crosshair, keywords: 'reveal locate sidebar tree', run: () => revealInFileList(activePath) }]
       : []),
     { id: 'shell.split', group: 'App', label: split ? 'Close the split' : 'Split to the right', icon: Columns2, shortcut: SHORTCUTS.split, keywords: 'side by side two', run: toggleSplit },
     { id: 'shell.close-tab', group: 'App', label: 'Close tab', icon: X, shortcut: SHORTCUTS.closeTab, run: closeActiveTab },
