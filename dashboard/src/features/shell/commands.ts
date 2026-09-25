@@ -51,7 +51,7 @@ export const shellCommands: CommandSource = ({ activePath }) => {
   const split = useUIStore.getState().current[1] !== null;
   return [
     { id: 'shell.settings', group: 'Go to', label: 'Settings', icon: Settings, shortcut: SHORTCUTS.settings, keywords: 'preferences options', run: () => go(paths.settings, { pin: true }) },
-    { id: 'shell.new-note-here', group: 'Note', label: 'New note in this folder', icon: FilePlus, shortcut: SHORTCUTS.newNote, keywords: 'create file', run: () => setTimeout(newNoteHere, 0) },
+    { id: 'shell.new-note-here', group: 'Note', label: 'New note', icon: FilePlus, shortcut: SHORTCUTS.newNote, keywords: 'create file page untitled in this folder', run: () => setTimeout(newNoteHere, 0) },
     { id: 'shell.new-folder', group: 'Note', label: 'New folder', icon: FolderPlus, keywords: 'create directory', run: () => setTimeout(() => startDraft(selectedFolder(), 'folder'), 0) },
     ...(activePath
       ? [{ id: 'shell.reveal', group: 'Note' as const, label: 'Show in the file list', icon: Crosshair, keywords: 'reveal locate sidebar tree', run: () => revealInSidebar(activePath) }]

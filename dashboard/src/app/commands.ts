@@ -6,7 +6,8 @@ import { noteCommands } from '../features/note/commands';
 import { shellCommands } from '../features/shell/commands';
 import { taskCommands } from '../features/tasks/commands';
 import { useGitStore } from '../data/git';
-import { useActivePath } from '../store/ui';
+import { useSettings } from '../store/settings';
+import { useActivePath, useUIStore } from '../store/ui';
 
 export interface Command {
   /** Stable and unique across owners, e.g. `note.delete`. */
@@ -34,8 +35,19 @@ export type CommandSource = (context: CommandContext) => Command[];
 /** Every owner's commands, in command-bar order. */
 const SOURCES: readonly CommandSource[] = [shellCommands, noteCommands, taskCommands, gitCommands, exportCommands];
 
+/**
+ * The command list, rebuilt whenever something a source reads changes: the
+ * note on screen, Git, pinned views, the theme, Vim keys, or the split.
+ */
 export function useCommands(): Command[] {
   const activePath = useActivePath();
   const inRepo = useGitStore((state) => state.status?.repo ?? false);
-  return useMemo(() => SOURCES.flatMap((source) => source({ activePath, inRepo })), [activePath, inRepo]);
+  const pinnedViews = useSettings((state) => state.pinnedViews);
+  const theme = useSettings((state) => state.theme);
+  const vimKeys = useSettings((state) => state.vimKeys);
+  const split = useUIStore((state) => state.current[1] !== null);
+  return useMemo(
+    () => SOURCES.flatMap((source) => source({ activePath, inRepo })),
+    [activePath, inRepo, pinnedViews, theme, vimKeys, split],
+  );
 }

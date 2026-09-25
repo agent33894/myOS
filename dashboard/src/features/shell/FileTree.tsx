@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { openNote } from '../../app/navigation';
 import { createFolder, createNote, move, moveFolder, remove, removeFolder } from '../../data/gateway';
 import { invoke } from '../../data/ipc';
+import { offerUndo } from '../../data/undo';
 import { useTree } from '../../data/selectors';
 import type { TreeFolder } from '../../data/tree';
 import { closeTabsUnder, useActivePath } from '../../store/ui';
@@ -194,7 +195,7 @@ export function FileTree() {
     try {
       if (row.kind === 'file') {
         await remove(row.path);
-        toast(`Deleted ${row.path}`, { description: `${formatShortcut(SHORTCUTS.undo)} puts it back.` });
+        offerUndo(`Deleted ${row.path}`);
       } else {
         const removed = await removeFolder(row.path);
         toast(`Deleted the folder ${row.path}`, { description: `${removed.length} ${removed.length === 1 ? 'note was' : 'notes were'} copied to history first.` });

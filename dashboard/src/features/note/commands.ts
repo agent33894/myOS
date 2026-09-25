@@ -1,17 +1,15 @@
-import { Code, FilePlus, FolderOpen, Keyboard, Link2, ListTree, SlidersHorizontal, Trash2 } from 'lucide-react';
+import { Code, FolderOpen, Keyboard, Link2, ListTree, SlidersHorizontal, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { Command, CommandSource } from '../../app/commands';
-import { go, openNote, paths } from '../../app/navigation';
-import { createNote, freeName, remove } from '../../data/gateway';
+import { go, paths } from '../../app/navigation';
+import { remove } from '../../data/gateway';
 import { invoke } from '../../data/ipc';
 import type { PanelId } from '../../app/panels';
 import { updateSettings, useSettings } from '../../store/settings';
 import { setRightPanel, setTabMode, useUIStore } from '../../store/ui';
-import { formatShortcut } from '../../ui';
+import { offerUndo } from '../../data/undo';
 
 const failed = (error: unknown) => toast.error(error instanceof Error ? error.message : 'That did not work');
-
-const parentOf = (path: string | null) => (path?.includes('/') ? path.slice(0, path.lastIndexOf('/')) : '');
 
 /** Show a panel in the right column, opening the column if it was folded. */
 function showPanel(panel: PanelId) {
@@ -20,21 +18,10 @@ function showPanel(panel: PanelId) {
   setRightPanel(panel);
 }
 
-/** Commands for notes: new, source or rendered, Vim keys, panels, show in folder, delete. */
+/** Commands for the note on screen: source or rendered, Vim keys, panels, show in folder, delete. */
 export const noteCommands: CommandSource = ({ activePath }) => {
+  if (!activePath) return [];
   const commands: Command[] = [
-    {
-      id: 'note.new',
-      group: 'Note',
-      label: 'New note',
-      icon: FilePlus,
-      keywords: 'create file page',
-      run: () => void createNote(freeName(parentOf(activePath))).then((note) => openNote(note.path), failed),
-    },
-  ];
-  if (!activePath) return commands;
-  return [
-    ...commands,
     {
       id: 'note.mode',
       group: 'Note',
@@ -75,8 +62,9 @@ export const noteCommands: CommandSource = ({ activePath }) => {
       run: () =>
         void remove(activePath).then(() => {
           go(paths.today);
-          toast(`Deleted ${activePath}. Undo with ${formatShortcut('mod+z')}.`);
+          offerUndo(`Deleted ${activePath}`);
         }, failed),
     },
   ];
+  return commands;
 };
