@@ -1,9 +1,6 @@
 import { useEffect } from 'react';
-import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { HashRouter } from 'react-router-dom';
 import { ErrorBoundary } from './app/ErrorBoundary';
-import { NotFound } from './app/NotFound';
-import { paths } from './app/navigation';
-import { APP_ROUTES } from './app/routes';
 import { ThemeController } from './app/ThemeController';
 import { useWorkspacePath } from './data/workspace';
 import { Welcome } from './features/onboarding/Welcome';
@@ -34,15 +31,7 @@ export default function App() {
           <Welcome onOpened={setFolder} />
         ) : (
           <HashRouter>
-            <Routes>
-              <Route element={<Shell />}>
-                <Route index element={<Navigate replace to={paths.today} />} />
-                {APP_ROUTES.map(({ path, component: Screen }) => (
-                  <Route key={path} path={path} element={<Screen />} />
-                ))}
-                <Route path="*" element={<NotFound />} />
-              </Route>
-            </Routes>
+            <Shell folder={folder} />
           </HashRouter>
         )}
       </TooltipProvider>

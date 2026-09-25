@@ -5,10 +5,12 @@ import { useCommands, type Command } from '../../app/commands';
 import { openNote } from '../../app/navigation';
 import { useNotes } from '../../data/selectors';
 import { closeOverlay, useUIStore } from '../../store/ui';
+import { recentCommands, rememberCommand } from '../../store/uiSession';
 import { Dialog, DialogContent, DialogTitle, Icon, Input, Kbd, cn } from '../../ui';
+import { fuzzyScore } from '../switcher/fuzzy';
 import { buildIndex, labelScore, searchDocs, type Snippet } from './search';
 
-type GroupName = Command['group'] | 'Notes';
+type GroupName = 'Recent' | Command['group'] | 'Notes';
 
 interface Row {
   id: string;
@@ -21,7 +23,7 @@ interface Row {
   run: () => void;
 }
 
-const GROUP_ORDER: GroupName[] = ['Go to', 'Note', 'Tasks', 'Git', 'App', 'Notes'];
+const GROUP_ORDER: GroupName[] = ['Recent', 'Go to', 'Note', 'Tasks', 'Git', 'App', 'Notes'];
 
 /** `text` with the first case-insensitive occurrence of `query` emphasized. */
 function Highlight({ text, query }: { text: string; query: string }) {
@@ -46,6 +48,8 @@ function PaletteBody({ onClose }: { onClose: () => void }) {
 
   const rows = useMemo<Row[]>(() => {
     const needle = query.trim();
+    const recentIds = recentCommands();
+    const recentRank = (id: string) => (recentIds.includes(id) ? recentIds.indexOf(id) : recentIds.length);
     const noteRow = (note: NoteSummary, snippet?: Snippet): Row => ({
       id: `note-${note.path}`,
       group: 'Notes',
@@ -55,21 +59,34 @@ function PaletteBody({ onClose }: { onClose: () => void }) {
       snippet,
       run: () => openNote(note.path),
     });
-    const commandRow = (command: Command): Row => ({
+    const commandRow = (command: Command, group: GroupName = command.group): Row => ({
       id: command.id,
-      group: command.group,
+      group,
       label: command.label,
       leading: command.icon ? <Icon icon={command.icon} className="text-text-tertiary" /> : null,
       shortcut: command.shortcut,
-      run: command.run,
+      run: () => {
+        rememberCommand(command.id);
+        command.run();
+      },
     });
 
-    if (!needle) return commands.map(commandRow).sort((a, b) => GROUP_ORDER.indexOf(a.group) - GROUP_ORDER.indexOf(b.group));
+    if (!needle) {
+      const recent = recentCommands().flatMap((id) => commands.filter((command) => command.id === id));
+      const rest = commands.filter((command) => !recent.includes(command));
+      return [...recent.map((command) => commandRow(command, 'Recent')), ...rest.map((command) => commandRow(command))].sort(
+        (a, b) => GROUP_ORDER.indexOf(a.group) - GROUP_ORDER.indexOf(b.group),
+      );
+    }
 
     const matched = commands
-      .map((command) => ({ command, score: Math.max(labelScore(command.label, needle), labelScore(command.keywords ?? '', needle) - 1) }))
+      .map((command) => ({
+        command,
+        // Plain matches first; a loose in-order match ("tglfs" for Toggle files) still counts.
+        score: Math.max(labelScore(command.label, needle), labelScore(command.keywords ?? '', needle) - 1, needle.length >= 3 && fuzzyScore(needle, command.label) > 0 ? 1 : 0),
+      }))
       .filter(({ score }) => score > 0)
-      .sort((a, b) => b.score - a.score)
+      .sort((a, b) => b.score - a.score || recentRank(a.command.id) - recentRank(b.command.id))
       .map(({ command }) => commandRow(command));
     const results = searchDocs(index, needle).map((hit) => noteRow(hit.item, hit.snippet));
     return [...matched, ...results].sort((a, b) => GROUP_ORDER.indexOf(a.group) - GROUP_ORDER.indexOf(b.group));

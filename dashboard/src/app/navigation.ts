@@ -1,3 +1,5 @@
+import { openUrl, type OpenOptions } from '../store/ui';
+
 /** Every URL in the app is built here, so routes and links cannot drift apart. */
 export const paths = {
   today: '/today',
@@ -25,10 +27,19 @@ export function notePathOf(pathname: string, search: string): string | null {
   return pathname === paths.note ? new URLSearchParams(search).get('path') : null;
 }
 
-/** Go to an app URL from anywhere, including code outside React. The hash router follows. */
-export function go(url: string): void {
-  window.location.hash = `#${url}`;
+/** The app URL in the window's location (`/today`, `/note?path=…`). */
+export const currentUrl = () => window.location.hash.replace(/^#/, '') || '/';
+
+/**
+ * Go to an app URL from anywhere, including code outside React: it opens in a
+ * tab (see store/ui.ts `openUrl`) and the hash router follows. `group: 1`
+ * opens it to the side; `pin` keeps the tab instead of previewing it.
+ */
+export function go(url: string, options?: OpenOptions): void {
+  openUrl(url, options);
+  if (currentUrl() !== url) window.location.hash = `#${url}`;
 }
 
 /** Open a note in its tab (a new tab when it isn't open). */
-export const openNote = (path: string, options?: { create?: boolean }) => go(toNoteUrl(path, options));
+export const openNote = (path: string, { create = false, ...options }: { create?: boolean } & OpenOptions = {}) =>
+  go(toNoteUrl(path, { create }), options);
