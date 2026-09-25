@@ -93,7 +93,7 @@ export function Page({ path, leading, onDeleted, onMoved, missingAction }: PageP
       />
 
       {item ? (
-        <div className="mt-3">
+        <div data-focus-hide className="mt-3">
           <PageProperties item={item} flush={doc.saveNow} onMoved={onMoved} />
         </div>
       ) : null}

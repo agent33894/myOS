@@ -5,6 +5,7 @@ import { useArtifactSync } from '../data/store';
 import { subscribe } from '../data/ipc';
 import { useUndoShortcuts } from '../data/undo';
 import { CommandPalette } from '../features/palette/CommandPalette';
+import { FocusExit, KnowledgeLayer } from '../features/knowledge/KnowledgeLayer';
 import { KeyboardShortcutsDialog } from '../features/shell/KeyboardShortcutsDialog';
 import { useNavigationMemory } from '../features/shell/navigationMemory';
 import { Sidebar } from '../features/shell/sidebar/Sidebar';
@@ -29,6 +30,8 @@ export default function AppShell() {
   const narrow = useSyncExternalStore(subscribeNarrow, () => window.matchMedia(NARROW).matches);
   const collapsed = useUIStore((state) => state.sidebarCollapsed);
   const isQuickCaptureOpen = useUIStore((state) => state.isQuickCaptureOpen);
+  // Focus mode (features/knowledge): no sidebar or window chrome, only a quiet way out.
+  const focusMode = useUIStore((state) => state.focusMode);
 
   // `myos --capture` (e.g. from a Hyprland keybinding) opens Quick Capture here.
   useEffect(() => subscribe('capture:open', () => useUIStore.getState().openQuickCapture()), []);
@@ -40,9 +43,9 @@ export default function AppShell() {
 
   return (
     <div className="flex h-full w-full bg-canvas text-text">
-      <Sidebar rail={collapsed || narrow} narrow={narrow} />
+      {focusMode ? null : <Sidebar rail={collapsed || narrow} narrow={narrow} />}
       <div className="flex min-w-0 flex-1 flex-col bg-canvas">
-        <WindowStrip closable />
+        <WindowStrip closable={!focusMode}>{focusMode ? <FocusExit /> : null}</WindowStrip>
         <main id="main-content-area" className="relative min-h-0 flex-1 overflow-hidden">
           {/* A page that fails shows its error in place; the sidebar keeps working. */}
           <ErrorBoundary resetKey={pathname}>
@@ -54,6 +57,7 @@ export default function AppShell() {
       </div>
       <CommandPalette />
       <KeyboardShortcutsDialog />
+      <KnowledgeLayer />
       {isQuickCaptureOpen ? <QuickCapture /> : null}
     </div>
   );

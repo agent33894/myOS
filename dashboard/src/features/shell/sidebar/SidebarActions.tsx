@@ -13,6 +13,7 @@ import {
   MenuTrigger,
 } from '../../../ui';
 import { useUIStore } from '../../../store/ui';
+import { NewFromTemplateMenuItem } from '../../knowledge/slots';
 import { SHORTCUTS } from '../shortcuts';
 import { useCreate } from '../useCreate';
 
@@ -29,6 +30,8 @@ function NewMenuItems() {
       <MenuItem icon={FolderPlus} onSelect={() => void newProject()}>
         New project
       </MenuItem>
+      {/* Templates (features/knowledge) */}
+      <NewFromTemplateMenuItem />
     </>
   );
 }

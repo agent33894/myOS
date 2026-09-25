@@ -1,0 +1,35 @@
+/*
+ * Focus mode page chrome. The page marks what can step back with
+ * `data-focus-hide`; "reveal" parts (the top bar) come back under the pointer.
+ */
+
+[data-focus-hide] {
+  transition: opacity var(--dur-slow) var(--ease-out);
+}
+
+html[data-focus-mode] [data-focus-hide] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+html[data-focus-mode] [data-focus-hide='reveal'] {
+  pointer-events: auto;
+}
+
+html[data-focus-mode] [data-focus-hide='reveal']:is(:hover, :focus-within) {
+  opacity: 1;
+}
+
+html[data-focus-mode] [data-focus-hide='gone'] {
+  display: none;
+}
+
+/* The way out: quiet until the pointer comes near. */
+.focus-exit {
+  opacity: 0.45;
+  transition: opacity var(--dur-base) var(--ease-out);
+}
+
+.focus-exit:is(:hover, :focus-within) {
+  opacity: 1;
+}
