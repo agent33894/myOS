@@ -1,30 +1,40 @@
 import { describe, expect, it } from 'vitest';
-import { parseCapture } from './inbox';
-import { selectToday } from './today';
+import type { CheckEntry } from './checklist';
+import { selectTasks } from './tasks';
+import { selectToday, type TaskItem } from './today';
 import { ArtifactType, TodoStatus } from './types';
 
 // Wednesday, 2026-09-23, local time.
 const now = new Date(2026, 8, 23, 10);
 
-const task = (title: string, fields: Partial<Parameters<typeof selectToday>[0][number]> = {}) => ({
+const task = (title: string, fields: Partial<TaskItem> = {}): TaskItem => ({
   title,
   type: ArtifactType.TODO,
   status: TodoStatus.PENDING,
   ...fields,
 });
 
+const check = (text: string, due?: string, done = false): CheckEntry => ({ kind: 'check', path: 'n.md', line: 1, text, due, done, noteTitle: 'Note' });
+
+const labels = (list: Array<TaskItem | CheckEntry>) => list.map((item) => ('kind' in item ? item.text : item.title));
+
 describe('selectToday', () => {
-  it('buckets open tasks and hides deferred ones until their date', () => {
+  it('buckets open tasks and dated checklist lines, and hides deferred and Someday tasks', () => {
     const buckets = selectToday(
       [
         task('late', { due: '2026-09-20' }),
+        task('planned yesterday', { planned: '2026-09-22' }),
         task('due today', { due: '2026-09-23' }),
+        task('planned second', { planned: '2026-09-23', order: 2 }),
+        task('planned first', { planned: '2026-09-23', order: 1 }),
         task('flagged', { flagged: true }),
         task('started', { status: TodoStatus.IN_PROGRESS }),
         task('soon', { due: '2026-09-30' }),
         task('far', { due: '2026-10-30' }),
+        task('parked', { status: TodoStatus.SOMEDAY, due: '2026-09-23' }),
         task('finished', { status: TodoStatus.DONE, completedDate: '2026-09-23' }),
         task('finished before', { status: TodoStatus.DONE, completedDate: '2026-09-22' }),
+        task('repeats', { due: '2026-09-30', repeatRule: 'every wed', completions: ['2026-09-23'] } as Partial<TaskItem>),
         task('deferred flag', { flagged: true, deferDate: '2026-09-24' }),
         task('deferred overdue', { due: '2026-09-01', deferDate: '2026-09-25' }),
         task('defer ended', { flagged: true, deferDate: '2026-09-23' }),
@@ -32,64 +42,31 @@ describe('selectToday', () => {
         { ...task('a capture', { flagged: true }), type: ArtifactType.INBOX },
       ],
       now,
+      [check('line late', '2026-09-21'), check('line today', '2026-09-23'), check('line done', '2026-09-23', true), check('line undated')],
     );
-    const titles = (list: Array<{ title: string }>) => list.map((item) => item.title);
-    expect(titles(buckets.overdue)).toEqual(['late']);
-    expect(titles(buckets.today)).toEqual(['due today', 'defer ended', 'flagged', 'started']);
-    expect(titles(buckets.upcoming)).toEqual(['soon']);
-    expect(titles(buckets.doneToday)).toEqual(['finished']);
+    expect(labels(buckets.carriedOver)).toEqual(['late', 'line late', 'planned yesterday']);
+    expect(labels(buckets.today)).toEqual(['planned first', 'planned second', 'due today', 'line today', 'defer ended', 'flagged', 'started']);
+    expect(labels(buckets.upcoming)).toEqual(['repeats', 'soon']);
+    expect(labels(buckets.doneToday)).toEqual(['finished', 'repeats']);
   });
 });
 
-describe('parseCapture', () => {
-  const launchPlan = { id: 'launch-plan-x1', title: 'Launch plan' };
-
-  it('leaves an @name that matches no project in the title', () => {
-    expect(parseCapture('Ask @sam about tiles', [launchPlan], now)).toMatchObject({
-      title: 'Ask @sam about tiles',
-      unknownRef: 'sam',
-      kind: 'capture',
-    });
-  });
-
-  it('pulls dates, tags, project, flag, and priority out of the title', () => {
-    expect(parseCapture('Call Ana tomorrow #calls @launch ! !high', [launchPlan], now)).toMatchObject({
-      title: 'Call Ana',
-      due: '2026-09-24',
-      tags: ['calls'],
-      project: launchPlan,
-      flagged: true,
-      priority: 'high',
-      kind: 'task',
-    });
-  });
-
-  it.each([
-    ['Pay rent fri', '2026-09-25'],
-    ['Standup wednesday', '2026-09-30'],
-    ['Review next week', '2026-09-30'],
-    ['Renew passport in 3 days', '2026-09-26'],
-    ['Water plants today', '2026-09-23'],
-    ['Sunday roast #food', '2026-09-27'],
-  ])('reads the date in "%s"', (text, due) => {
-    expect(parseCapture(text, [], now).due).toBe(due);
-  });
-
-  it.each(['Buy sun cream', "Read today's news", 'Sat with Joe about the plan'])('keeps "%s" undated', (text) => {
-    expect(parseCapture(text, [], now)).toMatchObject({ title: text, due: undefined, kind: 'capture' });
-  });
-
-  it('keeps plain thoughts as Inbox captures with the rest as the body', () => {
-    expect(parseCapture('Mail from ana@example.com about the sundae bar\nsecond line', [], now)).toEqual({
-      title: 'Mail from ana@example.com about the sundae bar',
-      body: 'second line',
-      flagged: false,
-      tags: [],
-      due: undefined,
-      priority: undefined,
-      project: undefined,
-      unknownRef: undefined,
-      kind: 'capture',
-    });
+describe('selectTasks', () => {
+  it('gives every open task Today does not show a section', () => {
+    const sections = selectTasks(
+      [
+        task('no date'),
+        task('ordered', { order: 1 }),
+        task('this week', { due: '2026-09-25' }),
+        task('later', { due: '2026-10-20' }),
+        task('deferred', { due: '2026-09-25', deferDate: '2026-09-24' }),
+        task('parked', { status: TodoStatus.SOMEDAY }),
+        task('finished', { status: TodoStatus.DONE }),
+      ],
+      now,
+    );
+    expect(labels(sections.anytime)).toEqual(['ordered', 'no date']);
+    expect(labels(sections.upcoming)).toEqual(['deferred', 'later']);
+    expect(labels(sections.someday)).toEqual(['parked']);
   });
 });

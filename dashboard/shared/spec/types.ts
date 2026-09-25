@@ -15,24 +15,37 @@ interface TypeSpec {
 const { DRAFT, ACTIVE, ARCHIVED, DONE, CANCELLED, SUPERSEDED } = ArtifactStatus;
 const NOTE = [DRAFT, ACTIVE, ARCHIVED] as const;
 const REFERENCE = [ACTIVE, ARCHIVED] as const;
+// Without a chosen area (the renderer sends the user's default), new files land here.
+const FALLBACK = Domain.PERSONAL;
+
+/** Domains as the UI names them: Areas. */
+export const AREAS: Readonly<Record<Domain, string>> = {
+  [Domain.WORK]: 'Work',
+  [Domain.PERSONAL]: 'Personal',
+  [Domain.RESEARCH]: 'Learning',
+  [Domain.CREATIVE]: 'Creative',
+};
 
 export const ARTIFACT_TYPES: Readonly<Record<ArtifactType, TypeSpec>> = {
   todo: {
     dir: 'todos',
-    statuses: [TodoStatus.PENDING, TodoStatus.IN_PROGRESS, TodoStatus.DONE, TodoStatus.CANCELLED],
+    statuses: [TodoStatus.PENDING, TodoStatus.IN_PROGRESS, TodoStatus.DONE, TodoStatus.CANCELLED, TodoStatus.SOMEDAY],
     defaultStatus: TodoStatus.PENDING,
-    domain: Domain.WORK,
+    domain: FALLBACK,
   },
-  memo: { dir: 'memos', statuses: [...NOTE, DONE], defaultStatus: ACTIVE, domain: Domain.WORK },
-  project: { dir: 'projects', statuses: [...NOTE, DONE, CANCELLED], defaultStatus: ACTIVE, domain: Domain.WORK },
+  memo: { dir: 'memos', statuses: [...NOTE, DONE], defaultStatus: ACTIVE, domain: FALLBACK },
+  project: { dir: 'projects', statuses: [...NOTE, DONE, CANCELLED], defaultStatus: ACTIVE, domain: FALLBACK },
   inbox: { dir: 'inbox', statuses: NOTE, defaultStatus: DRAFT, domain: null },
-  decision: { dir: 'decisions', statuses: [ACTIVE, SUPERSEDED, ARCHIVED], defaultStatus: ACTIVE, domain: Domain.WORK },
-  meeting: { dir: 'meetings', statuses: NOTE, defaultStatus: ACTIVE, domain: Domain.WORK },
+  decision: { dir: 'decisions', statuses: [ACTIVE, SUPERSEDED, ARCHIVED], defaultStatus: ACTIVE, domain: FALLBACK },
+  meeting: { dir: 'meetings', statuses: NOTE, defaultStatus: ACTIVE, domain: FALLBACK },
   research: { dir: 'topics', statuses: NOTE, defaultStatus: ACTIVE, domain: Domain.RESEARCH },
-  query: { dir: 'queries', statuses: REFERENCE, defaultStatus: ACTIVE, domain: Domain.WORK },
-  snippet: { dir: 'code', statuses: REFERENCE, defaultStatus: ACTIVE, domain: Domain.WORK },
-  prompt: { dir: 'prompts', statuses: NOTE, defaultStatus: ACTIVE, domain: Domain.WORK },
-  development: { dir: 'development', statuses: [...NOTE, DONE], defaultStatus: ACTIVE, domain: Domain.WORK },
+  query: { dir: 'queries', statuses: REFERENCE, defaultStatus: ACTIVE, domain: FALLBACK },
+  snippet: { dir: 'code', statuses: REFERENCE, defaultStatus: ACTIVE, domain: FALLBACK },
+  prompt: { dir: 'prompts', statuses: NOTE, defaultStatus: ACTIVE, domain: FALLBACK },
+  development: { dir: 'development', statuses: [...NOTE, DONE], defaultStatus: ACTIVE, domain: FALLBACK },
+  // One page per day at `journal/<YYYY-MM-DD>.md`.
+  journal: { dir: 'journal', statuses: REFERENCE, defaultStatus: ACTIVE, domain: null },
+  template: { dir: 'templates', statuses: REFERENCE, defaultStatus: ACTIVE, domain: null },
 };
 
 const TYPES = Object.keys(ARTIFACT_TYPES) as ArtifactType[];

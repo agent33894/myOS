@@ -1,5 +1,6 @@
 export { isFieldName, normalizeField, readFields, writeFields } from './fields';
 export {
+  AREAS,
   ARTIFACT_TYPES,
   canonicalPath,
   defaultStatusFor,

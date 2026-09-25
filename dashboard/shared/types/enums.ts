@@ -22,6 +22,8 @@ export enum ArtifactType {
   PROMPT = 'prompt',
   DEVELOPMENT = 'development',
   INBOX = 'inbox',
+  JOURNAL = 'journal',
+  TEMPLATE = 'template',
 }
 
 export enum TodoPriority {
@@ -35,6 +37,8 @@ export enum TodoStatus {
   IN_PROGRESS = 'in-progress',
   DONE = 'done',
   CANCELLED = 'cancelled',
+  /** Parked: hidden from Today and counts, listed under Tasks → Someday. */
+  SOMEDAY = 'someday',
 }
 
 export enum ArtifactStatus {

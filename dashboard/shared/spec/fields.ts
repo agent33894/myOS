@@ -1,7 +1,7 @@
 import { formatLocalDate } from '../date';
 import type { ArtifactFields } from '../types';
 
-type FieldKind = 'string' | 'strings' | 'date' | 'number' | 'boolean';
+type FieldKind = 'string' | 'strings' | 'date' | 'dates' | 'number' | 'boolean';
 
 /**
  * Every frontmatter key myOS understands, in the order it writes them.
@@ -21,6 +21,7 @@ const ARTIFACT_FIELDS = {
   project: 'string',
   priority: 'string',
   due: 'date',
+  planned: 'date',
   parentId: 'string',
   deferDate: 'date',
   estimatedMinutes: 'number',
@@ -28,6 +29,11 @@ const ARTIFACT_FIELDS = {
   flagged: 'boolean',
   completedDate: 'date',
   repeatRule: 'string',
+  completions: 'dates',
+  when: 'string',
+  next: 'string',
+  review: 'date',
+  reviewInterval: 'number',
   localPath: 'string',
   repoUrl: 'string',
   isExternalProject: 'boolean',
@@ -68,6 +74,10 @@ const NORMALIZE: Record<FieldKind, (value: unknown) => unknown> = {
     return Array.isArray(value) && items.every((item) => typeof item === 'string') ? items : undefined;
   },
   date: toDate,
+  dates: (value) => {
+    const dates = Array.isArray(value) ? value.map(toDate) : [];
+    return Array.isArray(value) && dates.every(Boolean) ? dates : undefined;
+  },
   number: (value) => (typeof value === 'number' && Number.isFinite(value) ? value : undefined),
   boolean: (value) => (typeof value === 'boolean' ? value : undefined),
 };
