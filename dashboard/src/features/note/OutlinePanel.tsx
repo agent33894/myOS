@@ -15,14 +15,24 @@ interface Heading {
 
 const FENCE = /^\s*(`{3,}|~{3,})/;
 
-/** `**API** and [[Auth|login]]` → `API and login`: heading text as it reads. */
-const plain = (text: string) =>
-  text
-    .replace(/\[\[([^\]|]+)\|([^\]]+)\]\]/g, '$2')
-    .replace(/\[\[([^\]]+)\]\]/g, '$1')
-    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
-    .replace(/(\*\*|__|\*|_|~~|`)(.+?)\1/g, '$2')
-    .trim();
+/** `**API** and [[Auth|login]]` → `API and login`: heading text as it reads, code spans without their backticks. */
+function plain(text: string): string {
+  // Code spans and escaped characters are kept aside as they read, so nothing below touches them.
+  const kept: string[] = [];
+  const keep = (value: string) => `\uE000${kept.push(value) - 1}\uE000`;
+  let out = text.replace(/\\([\\`*_{}[\]()#+\-.!~|<>])/g, (_match, char: string) => keep(char)).replace(/(`+)(.+?)\1/g, (_match, _ticks, inner: string) => keep(inner.trim()));
+  out = out
+    .replace(/!?\[\[([^\]|]+)\|([^\]]+)\]\]/g, '$2')
+    .replace(/!?\[\[([^\]]+)\]\]/g, '$1')
+    .replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/<[^>]+>/g, '');
+  // Emphasis can nest (`**bold _and_ more**`): strip until nothing changes. Underscores only count at word edges.
+  for (let previous = ''; previous !== out; ) {
+    previous = out;
+    out = out.replace(/(\*\*|\*|~~)(?=\S)(.+?)(?<=\S)\1/g, '$2').replace(/(?<![\p{L}\p{N}])(__|_)(?=\S)(.+?)(?<=\S)\1(?![\p{L}\p{N}])/gu, '$2');
+  }
+  return out.replace(/\uE000(\d+)\uE000/g, (_match, index: string) => kept[Number(index)]).trim();
+}
 
 /** ATX headings in the body, outside code fences. */
 function headings(markdown: string): Heading[] {
