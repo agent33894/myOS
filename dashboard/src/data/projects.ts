@@ -1,3 +1,4 @@
+import { checkEntries, type CheckEntry } from '@shared/checklist';
 import { ArtifactType, type ArtifactSummary } from '@shared/types';
 
 const OPEN_EXCLUDED = new Set<string>(['done', 'cancelled']);
@@ -24,6 +25,8 @@ export interface ProjectWithStats extends ArtifactSummary {
   doneTodos: ArtifactSummary[];
   /** Everything else that belongs to the project, most recently edited first. */
   materials: ArtifactSummary[];
+  /** Open checklist lines in the project's notes ("From notes"). */
+  checks: CheckEntry[];
   todoProgress?: { total: number; done: number; percentage: number };
   /** Earliest due date, today or later, among open tasks. */
   nextDue?: string;
@@ -64,13 +67,16 @@ function withStats(project: ArtifactSummary, items: ArtifactSummary[], today: st
     .sort()
     .at(-1);
 
+  const materials = items
+    .filter((item) => item.type !== ArtifactType.TODO)
+    .sort((a, b) => (b.updated ?? '').localeCompare(a.updated ?? ''));
+
   return {
     ...project,
     openTodos,
     doneTodos,
-    materials: items
-      .filter((item) => item.type !== ArtifactType.TODO)
-      .sort((a, b) => (b.updated ?? '').localeCompare(a.updated ?? '')),
+    materials,
+    checks: checkEntries(materials).filter((check) => !check.done),
     todoProgress: total > 0 ? { total, done: doneTodos.length, percentage: Math.round((doneTodos.length / total) * 100) } : undefined,
     nextDue,
     overdueCount: openTodos.filter(isOverdue).length,

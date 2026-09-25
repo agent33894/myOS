@@ -18,6 +18,8 @@ interface SettingsState extends StoredSettings {
   setReadingFont: (font: ReadingFont) => void;
   setRemindDueToday: (value: boolean) => void;
   setHasCompletedOnboarding: (value: boolean) => void;
+  /** Any stored setting, e.g. `setSetting('defaultArea', Domain.WORK)`. */
+  setSetting: <K extends keyof StoredSettings>(key: K, value: StoredSettings[K]) => void;
   resetAllSettings: () => void;
 }
 
@@ -41,6 +43,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
     setReadingFont: (readingFont) => persist({ readingFont }),
     setRemindDueToday: (remindDueToday) => persist({ remindDueToday }),
     setHasCompletedOnboarding: (hasCompletedOnboarding) => persist({ hasCompletedOnboarding }),
+    setSetting: (key, value) => persist({ [key]: value }),
     resetAllSettings: () => {
       const defaults = {
         ...getDefaultSettings(),

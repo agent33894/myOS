@@ -1,8 +1,7 @@
-import { addDays, differenceInCalendarDays, format, nextMonday } from 'date-fns';
-import { formatLocalDate } from '@shared/date';
+import { addDays, differenceInCalendarDays, format } from 'date-fns';
+import { formatLocalDate, nextMonday } from '@shared/date';
 
-/** The date part of a stored date or timestamp. */
-export const dayOf = (value?: string | null) => (value ? value.slice(0, 10) : undefined);
+export { dayOf } from '@shared/date';
 
 const atMidnight = (stamp: string) => new Date(`${stamp}T00:00:00`);
 

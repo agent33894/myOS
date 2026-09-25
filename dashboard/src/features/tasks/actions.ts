@@ -1,6 +1,7 @@
 import { toast } from 'sonner';
 import { TodoStatus, type ArtifactSummary } from '@shared/types';
-import { remove, toggleComplete } from '../../data/gateway';
+import { remove } from '../../data/gateway';
+import { toggleComplete } from '../../data/planning';
 import { undo } from '../../data/undo';
 
 const failed = (error: unknown, fallback: string) =>
