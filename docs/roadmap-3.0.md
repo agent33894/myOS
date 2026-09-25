@@ -97,7 +97,7 @@ What Wave B builds on. Everything below is in place, typed, and covered where it
 
 ### IPC channels (`shared/ipc/contracts.ts`)
 
-`artifacts:toggle-check(path, line, expectedText, expectRev?)`, `artifacts:rename(path, expectRev?)`, `artifacts:move(path, to, expectRev?)`, `artifacts:move-area(path, domain, expectRev?)`, `history:list(path)` → `VersionInfo[]`, `history:read(path, id)` → text, `history:restore(path, id, expectRev?)`, `export:pdf(path, html)` and `export:html(path, html)` → saved path or null. Templates and journal pages come through `artifacts:list` and `artifacts:create` (a draft may carry `id`; journal pages use the date). Listed notes carry `checks`.
+`artifacts:toggle-check(path, line, expectedText, expectRev?)`, `artifacts:rename(path, expectRev?)`, `artifacts:move(path, to, expectRev?)`, `artifacts:move-area(path, domain, expectRev?)`, `history:list(path)` → `VersionInfo[]`, `history:read(path, id)` → text, `history:restore(path, id, expectRev?)`, `export:pdf(path, html)` and `export:html(path, html)` → saved path or null; `export:reveal(savedPath)` shows a file this session exported (only those) in the file manager. Templates and journal pages come through `artifacts:list` and `artifacts:create` (a draft may carry `id`; journal pages use the date). Listed notes carry `checks`.
 
 ### Renderer data (`dashboard/src/data/`)
 
@@ -106,8 +106,12 @@ What Wave B builds on. Everything below is in place, typed, and covered where it
 - **Planning** (`planning.ts`): `completeTask`, `toggleComplete` (repeating tasks advance `due` and record `completions`), `plan(task, date?, order?)`, `unplan`, `reorderToday(paths)`, `setSomeday`, `replan(tasks, 'today' | 'tomorrow' | 'next-week' | 'someday' | 'none')`, `startReviewing`, `stopReviewing`, `answerReview(note, answer)`.
 - **Pages** (`pages.ts`): `createFromTemplate(template, { title, project?, domain? })`, `createProjectFromTemplate(template, { title, domain? })`, `ensureStarterTemplates()`, `openJournal(date)` → path, `createJournal(date)`, `appendToJournal(date, section, line)`.
 - **Export** (`exporter.ts`): `buildExportDocument({ title, bodyHtml, css? })`, `exportPdf(item, html)`, `exportHtml(item, html)`, `copyAsRichText(html, markdown)`, `copyAsMarkdown(markdown)`.
-- **Settings** (`store/settings.ts`, set any with `setSetting(key, value)`): `defaultArea` (personal), `availableHours` (6), `showCapacity` (true), `weeklyReviewDay` (5, Friday), `lastWeeklyReview` (null), `renameFilesWithTitles` (true), `focusDimParagraphs` (true), `includeJournalInSearch` (false).
+- **Settings** (`store/settings.ts`, set any with `setSetting(key, value)`): `defaultArea` (personal), `availableHours` (6), `showCapacity` (true), `weeklyReviewDay` (5, Friday), `lastWeeklyReview` (null), `renameFilesWithTitles` (true), `focusDimParagraphs` (true), `includeJournalInSearch` (false), `usedAreas` (all four; the areas chosen in onboarding, listed first in the Area menu).
 
 ### Left for Wave B
 
-Search still includes journal pages (apply `includeJournalInSearch`), nothing calls `ensureStarterTemplates` yet, and no screen calls rename after a title edit. `src/data/pages.ts` and `src/data/exporter.ts` are listed as knip entries until a screen imports them.
+Search still includes journal pages (apply `includeJournalInSearch`), nothing calls `ensureStarterTemplates` yet, `src/data/pages.ts` is listed as a knip entry until a screen imports it.
+
+### Files and trust (Wave B)
+
+`src/features/files/` owns the Area property, export and copy (`export/`: the open editor's DOM is serialized with the app's `.prose` rules and inlined styles for rich blocks, always in the light theme, with the bundled fonts embedded), Version history (`history/`), and `useRenameWithTitle(item, title, onMoved, flush)`. That hook is called with one line in `page/Page.tsx` and `projects/ProjectHome.tsx`: after a title edit settles (two seconds idle, not while typing elsewhere, or on leaving the page) and the save lands, the file is renamed and the page follows it.
