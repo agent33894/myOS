@@ -1,6 +1,6 @@
 import { closeOverlay, useUIStore } from '../../store/ui';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, Kbd } from '../../ui';
-import { SHORTCUT_GROUPS } from './shortcuts';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../ui';
+import { ShortcutList } from './ShortcutList';
 
 /** The `?` sheet: every shortcut, grouped. */
 export function KeyboardShortcutsDialog() {
@@ -20,21 +20,7 @@ export function KeyboardShortcutsDialog() {
         <DialogHeader>
           <DialogTitle>Keyboard shortcuts</DialogTitle>
         </DialogHeader>
-        <div className="grid gap-x-10 gap-y-6 sm:grid-cols-2">
-          {SHORTCUT_GROUPS.map((group, index) => (
-            <section key={group.title} aria-labelledby={`shortcuts-group-${index}`} className="flex flex-col gap-1">
-              <h3 id={`shortcuts-group-${index}`} className="pb-1 text-sm font-medium text-text-secondary">
-                {group.title}
-              </h3>
-              {group.items.map((item) => (
-                <div key={item.label} className="flex h-8 items-center justify-between gap-4 text-base text-text">
-                  <span>{item.label}</span>
-                  <Kbd shortcut={item.keys} />
-                </div>
-              ))}
-            </section>
-          ))}
-        </div>
+        <ShortcutList className="overflow-y-auto" />
       </DialogContent>
     </Dialog>
   );

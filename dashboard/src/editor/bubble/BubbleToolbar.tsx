@@ -74,7 +74,7 @@ export function BubbleToolbar({ editor, linkRequest }: { editor: Editor; linkReq
     { icon: Bold, label: 'Bold', shortcut: 'mod+b', on: state.bold, run: () => editor.chain().focus().toggleBold().run() },
     { icon: Italic, label: 'Italic', shortcut: 'mod+i', on: state.italic, run: () => editor.chain().focus().toggleItalic().run() },
     { icon: Strikethrough, label: 'Strikethrough', shortcut: 'mod+shift+s', on: state.strike, run: () => editor.chain().focus().toggleStrike().run() },
-    { icon: Code, label: 'Inline code', shortcut: 'mod+e', on: state.code, run: () => editor.chain().focus().toggleCode().run() },
+    { icon: Code, label: 'Inline code', on: state.code, run: () => editor.chain().focus().toggleCode().run() },
     { icon: Link2, label: 'Link', shortcut: 'mod+k', on: state.link, run: () => setEditingLink(true) },
     { icon: Heading2, label: 'Heading', shortcut: 'mod+alt+2', on: state.heading, run: () => editor.chain().focus().toggleHeading({ level: 2 }).run() },
   ];

@@ -35,6 +35,12 @@ export function useGlobalShortcuts(): void {
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.defaultPrevented) return;
+      // ⌃Tab on every platform (⌘Tab belongs to macOS).
+      if (event.ctrlKey && event.key === 'Tab') {
+        event.preventDefault();
+        showTabAt(null, event.shiftKey ? -1 : 1);
+        return;
+      }
       if (!hasPrimaryModifier(event)) {
         if (event.key === '?' && !event.altKey && !isTyping(event.target)) {
           event.preventDefault();
@@ -45,8 +51,7 @@ export function useGlobalShortcuts(): void {
       const letter = event.code.startsWith('Key') ? event.code.slice(3).toLowerCase() : event.key.toLowerCase();
       const digit = /^Digit[1-9]$/.test(event.code) ? Number(event.code.slice(5)) : null;
       let action: (() => void) | undefined;
-      if (event.key === 'Tab') action = () => showTabAt(null, event.shiftKey ? -1 : 1);
-      else if (event.shiftKey) return;
+      if (event.shiftKey) return;
       else if (event.altKey) {
         action = { n: newNoteHere, b: () => toggleColumn('right') }[letter];
       } else if (digit !== null) {

@@ -15,6 +15,10 @@ const MAC_KEYS: Record<string, string> = {
   down: '↓',
   left: '←',
   right: '→',
+  space: 'Space',
+  click: 'Click',
+  home: 'Home',
+  end: 'End',
 };
 
 const OTHER_KEYS: Record<string, string> = {
@@ -39,7 +43,8 @@ export function formatShortcut(shortcut: string): string {
     .toLowerCase()
     .split('+')
     .map((key) => names[key] ?? key.toUpperCase());
-  return keys.join(isMac ? '' : '+');
+  // A click reads better spelled out: ⌘-Click, Ctrl+Click.
+  return isMac && keys.at(-1) === 'Click' ? `${keys.slice(0, -1).join('')}-Click` : keys.join(isMac ? '' : '+');
 }
 
 interface KbdProps {

@@ -7,7 +7,7 @@ import { chooseWorkspace, useWorkspacePath } from '../../data/workspace';
 import { updateSettings, useSettings } from '../../store/settings';
 import { Button, Input, Kbd, PageHeader, PageLayout, SegmentedControl, Switch } from '../../ui';
 import { reloadForFolder } from '../shell/layout';
-import { SHORTCUT_GROUPS } from '../shell/shortcuts';
+import { ShortcutList } from '../shell/ShortcutList';
 import { AppearanceSettings } from './AppearanceSettings';
 import { SettingsGroup, SettingsRow } from './SettingsGroup';
 import { ViewsSettings } from './ViewsSettings';
@@ -131,19 +131,7 @@ function EditorSettings() {
 function KeyboardSettings() {
   return (
     <SettingsGroup title="Keyboard" description={<>Press <Kbd shortcut="?" /> anywhere to see these.</>}>
-      <div className="grid gap-x-10 gap-y-6 px-4 py-4 sm:grid-cols-2">
-        {SHORTCUT_GROUPS.map((group) => (
-          <section key={group.title} aria-label={group.title} className="flex flex-col">
-            <h3 className="pb-1 text-sm font-medium text-text-secondary">{group.title}</h3>
-            {group.items.map((item) => (
-              <div key={item.label} className="flex h-8 items-center justify-between gap-4 text-base text-text">
-                <span>{item.label}</span>
-                <Kbd shortcut={item.keys} />
-              </div>
-            ))}
-          </section>
-        ))}
-      </div>
+      <ShortcutList className="px-4 py-4" />
     </SettingsGroup>
   );
 }
