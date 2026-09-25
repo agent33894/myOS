@@ -2,6 +2,7 @@ import { mkdirSync, writeFileSync } from 'fs';
 import { dirname, join } from 'path';
 import { formatLocalDate } from '../../shared/date';
 import { canonicalPath, defaultStatusFor, domainFor } from '../../shared/spec';
+import { STARTER_TEMPLATES } from '../../shared/templates';
 import { ArtifactType, type ArtifactFields } from '../../shared/types';
 import { serializeDocument } from '../documents/markdown';
 
@@ -15,7 +16,7 @@ interface Keys {
   search: string;
 }
 
-/** A tiny, useful first workspace: one project with three tasks, a welcome note, and two captures to sort. */
+/** A tiny, useful first workspace: one project with three tasks, a welcome note, two captures to sort, and the starter templates. */
 function starterFiles(today: string, keys: Keys): StarterFile[] {
   return [
     {
@@ -41,7 +42,7 @@ function starterFiles(today: string, keys: Keys): StarterFile[] {
       type: ArtifactType.TODO,
       project: PROJECT_ID,
       flagged: true,
-      content: 'Today gathers what is overdue, due today, flagged, or in progress, so you only look in one place.',
+      content: 'Today gathers what is carried over, due or planned today, flagged, or in progress, so you only look in one place.',
     },
     {
       id: 'write-a-note',
@@ -57,12 +58,14 @@ function starterFiles(today: string, keys: Keys): StarterFile[] {
         'myOS is a calm home for your notes, tasks, and projects. Here is how it fits together.',
         '## Four places',
         `- **Inbox** holds quick captures until you sort them. Press ${keys.capture} anywhere to capture a thought.`,
-        '- **Today** shows what needs you now: overdue, due today, flagged, and in progress.',
+        '- **Today** shows what needs you now: carried over, due or planned today, flagged, and in progress.',
         `- **Notes** is every page of writing. Press ${keys.newNote} for a new one.`,
         '- **Projects** gather related tasks and notes in one place.',
         '## Capture shortcuts',
         'While capturing, you can add details inline:',
         '- `tomorrow`, `fri`, or `next week` sets a date',
+        '- `every tue` or `every month on 15` makes it repeat',
+        '- `~30m` adds an estimate',
         '- `#tag` adds a tag',
         '- `@project` files it into a project',
         '- `!` flags it',
@@ -81,6 +84,7 @@ function starterFiles(today: string, keys: Keys): StarterFile[] {
       title: 'Or turn me into a note — press N',
       type: ArtifactType.INBOX,
     },
+    ...STARTER_TEMPLATES.map((template) => ({ ...template, type: ArtifactType.TEMPLATE })),
   ];
 }
 

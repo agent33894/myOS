@@ -2,12 +2,13 @@ import { ipcMain } from 'electron';
 import type { IpcErrorCode, IpcInvokeArgs, IpcInvokeChannel, IpcValue, Result } from '../../shared/ipc/contracts';
 import { DomainError, isMissingFile } from '../errors';
 
-/** `path`: non-empty string. A trailing `?` allows undefined. */
-type ArgKind = 'path' | 'string' | 'object' | 'array' | 'string?' | 'object?';
+/** `path`: non-empty string. `line`: a positive integer. A trailing `?` allows undefined. */
+type ArgKind = 'path' | 'string' | 'line' | 'object' | 'array' | 'string?' | 'object?';
 
 const CHECKS: Record<ArgKind, (value: unknown) => boolean> = {
   path: (value) => typeof value === 'string' && value.trim().length > 0,
   string: (value) => typeof value === 'string',
+  line: (value) => Number.isInteger(value) && (value as number) > 0,
   object: (value) => typeof value === 'object' && value !== null && !Array.isArray(value),
   array: Array.isArray,
   'string?': (value) => value === undefined || typeof value === 'string',

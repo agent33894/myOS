@@ -3,6 +3,7 @@ import { copyFileSync, existsSync, lstatSync, mkdirSync, readFileSync, readlinkS
 import { execFileSync } from 'child_process';
 import { homedir } from 'os';
 import { join } from 'path';
+import { checkEntries, type CheckEntry } from '../shared/checklist';
 import { captureDraft, parseCapture } from '../shared/inbox';
 import { PROJECT_CLOSED_STATUSES } from '../shared/spec';
 import { selectToday } from '../shared/today';
@@ -19,8 +20,9 @@ const USAGE = `Usage: myos [command]
 
   myos                          Open myOS
   myos capture <text>           Capture to the Inbox, or as a task when it has a date,
-                                flag, or @project (reads stdin when no text is given)
-  myos today                    List overdue, today, upcoming, and done-today tasks
+                                repeat (every tue), estimate (~30m), flag, or @project
+                                (reads stdin when no text is given)
+  myos today                    List carried-over, today, upcoming, and done-today tasks
   myos search <query>           Find notes by title, tag or text
   myos --capture                Open Quick Capture in the running app
   myos --install-desktop-entry  Add myOS to the app launcher, register myos: links
@@ -59,11 +61,17 @@ function projectTitles(artifacts: ArtifactSummary[]): Map<string, string> {
   );
 }
 
-function taskLine(task: ArtifactSummary, projects: Map<string, string>): string {
-  const detail = [task.due ? `due ${task.due}` : null, task.project ? projects.get(task.project) ?? task.project : null]
+function taskLine(entry: ArtifactSummary | CheckEntry, projects: Map<string, string>): string {
+  const check = 'kind' in entry;
+  const detail = [
+    entry.due ? `due ${entry.due}` : null,
+    check ? null : entry.repeatRule,
+    entry.project ? (projects.get(entry.project) ?? entry.project) : null,
+    check ? `in ${entry.noteTitle}` : null,
+  ]
     .filter(Boolean)
     .join(' · ');
-  return `  ${task.title}${detail ? `  (${detail})` : ''}`;
+  return `  ${check ? entry.text : entry.title}${detail ? `  (${detail})` : ''}`;
 }
 
 async function capture(args: string[]): Promise<number> {
@@ -84,9 +92,9 @@ async function capture(args: string[]): Promise<number> {
 async function today(): Promise<number> {
   const artifacts = await listArtifacts();
   const projects = projectTitles(artifacts);
-  const { overdue, today, upcoming, doneToday } = selectToday(artifacts);
-  const sections: Array<[string, ArtifactSummary[]]> = [
-    ['Overdue', overdue],
+  const { carriedOver, today, upcoming, doneToday } = selectToday(artifacts, new Date(), checkEntries(artifacts));
+  const sections: Array<[string, Array<ArtifactSummary | CheckEntry>]> = [
+    ['Carried over', carriedOver],
     ['Today', today],
     ['Upcoming', upcoming],
     ['Done today', doneToday],

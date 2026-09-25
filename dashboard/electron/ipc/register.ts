@@ -4,12 +4,20 @@ import {
   createArtifact,
   deleteArtifact,
   listArtifacts,
+  listHistory,
+  moveArtifact,
+  moveToArea,
   patchArtifact,
   readArtifact,
+  readHistory,
+  renameArtifact,
   restoreArtifact,
+  restoreVersion,
   retypeArtifact,
   saveArtifact,
+  toggleCheck,
 } from '../documents/artifacts';
+import { exportDocument } from '../export/export';
 import { attachAsset } from '../documents/assets';
 import { commitDiff, commitSummary } from '../git/commits';
 import { getArtifactGitRules, setArtifactGitRules } from '../git/rules';
@@ -33,6 +41,17 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
   handle('artifacts:delete', ['path', 'string?'], deleteArtifact);
   handle('artifacts:restore', ['object'], restoreArtifact);
   handle('artifacts:attach-asset', ['object'], attachAsset);
+  handle('artifacts:toggle-check', ['path', 'line', 'string', 'string?'], toggleCheck);
+  handle('artifacts:rename', ['path', 'string?'], renameArtifact);
+  handle('artifacts:move', ['path', 'path', 'string?'], moveArtifact);
+  handle('artifacts:move-area', ['path', 'string', 'string?'], moveToArea);
+
+  handle('history:list', ['path'], listHistory);
+  handle('history:read', ['path', 'string'], readHistory);
+  handle('history:restore', ['path', 'string', 'string?'], restoreVersion);
+
+  handle('export:pdf', ['path', 'string'], (path, html) => exportDocument('pdf', path, html, getWindow()));
+  handle('export:html', ['path', 'string'], (path, html) => exportDocument('html', path, html, getWindow()));
 
   handle('workspace:current', [], currentWorkspace);
   handle('workspace:choose', [], async () => {

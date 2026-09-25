@@ -23,11 +23,15 @@ describe('starter workspace', () => {
     expect(artifacts.map((artifact) => artifact.filePath).sort()).toEqual([
       'inbox/sort-me-into-a-task.md',
       'inbox/turn-me-into-a-note.md',
-      'work/memos/welcome-to-myos.md',
-      'work/projects/getting-started.md',
-      'work/todos/capture-your-first-thought.md',
-      'work/todos/plan-your-day-in-today.md',
-      'work/todos/write-a-note.md',
+      'personal/memos/welcome-to-myos.md',
+      'personal/projects/getting-started.md',
+      'personal/todos/capture-your-first-thought.md',
+      'personal/todos/plan-your-day-in-today.md',
+      'personal/todos/write-a-note.md',
+      'templates/lecture-notes.md',
+      'templates/meeting-notes.md',
+      'templates/project-brief.md',
+      'templates/weekly-plan.md',
     ]);
     expect(artifacts.every((artifact) => Object.keys(artifact.extra).length === 0)).toBe(true);
     expect(selectToday(artifacts).today).toHaveLength(2);

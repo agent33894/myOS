@@ -128,17 +128,18 @@ try {
   if (!workspacePath.startsWith(home + '/')) {
     throw new Error(`Default workspace escaped temporary home: ${workspacePath}`);
   }
-  await stat(join(workspacePath, 'work/memos/welcome-to-myos.md'));
+  await stat(join(workspacePath, 'personal/memos/welcome-to-myos.md'));
+  await stat(join(workspacePath, 'templates/meeting-notes.md'));
 
   await evaluate(`(() => {
     window.__myosSmokeEvents = [];
     window.electronAPI.on('artifacts:changed', (change) => window.__myosSmokeEvents.push(change));
   })()`);
-  const externalRelativePath = 'work/memos/external-linux-smoke.md';
+  const externalRelativePath = 'personal/memos/external-linux-smoke.md';
   await writeFile(join(workspacePath, externalRelativePath), '# External Linux smoke\n', 'utf8');
   await until('nested external Markdown watcher', async () => {
     const events = await evaluate('window.__myosSmokeEvents');
-    return events.some((event) => event.path === 'work/memos/external-linux-smoke.md' && event.kind !== 'deleted');
+    return events.some((event) => event.path === 'personal/memos/external-linux-smoke.md' && event.kind !== 'deleted');
   });
   const externalContent = await evaluate(`window.electronAPI.invoke('artifacts:read', ${JSON.stringify(externalRelativePath)}).then((result) => result.value.content)`);
   if (externalContent !== '# External Linux smoke') {
@@ -154,13 +155,18 @@ try {
     const created = await call('artifacts:create', {title: 'Linux smoke memo', type: 'memo', content: 'Packaged IPC round trip'});
     const saved = await call('artifacts:save', created.filePath, {fields: {}, content: 'Saved once'}, created.rev);
     const stale = await window.electronAPI.invoke('artifacts:save', created.filePath, {fields: {}, content: 'Stale'}, created.rev);
-    const snapshot = await call('artifacts:delete', created.filePath, saved.rev);
+    const renamed = await call('artifacts:rename', created.filePath, saved.rev);
+    const versions = await call('history:list', renamed.filePath);
+    const snapshot = await call('artifacts:delete', renamed.filePath, renamed.rev);
     const restored = await call('artifacts:restore', snapshot);
-    const read = await call('artifacts:read', created.filePath);
-    await call('artifacts:delete', created.filePath);
-    return {path: created.filePath, content: read.content, title: restored.title, stale: stale.ok ? 'ok' : stale.error.code};
+    const read = await call('artifacts:read', renamed.filePath);
+    await call('artifacts:delete', renamed.filePath);
+    return {path: renamed.filePath, content: read.content, title: restored.title, stale: stale.ok ? 'ok' : stale.error.code, versions: versions.length};
   })()`);
-  if (roundTrip.title !== 'Linux smoke memo' || roundTrip.content !== 'Saved once' || roundTrip.stale !== 'CONFLICT') {
+  if (
+    roundTrip.title !== 'Linux smoke memo' || roundTrip.content !== 'Saved once' || roundTrip.stale !== 'CONFLICT' ||
+    roundTrip.path !== 'personal/memos/linux-smoke-memo.md' || roundTrip.versions < 1
+  ) {
     throw new Error(`IPC round trip returned unexpected data: ${JSON.stringify(roundTrip)}`);
   }
   try {
@@ -190,7 +196,7 @@ try {
   const found = await runCli(['search', 'smoke', 'capture']);
   if (!found.includes('Linux smoke capture')) throw new Error(`myos search missed the capture: ${found}`);
   const today = await runCli(['today']);
-  if (!/^Today \(\d+\)$/m.test(today) || !/^Upcoming \(\d+\)$/m.test(today)) throw new Error(`Unexpected myos today output: ${today}`);
+  if (!/^Carried over \(\d+\)$/m.test(today) || !/^Today \(\d+\)$/m.test(today) || !/^Upcoming \(\d+\)$/m.test(today)) throw new Error(`Unexpected myos today output: ${today}`);
 
   await runCli(['--install-desktop-entry']);
   const desktopEntry = await readFile(join(data, 'applications', 'myos.desktop'), 'utf8');
@@ -203,7 +209,7 @@ try {
     throw new Error('myos was not linked into ~/.local/bin');
   }
 
-  console.log(`Packaged Linux smoke passed: onboarding, default workspace, nested watcher, IPC create/save/conflict/delete/restore (${roundTrip.path}), terminal capture/search/today, desktop entry.`);
+  console.log(`Packaged Linux smoke passed: onboarding, default workspace, nested watcher, IPC create/save/conflict/rename/history/delete/restore (${roundTrip.path}), terminal capture/search/today, desktop entry.`);
 } finally {
   socket?.close();
   child.kill('SIGTERM');

@@ -1,4 +1,4 @@
-import type { Artifact, ArtifactDraft, ArtifactPatch, ArtifactSummary, ArtifactType } from '../types';
+import type { Artifact, ArtifactDraft, ArtifactPatch, ArtifactSummary, ArtifactType, Domain } from '../types';
 
 export type IpcErrorCode = 'NOT_FOUND' | 'CONFLICT' | 'INVALID' | 'OUTSIDE_WORKSPACE' | 'INTERNAL';
 
@@ -14,6 +14,15 @@ export interface ArtifactSave {
 
 /** Converting a file to another type, e.g. an Inbox capture into a task. */
 export type ArtifactRetype = ArtifactPatch & { type: ArtifactType };
+
+/** One saved version of a file, from `history:list`. */
+export interface VersionInfo {
+  id: string;
+  /** ISO timestamp. */
+  savedAt: string;
+  /** Bytes. */
+  size: number;
+}
 
 export interface AssetAttachmentRequest {
   artifactId?: string;
@@ -70,6 +79,22 @@ export interface IpcInvokeMap {
   'artifacts:delete': { args: [path: string, expectRev?: string]; value: Artifact };
   'artifacts:restore': { args: [snapshot: Artifact]; value: Artifact };
   'artifacts:attach-asset': { args: [request: AssetAttachmentRequest]; value: AssetAttachmentResult };
+  /** Flip one checkbox line; CONFLICT when that line no longer reads `expectedText`. */
+  'artifacts:toggle-check': { args: [path: string, line: number, expectedText: string, expectRev?: string]; value: Artifact };
+  /** Rename the file to `<slug of title>.md` in its folder; journal pages keep their date. */
+  'artifacts:rename': { args: [path: string, expectRev?: string]; value: Artifact };
+  /** Move the file, bytes unchanged, to another workspace path that must not exist yet. */
+  'artifacts:move': { args: [path: string, to: string, expectRev?: string]; value: Artifact };
+  /** Set the area and move the file to that area's folder for its type, keeping its name. */
+  'artifacts:move-area': { args: [path: string, domain: Domain, expectRev?: string]; value: Artifact };
+  /** Saved versions of a file, newest first. */
+  'history:list': { args: [path: string]; value: VersionInfo[] };
+  'history:read': { args: [path: string, id: string]; value: string };
+  /** Write a saved version back over the file, keeping the current text as a version first. */
+  'history:restore': { args: [path: string, id: string, expectRev?: string]; value: Artifact };
+  /** Ask where to save, then write the file; null when the user cancels. */
+  'export:pdf': { args: [path: string, html: string]; value: string | null };
+  'export:html': { args: [path: string, html: string]; value: string | null };
   'workspace:current': { args: []; value: string | null };
   'workspace:choose': { args: []; value: string | null };
   'workspace:create-starter': { args: []; value: string };
@@ -100,6 +125,15 @@ export const IPC_INVOKE_CHANNELS = Object.keys({
   'artifacts:delete': 1,
   'artifacts:restore': 1,
   'artifacts:attach-asset': 1,
+  'artifacts:toggle-check': 1,
+  'artifacts:rename': 1,
+  'artifacts:move': 1,
+  'artifacts:move-area': 1,
+  'history:list': 1,
+  'history:read': 1,
+  'history:restore': 1,
+  'export:pdf': 1,
+  'export:html': 1,
   'workspace:current': 1,
   'workspace:choose': 1,
   'workspace:create-starter': 1,

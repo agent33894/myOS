@@ -1,6 +1,7 @@
 import yaml from 'js-yaml';
 import { basename, extname } from 'path';
 import type { Stats } from 'fs';
+import { extractChecks } from '../../shared/checklist';
 import { formatLocalDate } from '../../shared/date';
 import { defaultStatusFor, domainFor, isArtifactType, isDomain, readFields, typeFromPath, writeFields } from '../../shared/spec';
 import type { Artifact, ArtifactFields } from '../../shared/types';
@@ -56,6 +57,8 @@ export function parseDocument(text: string, filePath: string, stats: FileStats):
   const content = body.trim();
   const born = stats.birthtime.getTime() ? stats.birthtime : stats.mtime;
   const pathDomain = filePath.split('/')[0];
+  // Checkbox lines in notes are tasks too; a task's own checklist and a template's are not.
+  const checks = type === 'todo' || type === 'template' ? [] : extractChecks(text);
 
   return {
     ...known,
@@ -72,6 +75,7 @@ export function parseDocument(text: string, filePath: string, stats: FileStats):
     rev: revOf(stats),
     extra,
     content,
+    ...(checks.length > 0 ? { checks } : {}),
   };
 }
 

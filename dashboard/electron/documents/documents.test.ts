@@ -1,13 +1,28 @@
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'fs';
 import { mkdir } from 'fs/promises';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { Domain } from '../../shared/types';
 
 let root = '';
+let appData = '';
 vi.mock('../workspace/root', () => ({ workspaceRoot: () => root }));
+vi.mock('electron', () => ({ app: { getPath: () => appData } }));
 
-const { deleteArtifact, patchArtifact, readArtifact, restoreArtifact, saveArtifact } = await import('./artifacts');
+const {
+  deleteArtifact,
+  listHistory,
+  moveArtifact,
+  moveToArea,
+  patchArtifact,
+  readArtifact,
+  readHistory,
+  renameArtifact,
+  restoreArtifact,
+  restoreVersion,
+  saveArtifact,
+} = await import('./artifacts');
 const { parseDocument, serializeDocument } = await import('./markdown');
 
 const stats = { mtimeMs: 1, size: 1, mtime: new Date('2026-01-02T03:04:05Z'), birthtime: new Date('2026-01-01T00:00:00Z') };
@@ -42,8 +57,12 @@ async function put(path: string, text: string) {
 
 beforeEach(() => {
   root = mkdtempSync(join(tmpdir(), 'myos-documents-'));
+  appData = mkdtempSync(join(tmpdir(), 'myos-app-data-'));
 });
-afterEach(() => rmSync(root, { recursive: true, force: true }));
+afterEach(() => {
+  rmSync(root, { recursive: true, force: true });
+  rmSync(appData, { recursive: true, force: true });
+});
 
 describe('round trip', () => {
   it('keeps known fields, custom frontmatter, and the body', () => {
@@ -101,5 +120,55 @@ describe('writes', () => {
     expect(restored.filePath).toBe('notes/loose.md');
     expect(readFileSync(join(root, 'notes/loose.md'), 'utf8')).toBe(handWritten);
     await expect(restoreArtifact(snapshot)).rejects.toMatchObject({ code: 'CONFLICT' });
+  });
+});
+
+describe('moves and versions', () => {
+  const handWritten = '---\ntitle: Garden plan\ndomain: work\ncustom: [x]\n---\n\n* bullet\n';
+  const read = (path: string) => readFileSync(join(root, path), 'utf8');
+
+  it('renames a file after its title with its bytes unchanged, and never over another file', async () => {
+    await put('work/memos/untitled-abc.md', handWritten);
+    await put('work/memos/garden-plan.md', 'someone else');
+    const renamed = await renameArtifact('work/memos/untitled-abc.md');
+    expect(renamed.filePath).toBe('work/memos/garden-plan-2.md');
+    expect(read(renamed.filePath)).toBe(handWritten);
+    expect(read('work/memos/garden-plan.md')).toBe('someone else');
+    expect(existsSync(join(root, 'work/memos/untitled-abc.md'))).toBe(false);
+    expect((await renameArtifact(renamed.filePath)).filePath).toBe(renamed.filePath);
+    // Undo moves it back exactly.
+    const back = await moveArtifact(renamed.filePath, 'work/memos/untitled-abc.md');
+    expect(read(back.filePath)).toBe(handWritten);
+    await expect(moveArtifact(back.filePath, 'work/memos/garden-plan.md')).rejects.toMatchObject({ code: 'CONFLICT' });
+  });
+
+  it('moves a file to another area, changing only its domain', async () => {
+    await put('work/memos/garden.md', handWritten);
+    const moved = await moveToArea('work/memos/garden.md', Domain.PERSONAL);
+    expect(moved.filePath).toBe('personal/memos/garden.md');
+    expect(read(moved.filePath)).toContain('domain: personal');
+    expect(read(moved.filePath).endsWith('---\n\n* bullet\n')).toBe(true);
+    expect(moved.extra.custom).toEqual(['x']);
+    expect(existsSync(join(root, 'work/memos/garden.md'))).toBe(false);
+  });
+
+  it('keeps versions across a move and restores one without losing the current text', async () => {
+    const path = 'work/memos/garden.md';
+    await put(path, handWritten);
+    const { rev } = await readArtifact(path);
+    await saveArtifact(path, { fields: {}, content: 'Second draft' }, rev);
+    const moved = await moveToArea(path, Domain.PERSONAL);
+    const versions = await listHistory(moved.filePath);
+    expect(versions).toHaveLength(2);
+    const [beforeMove, original] = versions;
+    expect(await readHistory(moved.filePath, original.id)).toBe(handWritten);
+    await expect(readHistory(moved.filePath, '../../etc/passwd')).rejects.toMatchObject({ code: 'NOT_FOUND' });
+
+    const current = read(moved.filePath);
+    await restoreVersion(moved.filePath, original.id, moved.rev);
+    expect(read(moved.filePath)).toBe(handWritten);
+    const after = await listHistory(moved.filePath);
+    expect(await readHistory(moved.filePath, after[0].id)).toBe(current);
+    expect(beforeMove.id <= after[0].id).toBe(true);
   });
 });
