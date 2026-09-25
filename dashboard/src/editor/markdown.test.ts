@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { Editor } from '@tiptap/core';
 import { MarkdownManager } from '@tiptap/markdown';
 import { createExtensions, markdownParser } from './extensions';
+import { setFocusMode } from './focus/focus';
+import { refreshWikiLinks } from './links/wikiLinks';
 import { connectMarkdown, needsSync } from './useMarkdownSync';
 
 const markdown = new MarkdownManager({ marked: markdownParser as never, extensions: createExtensions({ placeholder: '' }) });
@@ -101,6 +103,15 @@ describe('editor binding', () => {
       expect(changes).toEqual([]);
       editor.destroy();
     }
+  });
+
+  it('restyling links or entering focus mode is never an edit', () => {
+    const { editor, changes } = open('See [[Missing page]] and [[Other]].');
+    editor.storage.wikiLinks.exists = (target) => target === 'Other';
+    editor.view.dispatch(refreshWikiLinks(editor.state.tr));
+    editor.view.dispatch(setFocusMode(editor.state.tr, { typewriter: true, dim: true }));
+    expect(changes).toEqual([]);
+    editor.destroy();
   });
 
   it('reports each real edit once', () => {

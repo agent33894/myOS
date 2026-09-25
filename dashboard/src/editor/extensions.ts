@@ -17,8 +17,10 @@ import { CodeBlockView } from './blocks/code/CodeBlockView';
 import { CodeHighlight } from './blocks/code/highlight';
 import { RichBlock } from './blocks/RichBlock';
 import { FindInPage } from './find/plugin';
+import { FocusMode } from './focus/focus';
 import { resolveAssetUrl } from './links/assets';
 import { WikiLinks } from './links/wikiLinks';
+import { LinkSuggest } from './links/wikiSuggest';
 import { SlashCommand } from './slash/plugin';
 
 // Workspace assets (`assets/…`) render through the app's myos:// protocol; the
@@ -54,6 +56,8 @@ interface ExtensionOptions {
   placeholder: string;
   /** Receives keys while the "/" menu is open. */
   slashKeys?: { current: ((event: KeyboardEvent) => boolean) | null };
+  /** Receives keys while the "[[" link suggestions are open. */
+  linkKeys?: { current: ((event: KeyboardEvent) => boolean) | null };
 }
 
 /**
@@ -71,7 +75,7 @@ export const markdownParser = new Marked({
 });
 
 /** Every extension the editor uses, configured once. Order matters for Markdown: rich blocks claim their fences before code blocks do. */
-export function createExtensions({ placeholder, slashKeys = { current: null } }: ExtensionOptions): AnyExtension[] {
+export function createExtensions({ placeholder, slashKeys = { current: null }, linkKeys = { current: null } }: ExtensionOptions): AnyExtension[] {
   return [
     StarterKit.configure({ codeBlock: false, link: false }),
     RichBlock,
@@ -96,7 +100,9 @@ export function createExtensions({ placeholder, slashKeys = { current: null } }:
     }),
     Typography,
     WikiLinks,
+    LinkSuggest.configure({ onKeyDown: (event) => linkKeys.current?.(event) ?? false }),
     FindInPage,
+    FocusMode,
     // A function, not the ref: configure() deep-copies plain objects.
     SlashCommand.configure({ onKeyDown: (event) => slashKeys.current?.(event) ?? false }),
     Markdown.configure({ marked: markdownParser as unknown as typeof import('marked').marked }),

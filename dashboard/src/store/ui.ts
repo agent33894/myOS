@@ -46,6 +46,9 @@ interface UIState {
   sidebarCollapsed: boolean;
   /** Workspace paths of recently opened items, newest first. */
   recentPaths: string[];
+  /** Focus mode (⌘.): no sidebar or page chrome, just the writing. Never persisted. */
+  focusMode: boolean;
+  setFocusMode: (on: boolean) => void;
   setQuickCaptureDraft: (draft: string) => void;
   clearQuickCaptureDraft: () => void;
   openCommandPalette: () => void;
@@ -75,6 +78,8 @@ export const useUIStore = create<UIState>((set, get) => {
     quickCaptureDraft: '',
     sidebarWidth: clampWidth(typeof sidebar.width === 'number' ? sidebar.width : SIDEBAR_DEFAULT_WIDTH),
     sidebarCollapsed: sidebar.collapsed === true,
+    focusMode: false,
+    setFocusMode: (focusMode) => set({ focusMode }),
     recentPaths: Array.isArray(recent) ? recent.filter((path): path is string => typeof path === 'string') : [],
     setQuickCaptureDraft: (draft) => set({ quickCaptureDraft: draft }),
     clearQuickCaptureDraft: () => set({ quickCaptureDraft: '' }),
