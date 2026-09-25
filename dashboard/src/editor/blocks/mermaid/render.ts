@@ -2,10 +2,7 @@
 // design tokens (both themes) plus the current accent each time it renders.
 
 const channels = (hex: string) => {
-  let digits = hex.replace('#', '');
-  // The CSS minifier shortens tokens like #ffffff to #fff.
-  if (digits.length === 3) digits = [...digits].map((digit) => digit + digit).join('');
-  const value = Number.parseInt(digits, 16);
+  const value = Number.parseInt(hex.slice(1), 16);
   return [(value >> 16) & 255, (value >> 8) & 255, value & 255];
 };
 
@@ -15,9 +12,29 @@ function mix(a: string, b: string, amount: number): string {
   return `#${ca.map((channel, index) => Math.round(channel * amount + cb[index] * (1 - amount)).toString(16).padStart(2, '0')).join('')}`;
 }
 
-function themeVariables(accent: string, dark: boolean) {
+/**
+ * A CSS color as `#rrggbb`. Tokens can be `color-mix(…)` expressions that
+ * Mermaid cannot read, so the browser computes the color and one painted pixel
+ * gives it back in sRGB.
+ */
+function resolveColor(css: string): string {
+  const probe = document.createElement('span');
+  probe.style.color = css;
+  document.body.append(probe);
+  const computed = getComputedStyle(probe).color;
+  probe.remove();
+  const context = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
+  if (!context) return '#000000';
+  context.fillStyle = computed;
+  context.fillRect(0, 0, 1, 1);
+  const [r, g, b] = context.getImageData(0, 0, 1, 1).data;
+  return `#${[r, g, b].map((channel) => channel.toString(16).padStart(2, '0')).join('')}`;
+}
+
+function themeVariables(accentColor: string, dark: boolean) {
   const style = getComputedStyle(document.documentElement);
-  const token = (name: string) => style.getPropertyValue(`--${name}`).trim();
+  const token = (name: string) => resolveColor(`var(--${name})`);
+  const accent = resolveColor(accentColor);
   const [canvas, raised, sunken, text, secondary] = ['canvas', 'raised', 'sunken', 'text', 'text-secondary'].map(token);
   const node = mix(accent, raised, dark ? 0.22 : 0.1);
   const border = mix(accent, raised, 0.5);
