@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { runView, viewFromFence, type ViewNote } from './query';
+import { resolveFromNote, runView, viewFromFence, type ViewNote } from './query';
 import { extractTasks } from './tasks';
 
 const TODAY = '2026-09-25';
@@ -93,5 +93,13 @@ describe('fenced views', () => {
     expect(viewFromFence('tasks open #work', '')).toEqual({ kind: 'tasks', query: 'open #work' });
     expect(viewFromFence('notes', 'path:notes/\nsort:modified\n')).toEqual({ kind: 'notes', query: 'path:notes/ sort:modified' });
     expect(viewFromFence('ts', 'x')).toBeNull();
+  });
+
+  it('reads place terms relative to the note the block sits in', () => {
+    const from = 'Projects/Garden/plan.md';
+    expect(resolveFromNote('open path:. -file:this', from)).toBe('open path:Projects/Garden/ -path:Projects/Garden/plan.md');
+    expect(resolveFromNote('path:../ path:./beds path:"../My notes/"', from)).toBe('path:Projects/ path:Projects/Garden/beds path:"Projects/My notes/"');
+    expect(resolveFromNote('path:. path:../../..', 'top.md')).toBe('path: path:../../..');
+    expect(resolveFromNote('path:notes/ file:api', from)).toBe('path:notes/ file:api');
   });
 });

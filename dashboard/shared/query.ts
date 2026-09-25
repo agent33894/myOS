@@ -220,6 +220,42 @@ export function runView(kind: ViewKind, text: string, notes: readonly ViewNote[]
   return { kind, groups, total: matched.length, errors: query.errors };
 }
 
+const quoted = (text: string) => (/\s/.test(text) ? `"${text}"` : text);
+
+/** `folder` joined with a relative path (`.`, `./x`, `../x`); null when it climbs out of the open folder. */
+function joinRelative(folder: string, relative: string): string | null {
+  const parts = folder ? folder.split('/') : [];
+  for (const part of relative.split('/')) {
+    if (part === '' || part === '.') continue;
+    if (part === '..') {
+      if (parts.length === 0) return null;
+      parts.pop();
+    } else parts.push(part);
+  }
+  return parts.join('/');
+}
+
+/**
+ * A view written inside a note, with its place terms made absolute: `path:.`
+ * is the note's folder, `path:./x` and `path:../x` are relative to it, and
+ * `file:this` is the note itself. Other terms are left as written.
+ */
+export function resolveFromNote(text: string, sourcePath: string): string {
+  const folder = folderOf(sourcePath);
+  return text.replace(TOKEN, (token) => {
+    const match = /^(-?)(path|file):(.*)$/i.exec(token);
+    if (!match) return token;
+    const [, negate, key, raw] = match;
+    const value = unquote(raw);
+    if (key.toLowerCase() === 'file') return value.toLowerCase() === 'this' ? `${negate}path:${quoted(sourcePath)}` : token;
+    if (!/^\.\.?(\/|$)/.test(value)) return token;
+    const resolved = joinRelative(folder, value);
+    if (resolved === null) return token;
+    const asFolder = /(^|\/)\.{0,2}$/.test(value) && resolved !== '';
+    return `${negate}path:${quoted(asFolder ? `${resolved}/` : resolved)}`;
+  });
+}
+
 /**
  * A fenced view block: ```tasks or ```notes, with the query after the
  * language name and/or on the lines inside. Null for any other fence.

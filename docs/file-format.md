@@ -90,6 +90,7 @@ A view is one line of text. Terms are combined with AND; a `-` in front of a fil
 | `#tag`, `-#tag` | Tasks (or notes) with or without a tag. |
 | `path:notes/` | Files whose path starts with this. |
 | `file:api` | Files whose name contains this. |
+| `path:.`, `path:./drafts/`, `path:../`, `file:this` | In a view block inside a note: the note's own folder, a folder relative to it, or the note itself. |
 | `words`, `"a phrase"` | Task text, or a note's title and text. |
 | `sort:due`, `sort:priority`, `sort:file` | Task order (default `due`). Notes sort by `file`, `title`, or `modified`. |
 | `group:file`, `group:folder`, `group:tag`, `group:date` | Groups (`date` is for tasks). |
@@ -106,6 +107,8 @@ group:file
 ```notes #meeting sort:modified limit:10
 ```
 ````
+
+In a note, `path:.` is that note's folder, `path:./x` and `path:../x` are read from it, and `file:this` is the note itself, so a block keeps working when its folder is moved or renamed. Opening the block as a view writes these out as full paths.
 
 ## Links
 

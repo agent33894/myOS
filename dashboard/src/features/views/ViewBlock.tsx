@@ -1,5 +1,6 @@
 import { FileText, ListChecks, Maximize2 } from 'lucide-react';
-import type { ViewKind } from '@shared/query';
+import { useMemo } from 'react';
+import { resolveFromNote, type ViewKind } from '@shared/query';
 import { go } from '../../app/navigation';
 import { useView } from '../../data/selectors';
 import { Icon, IconButton } from '../../ui';
@@ -17,10 +18,13 @@ export interface ViewBlockProps {
 /**
  * A live view inside a note: the editor renders ```tasks and ```notes fences
  * with this component. Results update as files change; checking a task
- * writes to that task's own file.
+ * writes to that task's own file. Place terms are read from the note's own
+ * folder (see `resolveFromNote`).
  */
 export function ViewBlock({ kind, query, sourcePath }: ViewBlockProps) {
-  const result = useView(kind, query);
+  // `path:.`, `path:../x`, and `file:this` mean this note's folder and file.
+  const resolved = useMemo(() => (sourcePath ? resolveFromNote(query, sourcePath) : query), [query, sourcePath]);
+  const result = useView(kind, resolved);
   return (
     <div data-task-scope="" data-source={sourcePath} contentEditable={false} className="flex flex-col gap-1 rounded-lg bg-sunken p-2">
       <div className="flex h-8 items-center gap-2 pl-3 pr-1">
@@ -29,7 +33,7 @@ export function ViewBlock({ kind, query, sourcePath }: ViewBlockProps) {
         <span className="shrink-0 text-xs tabular-nums text-text-tertiary">
           {countLabel(result.total, kind)}
         </span>
-        <IconButton icon={Maximize2} label="Open as view" size="sm" onClick={() => go(viewUrl(kind, query))} />
+        <IconButton icon={Maximize2} label="Open as view" size="sm" onClick={() => go(viewUrl(kind, resolved))} />
       </div>
       {result.errors.length ? <p className="px-3 text-xs text-text-secondary">{result.errors.join(' ')}</p> : null}
       <ViewResults result={result} compact empty={kind === 'tasks' ? 'No tasks match right now.' : 'No notes match right now.'} />
