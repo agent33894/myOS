@@ -109,7 +109,9 @@ export function Editor({
 
   // Views inside the note are told which note they sit in.
   editor.storage.viewFence.sourcePath = note.path;
-  useMarkdownSync(editor, value, note.path, onChange);
+  const sync = useMarkdownSync(editor, value, note.path, onChange);
+  const syncRef = useRef(sync);
+  syncRef.current = sync;
   useEditorBridge(editor, note.path, value, initialLine);
   const links = useLinks(editor, note.path);
   const taskToggle = useRef(onTaskToggle);
@@ -125,6 +127,7 @@ export function Editor({
       event.preventDefault();
       event.stopPropagation();
       if (!editor.isEditable) return;
+      click.line = syncRef.current?.taskLine(click.pos) ?? null;
       const handled = taskToggle.current && click.ordinal >= 0 ? taskToggle.current(click) : Promise.resolve(false);
       void handled.then((done) => {
         if (!done && !editor.isDestroyed) toggleInDocument(editor.view, click);

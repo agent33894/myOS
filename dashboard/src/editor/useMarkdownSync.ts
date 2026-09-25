@@ -1,7 +1,23 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Editor } from '@tiptap/core';
 import { EditorState, Selection, TextSelection } from '@tiptap/pm/state';
+import type { Node as PMNode } from '@tiptap/pm/model';
+import { extractTasks } from '@shared/tasks';
 import { attach, parseWithSource, serializeWithSource, type SourceMap } from './markdownSource';
+
+// TipTap makes task items only of `-`, `*`, `+` bullets with `[ ]` or `[x]`.
+const RENDERED_TASK = /^\s*[-*+]\s+\[[ xX]\]\s/;
+
+/** Task items with text, outside quotes, in document order: the ones the file has as task lines. */
+function taskItemsIn(node: PMNode, offset: number): number[] {
+  const found: number[] = [];
+  node.descendants((child, pos) => {
+    if (child.type.name === 'blockquote') return false;
+    if (child.type.name === 'taskItem' && (child.firstChild?.textContent.trim() ?? '')) found.push(offset + pos);
+    return true;
+  });
+  return found;
+}
 
 /**
  * Whether an incoming `value` must be loaded into the editor. Our own
@@ -62,6 +78,29 @@ export function connectMarkdown(editor: Editor, initial: { value: string; docume
   editor.on('update', emit);
 
   return {
+    /**
+     * The 0-based line, in the Markdown this editor emits, of the task item
+     * at `pos`: found in its own top-level block by its place among that
+     * block's task lines. Null when the block's task lines and task items
+     * don't pair up one to one, so a caller never guesses.
+     */
+    taskLine(pos: number): number | null {
+      const { doc } = editor.state;
+      if (doc.nodeAt(pos)?.type.name !== 'taskItem') return null;
+      const top = doc.resolve(pos).index(0);
+      let blockPos = 0;
+      for (let index = 0; index < top; index += 1) blockPos += doc.child(index).nodeSize;
+      const items = taskItemsIn(doc.child(top), blockPos + 1);
+      const ordinal = items.indexOf(pos);
+      const starts: number[] = [];
+      const markdown = serializeWithSource(editor, source, starts);
+      const start = starts[top];
+      if (ordinal < 0 || start === undefined || start < 0) return null;
+      const end = starts.slice(top + 1).find((next) => next >= 0) ?? markdown.length;
+      const lines = extractTasks(markdown.slice(start, end), '').filter((task) => RENDERED_TASK.test(task.raw));
+      if (lines.length !== items.length) return null;
+      return markdown.slice(0, start).split('\n').length - 1 + lines[ordinal].line - 1;
+    },
     /** A value from the host: another document, a reload from disk, or the echo of our own change. */
     receive(value: string, key: string) {
       const switched = key !== documentKey;
@@ -91,4 +130,6 @@ export function useMarkdownSync(editor: Editor, value: string, documentKey: stri
   useEffect(() => {
     sync?.receive(value, documentKey);
   }, [sync, value, documentKey]);
+
+  return sync;
 }

@@ -10,6 +10,8 @@ export interface TaskClick {
   checked: boolean;
   /** The task item's position, for the fallback toggle. */
   pos: number;
+  /** The 0-based body line of the task, when the editor could pair it with its line exactly. */
+  line: number | null;
 }
 
 /**
@@ -42,7 +44,7 @@ export function taskClickAt(view: EditorView, target: EventTarget | null): TaskC
   if (!found) return null;
   const { node, pos } = found as { node: PMNode; pos: number };
   const ordinal = taskItems(view.state.doc).findIndex((entry) => entry.pos === pos);
-  return { ordinal, text: node.firstChild?.textContent ?? '', checked: Boolean(node.attrs.checked), pos };
+  return { ordinal, text: node.firstChild?.textContent ?? '', checked: Boolean(node.attrs.checked), pos, line: null };
 }
 
 /** Flip a task item's checkbox in the document, for tasks that are not task lines in the file. */

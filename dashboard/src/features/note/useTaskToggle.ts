@@ -6,6 +6,7 @@ import { toggleTask } from '../../data/gateway';
 import { useDataStore } from '../../data/store';
 import type { TaskClick } from '../../editor';
 import { sameTaskText } from '../../editor/lines';
+import { formatShortcut } from '../../ui';
 
 interface DocumentLike {
   content: string | null;
@@ -58,16 +59,20 @@ export function useTaskToggle(path: string, doc: DocumentLike) {
     return true;
   }
 
-  /** Rendered mode: find the clicked task item's line by its place among task items, checked by its text. */
+  /**
+   * Rendered mode: the editor pairs the clicked item with its body line. The
+   * line must still read as that task (same text, same state), or nothing is
+   * written and the user is told.
+   */
   async function fromRendered(click: TaskClick): Promise<boolean> {
     const body = latest.current.content;
     if (body === null) return false;
-    const tasks = extractTasks(body, path).filter((task) => RENDERED_TASK.test(task.raw));
-    const fits = (task: Task | undefined) => task && (task.status === 'done') === click.checked && sameTaskText(task.raw, click.text);
-    const direct = tasks[click.ordinal];
-    const matches = fits(direct) ? [direct] : tasks.filter(fits);
-    if (matches.length !== 1) return false;
-    return toggleLine(matches[0].line - 1, matches[0].raw);
+    const task = click.line === null ? undefined : extractTasks(body, path).find((entry) => entry.line === click.line! + 1);
+    if (!task || !RENDERED_TASK.test(task.raw) || (task.status === 'done') !== click.checked || !sameTaskText(task.raw, click.text)) {
+      toast.error(`Could not find that task’s line in the file, so nothing was changed. Press ${formatShortcut('mod+e')} and check it in the source.`);
+      return true;
+    }
+    return toggleLine(task.line - 1, task.raw);
   }
 
   /** Source mode: the line is known exactly. */

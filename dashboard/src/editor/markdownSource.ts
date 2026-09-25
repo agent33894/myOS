@@ -79,11 +79,27 @@ export function attach(source: SourceMap | null, doc: PMNode): SourceMap | null 
   return source;
 }
 
-/** The document as Markdown, reusing the original text of every untouched block. */
-export function serializeWithSource(editor: Editor, source: SourceMap | null): string {
-  if (!source) return editor.getMarkdown();
+/**
+ * The document as Markdown, reusing the original text of every untouched
+ * block. `starts`, when given, receives where each top-level node's text
+ * begins in the result (-1 for a node that writes nothing).
+ */
+export function serializeWithSource(editor: Editor, source: SourceMap | null, starts?: number[]): string {
   const { doc } = editor.state;
+  if (!source) {
+    if (!starts) return editor.getMarkdown();
+    // Without a map, blocks are written one by one and joined as the serializer does.
+    const blocks: string[] = [];
+    doc.forEach((node) => blocks.push(editor.markdown!.serialize({ type: 'doc', content: [node.toJSON()] }).replace(/\n+$/, '')));
+    let offset = 0;
+    blocks.forEach((text, index) => {
+      starts.push(offset);
+      offset += text.length + (index + 1 < blocks.length ? 2 : 0);
+    });
+    return blocks.join('\n\n');
+  }
   const parts: string[] = [];
+  const at = () => parts.reduce((total, part) => total + part.length, 0);
   const isTrailingEmpty = (index: number) =>
     index === doc.childCount - 1 && doc.child(index).type.name === 'paragraph' && doc.child(index).content.size === 0;
   // The span the previous node stood for, so neighbours keep their original spacing.
@@ -93,7 +109,10 @@ export function serializeWithSource(editor: Editor, source: SourceMap | null): s
     let text: string;
     if (span === undefined) {
       text = editor.markdown!.serialize({ type: 'doc', content: [node.toJSON()] }).replace(/\n+$/, '');
-      if (!text && isTrailingEmpty(index)) return;
+      if (!text && isTrailingEmpty(index)) {
+        starts?.push(-1);
+        return;
+      }
       // An edited block standing where an original one was keeps that block's place.
       const replaced = previous === null ? (parts.length ? undefined : 0) : previous + 1;
       const atEnd = index + 1 === doc.childCount || isTrailingEmpty(index + 1);
@@ -103,7 +122,9 @@ export function serializeWithSource(editor: Editor, source: SourceMap | null): s
       text = source.spans[span].raw;
     }
     const followsOriginalOrder = span !== undefined && (previous === null ? parts.length === 0 && span === 0 : span === previous + 1);
-    parts.push(followsOriginalOrder ? source.spans[span!].before : parts.length ? '\n\n' : '', text);
+    parts.push(followsOriginalOrder ? source.spans[span!].before : parts.length ? '\n\n' : '');
+    starts?.push(at());
+    parts.push(text);
     previous = span ?? null;
   });
   if (previous === source.spans.length - 1) parts.push(source.after);

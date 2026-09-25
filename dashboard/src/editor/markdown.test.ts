@@ -140,6 +140,26 @@ describe('editor binding', () => {
     editor.destroy();
   });
 
+  it('pairs a clicked task item with its exact line, even among tasks with the same text', () => {
+    const file = ['# Title', '', '- [ ] Same text', '', '> - [ ] Quoted', '', '* [x] Same text', '', '  more', '- [ ] Same text', '', 'Para', '', '- [ ] Last'].join('\n');
+    const { editor, sync, changes } = open(file);
+    const items: number[] = [];
+    editor.state.doc.descendants((node, pos) => {
+      if (node.type.name === 'blockquote') return false;
+      if (node.type.name === 'taskItem') items.push(pos);
+      return true;
+    });
+    const found = items.map((pos) => sync.taskLine(pos));
+    expect(found).toEqual([2, 6, 9, 13]);
+    // Edited blocks count from what the editor now writes.
+    editor.view.dispatch(editor.state.tr.insertText('Edited ', 1));
+    editor.view.dispatch(editor.state.tr.split(editor.state.doc.child(0).nodeSize - 1));
+    const now = changes.at(-1)!.split('\n');
+    expect(now.length).toBeGreaterThan(file.split('\n').length);
+    expect(sync.taskLine(items.at(-1)! + 'Edited '.length + 2)).toBe(now.indexOf('- [ ] Last'));
+    editor.destroy();
+  });
+
   it('rewrites only the block that was edited', () => {
     const file = [
       'Intro paragraph',
