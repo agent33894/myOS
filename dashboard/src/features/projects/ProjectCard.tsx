@@ -1,4 +1,6 @@
 import { useNavigate } from 'react-router-dom';
+import { Footprints } from 'lucide-react';
+import { Icon } from '../../ui';
 import { toProjectUrl } from '../../app/navigation';
 import type { ProjectWithStats } from '../../data/projects';
 import { snippet } from '../notes/noteSearch';
@@ -6,7 +8,7 @@ import { dayLabel, inSentence } from '../tasks/dates';
 import { ProjectDot } from '../tasks/ProjectDot';
 import { projectColor } from '../tasks/projectRefs';
 
-/** A project at a glance: name, a line of description, and how far along it is. */
+/** A project at a glance: name, a line of description, its next step, and how far along it is. */
 export function ProjectCard({ project }: { project: ProjectWithStats }) {
   const navigate = useNavigate();
   const color = projectColor(project);
@@ -15,7 +17,7 @@ export function ProjectCard({ project }: { project: ProjectWithStats }) {
   const open = () => navigate(toProjectUrl(project.id));
   const next =
     project.overdueCount > 0 ? (
-      <span className="text-danger">{project.overdueCount} overdue</span>
+      <span>{project.overdueCount} carried over</span>
     ) : project.nextDue ? (
       <span>Next due {inSentence(dayLabel(project.nextDue))}</span>
     ) : null;
@@ -33,6 +35,13 @@ export function ProjectCard({ project }: { project: ProjectWithStats }) {
         <h3 className="min-w-0 flex-1 truncate text-base font-medium text-text">{project.title}</h3>
       </div>
       <p className="mt-1 min-h-9 line-clamp-2 text-sm text-text-tertiary">{description || 'No description yet.'}</p>
+      {project.next ? (
+        <p className="mt-3 flex min-w-0 items-center gap-1.5 text-sm text-text-secondary">
+          <Icon icon={Footprints} size="sm" className="text-text-tertiary" />
+          <span className="sr-only">Next step: </span>
+          <span className="truncate">{project.next}</span>
+        </p>
+      ) : null}
       <div className="mt-4 h-1 overflow-hidden rounded-full bg-text/5">
         <div
           className="h-full rounded-full transition-all duration-slow ease-out"
