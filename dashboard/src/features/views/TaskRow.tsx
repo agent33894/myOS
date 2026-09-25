@@ -69,20 +69,42 @@ const PRIORITY: Record<Priority, { icon: LucideIcon; label: string; className: s
 const TAG = /(^|\s)(#[^\s#]*[^\s#\d][^\s#]*)/gu;
 
 /** The description with each #tag as a quiet chip. */
+/** Links and emphasis as they read: `[[Note|label]]` → label, `[x](url)` → x, `**b**` → b. */
+const readable = (text: string) =>
+  text
+    .replace(/!?\[\[([^\]|]+)\|([^\]]+)\]\]/g, '$2')
+    .replace(/!?\[\[([^\]]+)\]\]/g, '$1')
+    .replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/(\*\*|~~|\*)(?=\S)(.+?)(?<=\S)\1/g, '$2');
+
+/** A task's words with `#tags` as pills and `code` in mono; everything else as it reads. */
 function TaskText({ text }: { text: string }) {
   const parts: ReactNode[] = [];
-  let last = 0;
-  for (const match of text.matchAll(TAG)) {
-    const start = (match.index ?? 0) + match[1].length;
-    if (start > last) parts.push(text.slice(last, start));
-    parts.push(
-      <span key={start} className="mx-0.5 inline-flex h-5 items-center rounded-sm bg-accent-soft px-1.5 align-middle text-sm text-accent-text">
-        {match[2].slice(1)}
-      </span>,
-    );
-    last = start + match[2].length;
-  }
-  if (last < text.length) parts.push(text.slice(last));
+  // Code spans first, so a `#` or `*` inside code stays as written.
+  text.split(/(`+[^`]+?`+)/).forEach((segment, index) => {
+    const code = /^(`+)([^`]+?)\1$/.exec(segment);
+    if (code) {
+      parts.push(
+        <code key={`c${index}`} className="rounded-sm bg-text/5 px-1 font-mono text-sm">
+          {code[2]}
+        </code>,
+      );
+      return;
+    }
+    const plain = readable(segment);
+    let last = 0;
+    for (const match of plain.matchAll(TAG)) {
+      const start = (match.index ?? 0) + match[1].length;
+      if (start > last) parts.push(plain.slice(last, start));
+      parts.push(
+        <span key={`t${index}-${start}`} className="mx-0.5 inline-flex h-5 items-center rounded-sm bg-accent-soft px-1.5 align-middle text-sm text-accent-text">
+          {match[2]}
+        </span>,
+      );
+      last = start + match[2].length;
+    }
+    if (last < plain.length) parts.push(plain.slice(last));
+  });
   return <>{parts}</>;
 }
 

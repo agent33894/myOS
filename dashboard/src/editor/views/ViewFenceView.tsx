@@ -56,46 +56,48 @@ export function ViewFenceView({ node, editor, getPos, selected, updateAttributes
   };
 
   return (
-    <NodeViewWrapper
-      className={cn('view-fence not-prose group/view my-6 rounded-lg outline-none', selected && 'ring-2 ring-focus ring-offset-4')}
-      contentEditable={false}
-      data-drag-handle=""
-    >
-      <div className="flex h-8 items-center gap-2 px-2 text-sm text-text-secondary">
-        <Icon icon={view.kind === 'tasks' ? ListChecks : FileText} size="sm" />
-        <span className="font-medium">{view.kind === 'tasks' ? 'Tasks' : 'Notes'}</span>
-        {editing ? (
-          <Input
-            ref={field}
-            size="sm"
-            aria-label="View query"
-            placeholder={view.kind === 'tasks' ? 'open due<=today #work' : '#meeting sort:modified'}
-            value={draft}
-            spellCheck={false}
-            onChange={(event) => setDraft(event.target.value)}
-            onKeyDown={onKeyDown}
-            onBlur={save}
-            className="flex-1 font-mono"
-          />
-        ) : (
-          <>
-            <span className="min-w-0 flex-1 truncate font-mono text-xs text-text-tertiary">{view.query || 'everything'}</span>
-            {editor.isEditable ? (
-              <IconButton
-                icon={Pencil}
-                label="Edit query"
+    <NodeViewWrapper className={cn('view-fence not-prose group/view my-6 rounded-lg outline-none', selected && 'ring-2 ring-focus ring-offset-4')} contentEditable={false} data-drag-handle="">
+      <ViewBlock
+        kind={view.kind}
+        query={view.query}
+        sourcePath={sourcePath}
+        title={
+          <div className="flex min-w-0 flex-1 items-center gap-2 text-sm text-text-secondary">
+            <Icon icon={view.kind === 'tasks' ? ListChecks : FileText} size="sm" />
+            <span className="font-medium">{view.kind === 'tasks' ? 'Tasks' : 'Notes'}</span>
+            {editing ? (
+              <Input
+                ref={field}
                 size="sm"
-                className="opacity-0 transition-opacity duration-fast focus-visible:opacity-100 group-hover/view:opacity-100"
-                onClick={() => {
-                  setDraft(view.query);
-                  setEditing(true);
-                }}
+                aria-label="View query"
+                placeholder={view.kind === 'tasks' ? 'open due<=today #work' : '#meeting sort:modified'}
+                value={draft}
+                spellCheck={false}
+                onChange={(event) => setDraft(event.target.value)}
+                onKeyDown={onKeyDown}
+                onBlur={save}
+                className="flex-1 font-mono"
               />
-            ) : null}
-          </>
-        )}
-      </div>
-      <ViewBlock kind={view.kind} query={view.query} sourcePath={sourcePath} />
+            ) : (
+              <>
+                <span className="min-w-0 flex-1 truncate font-mono text-xs text-text-tertiary">{view.query || 'everything'}</span>
+                {editor.isEditable ? (
+                  <IconButton
+                    icon={Pencil}
+                    label="Edit query"
+                    size="sm"
+                    className="opacity-0 transition-opacity duration-fast focus-visible:opacity-100 group-hover/view:opacity-100"
+                    onClick={() => {
+                      setDraft(view.query);
+                      setEditing(true);
+                    }}
+                  />
+                ) : null}
+              </>
+            )}
+          </div>
+        }
+      />
     </NodeViewWrapper>
   );
 }

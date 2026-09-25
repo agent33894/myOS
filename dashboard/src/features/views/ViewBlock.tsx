@@ -1,5 +1,5 @@
 import { FileText, ListChecks, Maximize2 } from 'lucide-react';
-import { useMemo } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { resolveFromNote, type ViewKind } from '@shared/query';
 import { go } from '../../app/navigation';
 import { useView } from '../../data/selectors';
@@ -13,6 +13,8 @@ export interface ViewBlockProps {
   query: string;
   /** The note the block sits in. */
   sourcePath: string;
+  /** Replaces the kind icon and query at the start of the header (the editor puts its query field there). */
+  title?: ReactNode;
 }
 
 /**
@@ -21,15 +23,19 @@ export interface ViewBlockProps {
  * writes to that task's own file. Place terms are read from the note's own
  * folder (see `resolveFromNote`).
  */
-export function ViewBlock({ kind, query, sourcePath }: ViewBlockProps) {
+export function ViewBlock({ kind, query, sourcePath, title }: ViewBlockProps) {
   // `path:.`, `path:../x`, and `file:this` mean this note's folder and file.
   const resolved = useMemo(() => (sourcePath ? resolveFromNote(query, sourcePath) : query), [query, sourcePath]);
   const result = useView(kind, resolved);
   return (
     <div data-task-scope="" data-source={sourcePath} contentEditable={false} className="flex flex-col gap-1 rounded-lg bg-sunken p-2">
       <div className="flex h-8 items-center gap-2 pl-3 pr-1">
-        <Icon icon={kind === 'tasks' ? ListChecks : FileText} size="sm" className="text-text-tertiary" />
-        <span style={{ fontVariantLigatures: 'none' }} className="min-w-0 flex-1 truncate font-mono text-xs text-text-secondary">{query || kind}</span>
+        {title ?? (
+          <>
+            <Icon icon={kind === 'tasks' ? ListChecks : FileText} size="sm" className="text-text-tertiary" />
+            <span style={{ fontVariantLigatures: 'none' }} className="min-w-0 flex-1 truncate font-mono text-xs text-text-secondary">{query || kind}</span>
+          </>
+        )}
         <span className="shrink-0 text-xs tabular-nums text-text-tertiary">
           {countLabel(result.total, kind)}
         </span>

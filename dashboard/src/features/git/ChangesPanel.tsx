@@ -34,12 +34,12 @@ function BranchHeader({ status }: { status: GitStatus }) {
         <Icon icon={GitBranch} className="text-text-tertiary" />
         <div className="flex min-w-0 flex-1 flex-col">
           <span className="truncate font-mono text-sm font-medium text-text">{status.branch ?? 'Detached HEAD'}</span>
-          <span className="truncate font-mono text-xs text-text-tertiary">
+          <span className={cn('text-xs text-text-tertiary', status.upstream ? 'truncate font-mono' : '')}>
             {status.upstream
               ? [status.upstream, status.ahead ? `↑${status.ahead}` : '', status.behind ? `↓${status.behind}` : '', !status.ahead && !status.behind ? 'up to date' : ''].filter(Boolean).join('  ')
               : firstPush
-                ? `Not on a remote yet. Push sends it to ${target}.`
-                : 'No upstream branch'}
+                ? 'Not on a remote yet.'
+                : 'No upstream branch.'}
           </span>
         </div>
       </div>
