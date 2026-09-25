@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Editor } from '@tiptap/core';
-import { EditorState, TextSelection } from '@tiptap/pm/state';
+import { EditorState, Selection, TextSelection } from '@tiptap/pm/state';
 import { attach, parseWithSource, serializeWithSource, type SourceMap } from './markdownSource';
 
 /**
@@ -27,14 +27,17 @@ function settle(editor: Editor) {
 /**
  * Replace the document without an undo step, an `update` event, or a focus
  * change. A fresh state also drops the undo history, which belongs to the
- * document being replaced. Returns the map that keeps untouched blocks as written.
+ * document being replaced. A reload of the same file (a task checked, a
+ * change from another app) keeps the caret about where it was. Returns the
+ * map that keeps untouched blocks as written.
  */
-function load(editor: Editor, markdown: string): SourceMap | null {
+function load(editor: Editor, markdown: string, keepCaret = false): SourceMap | null {
   const { doc: json, source } = parseWithSource(editor.markdown!, markdown);
   const parsed = editor.schema.nodeFromJSON(json);
   // An empty file parses to a doc with no blocks; the schema needs one.
   const doc = parsed.type.createAndFill(parsed.attrs, parsed.content) ?? parsed;
-  editor.view.updateState(EditorState.create({ doc, plugins: editor.state.plugins, selection: TextSelection.atStart(doc) }));
+  const selection = keepCaret ? Selection.near(doc.resolve(Math.min(editor.state.selection.from, doc.content.size))) : TextSelection.atStart(doc);
+  editor.view.updateState(EditorState.create({ doc, plugins: editor.state.plugins, selection }));
   settle(editor);
   return attach(source, editor.state.doc);
 }
@@ -63,7 +66,7 @@ export function connectMarkdown(editor: Editor, initial: { value: string; docume
     receive(value: string, key: string) {
       const switched = key !== documentKey;
       const normalize = (markdown: string) => editor.markdown!.serialize(editor.markdown!.parse(markdown));
-      if (switched || needsSync(lastSeen, current, value, normalize)) source = load(editor, value);
+      if (switched || needsSync(lastSeen, current, value, normalize)) source = load(editor, value, !switched);
       documentKey = key;
       lastSeen = value;
     },

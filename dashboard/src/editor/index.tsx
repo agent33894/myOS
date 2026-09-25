@@ -1,6 +1,6 @@
 // Contract between the note tab and the editor. The tab owns the name,
 // properties, and saving; the editor owns the body.
-import { useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react';
+import { lazy, useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react';
 import type { EditorView } from '@tiptap/pm/view';
 import { createPortal } from 'react-dom';
 import { EditorContent, useEditor } from '@tiptap/react';
@@ -15,6 +15,8 @@ import { LinkSuggestMenu } from './links/LinkSuggestMenu';
 import { useLinks } from './links/useLinks';
 import { SlashMenu } from './slash/SlashMenu';
 import { useAttachFile } from './slash/useAttachFile';
+import { taskClickAt, toggleInDocument, type TaskClick } from './tasks/taskClicks';
+import { useEditorBridge } from './useEditorBridge';
 import { useMarkdownSync } from './useMarkdownSync';
 import './editor.css';
 
@@ -30,7 +32,20 @@ export interface EditorProps {
   findSlot: HTMLElement | null;
   /** Show the document without editing it. */
   readOnly?: boolean;
+  /**
+   * A task checkbox was clicked. The host checks it off through the task line
+   * operation and resolves true; false leaves it to the editor, which flips
+   * the checkbox in the document.
+   */
+  onTaskToggle?: (click: TaskClick) => Promise<boolean>;
+  /** Body line to put the caret on once loaded (a switch from source mode). */
+  initialLine?: number;
 }
+
+export type { TaskClick } from './tasks/taskClicks';
+
+/** Markdown source mode (CodeMirror), loaded the first time a note is shown as source. */
+export const SourceEditor = lazy(() => import('./source/SourceEditor'));
 
 const isTyping = (element: Element | null) =>
   element instanceof HTMLElement && (element.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(element.tagName));
@@ -43,6 +58,8 @@ export function Editor({
   autoFocusWhenEmpty,
   findSlot,
   readOnly = false,
+  onTaskToggle,
+  initialLine,
 }: EditorProps) {
   const [slashKeys] = useState<{ current: ((event: KeyboardEvent) => boolean) | null }>({ current: null });
   const [linkKeys] = useState<{ current: ((event: KeyboardEvent) => boolean) | null }>({ current: null });
@@ -90,8 +107,32 @@ export function Editor({
     editorProps,
   });
 
+  // Views inside the note are told which note they sit in.
+  editor.storage.viewFence.sourcePath = note.path;
   useMarkdownSync(editor, value, note.path, onChange);
+  useEditorBridge(editor, note.path, value, initialLine);
   const links = useLinks(editor, note.path);
+  const taskToggle = useRef(onTaskToggle);
+  taskToggle.current = onTaskToggle;
+
+  // Checking a task goes through the task line operation (✅ date, repeats), never a
+  // re-serialize of the list. The capture listener stops TipTap's own toggle.
+  useEffect(() => {
+    const dom = editor.view.dom;
+    const onClick = (event: MouseEvent) => {
+      const click = taskClickAt(editor.view, event.target);
+      if (!click) return;
+      event.preventDefault();
+      event.stopPropagation();
+      if (!editor.isEditable) return;
+      const handled = taskToggle.current && click.ordinal >= 0 ? taskToggle.current(click) : Promise.resolve(false);
+      void handled.then((done) => {
+        if (!done && !editor.isDestroyed) toggleInDocument(editor.view, click);
+      });
+    };
+    dom.addEventListener('click', onClick, true);
+    return () => dom.removeEventListener('click', onClick, true);
+  }, [editor]);
   clickRef.current = links.handleClick;
   const attachFile = useAttachFile(editor, note.path);
 

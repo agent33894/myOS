@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import type { Editor } from '@tiptap/react';
-import { openNote } from '../../app/navigation';
 import { createNote } from '../../data/gateway';
 import { useGitStatus } from '../../data/git';
 import { invoke } from '../../data/ipc';
 import { useNotes } from '../../data/selectors';
+import { openFromLink } from '../../features/note/openToSide';
+import { hasPrimaryModifier } from '../../lib/platform';
 import { Popover, PopoverAnchor, PopoverContent } from '../../ui';
 import { findLinkedNote, findWikiLinkedNote } from '../../lib/links';
 import { commitHashOf } from '../diff/commitLinks';
@@ -24,7 +25,7 @@ const EXTERNAL = /^(https?:|mailto:)/i;
 
 /**
  * Link behavior inside the editor: wiki links and links to other notes open
- * them in the app, web links open in the browser, and when the folder is a
+ * them in their tab (beside this one with ⌘), web links open in the browser, and when the folder is a
  * Git repository, commit links preview on hover and open their diff on click.
  */
 export function useLinks(editor: Editor | null, path: string) {
@@ -56,16 +57,17 @@ export function useLinks(editor: Editor | null, path: string) {
     const { notes, path: from } = latest.current;
     const target = event.target instanceof Element ? event.target : null;
     if (!target) return false;
+    const beside = hasPrimaryModifier(event);
 
     const wiki = target.closest<HTMLElement>('[data-wikilink]');
     if (wiki) {
       const name = wiki.dataset.wikilink ?? '';
       const linked = findWikiLinkedNote(name, notes);
-      if (linked) openNote(linked.path);
+      if (linked) openFromLink(linked.path, beside);
       else if (name) {
         // A missing link is an invitation: clicking it makes the note beside this one and opens it.
         createNote(linkedNotePath(name, from))
-          .then((note) => openNote(note.path))
+          .then((note) => openFromLink(note.path, beside))
           .catch(() => toast.error(`Couldn’t create “${name}”`));
       }
       return true;
@@ -76,7 +78,7 @@ export function useLinks(editor: Editor | null, path: string) {
     const href = anchor.getAttribute('href') ?? '';
     const linked = findLinkedNote(href, from, notes);
     if (linked) {
-      openNote(linked.path);
+      openFromLink(linked.path, beside);
       return true;
     }
     const commit = commitAt(anchor);

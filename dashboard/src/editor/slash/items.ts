@@ -1,10 +1,13 @@
 import type { Editor } from '@tiptap/core';
 import {
+  CalendarDays,
   Code2,
+  FileText,
   Heading1,
   Heading2,
   Heading3,
   ImagePlus,
+  ListChecks,
   List,
   ListOrdered,
   ListTodo,
@@ -14,6 +17,7 @@ import {
   Table,
   type LucideIcon,
 } from 'lucide-react';
+import { formatLocalDate } from '@shared/date';
 import { BLOCKS, newBlockSource, type BlockKind } from '../blocks/registry';
 
 export interface SlashItem {
@@ -59,6 +63,25 @@ const richBlock = (kind: BlockKind): SlashItem => {
   };
 };
 
+/** A live view (docs/file-format.md#views), opened with its query field ready. */
+const viewItem = (kind: 'tasks' | 'notes', label: string, description: string, icon: LucideIcon, keywords: string[], query: string): SlashItem =>
+  basic(`${kind}-view`, label, description, icon, ['view', 'query', 'search', ...keywords], (editor) =>
+    editor
+      .chain()
+      .focus()
+      .insertContent([{ type: 'viewFence', attrs: { info: `${kind} ${query}`, source: '', fresh: true } }, { type: 'paragraph' }])
+      .run(),
+  );
+
+/** Today's date; in a task it is the due date (📅), as Obsidian Tasks writes it. */
+function insertDate(editor: Editor) {
+  const { $from } = editor.state.selection;
+  const inTask = $from.depth > 1 && $from.node(-1).type.name === 'taskItem';
+  const before = $from.parent.textBetween(0, $from.parentOffset);
+  const space = before && !/\s$/.test(before) ? ' ' : '';
+  editor.chain().focus().insertContent(`${space}${inTask ? '📅 ' : ''}${formatLocalDate()}`).run();
+}
+
 /** Everything `/` can insert: basics first, richer blocks under "More blocks". */
 export const SLASH_ITEMS: SlashItem[] = [
   basic('text', 'Text', 'Plain writing', Pilcrow, ['paragraph', 'plain'], (editor) => editor.chain().focus().setParagraph().run()),
@@ -67,7 +90,10 @@ export const SLASH_ITEMS: SlashItem[] = [
   heading(3, Heading3, 'Small section heading'),
   basic('bullets', 'Bulleted list', 'A simple list', List, ['unordered', 'bullet', 'ul'], (editor) => editor.chain().focus().toggleBulletList().run()),
   basic('numbers', 'Numbered list', 'A list with numbers', ListOrdered, ['ordered', 'ol', '1.'], (editor) => editor.chain().focus().toggleOrderedList().run()),
-  basic('todo', 'To-do list', 'Things to check off', ListTodo, ['task', 'checkbox', 'check'], (editor) => editor.chain().focus().toggleTaskList().run()),
+  basic('todo', 'Task', 'A line to check off', ListTodo, ['todo', 'checkbox', 'check'], (editor) => editor.chain().focus().toggleTaskList().run()),
+  basic('date', 'Date', 'Today’s date; the due date in a task', CalendarDays, ['today', 'due', 'day'], insertDate),
+  viewItem('tasks', 'Task view', 'Tasks from every note, live', ListChecks, ['tasks', 'list', 'due'], 'open'),
+  viewItem('notes', 'Note list view', 'Notes that match, live', FileText, ['notes', 'files', 'list'], 'sort:modified limit:10'),
   basic('quote', 'Quote', 'Set a passage apart', Quote, ['blockquote', 'citation'], (editor) => editor.chain().focus().toggleBlockquote().run()),
   basic('divider', 'Divider', 'A line between sections', Minus, ['hr', 'rule', 'separator'], (editor) => editor.chain().focus().setHorizontalRule().run()),
   basic('code', 'Code', 'Code with highlighting', Code2, ['snippet', 'pre', 'program'], (editor) => editor.chain().focus().setCodeBlock().run()),
