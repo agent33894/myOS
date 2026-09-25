@@ -13,10 +13,7 @@ const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Frida
 /** Listed Monday first, the way the week reads. */
 const WEEKDAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
 
-/**
- * @public Where the rituals open. It lives with the sidebar, which is always
- * mounted; it could equally sit in the app shell.
- */
+/** Where the rituals open. Mounted once by the app shell, so they work in focus mode too. */
 export function RitualHost() {
   const open = useRitualStore((state) => state.open);
   const close = useRitualStore((state) => state.close);
@@ -36,13 +33,13 @@ export function RitualHost() {
 function useWeeklyNudge() {
   const reviewDay = useSettingsStore((state) => state.weeklyReviewDay);
   const lastReview = useSettingsStore((state) => state.lastWeeklyReview);
-  const enabled = useRitualStore((state) => state.weeklyNudge);
-  const dismissedWeek = useRitualStore((state) => state.dismissedWeek);
+  const enabled = useSettingsStore((state) => state.weeklyNudge);
+  const dismissedWeek = useSettingsStore((state) => state.weeklyNudgeDismissed);
   const today = formatLocalDate();
   return {
     visible: showsWeeklyNudge({ today, reviewDay, lastReview, dismissedWeek, enabled }),
     why: `${WEEKDAYS[reviewDay]} is your weekly review day: a few minutes to tidy up and start next week fresh.`,
-    dismiss: () => useRitualStore.getState().setPrefs({ dismissedWeek: weekStartOf(today) }),
+    dismiss: () => useSettingsStore.getState().setSetting('weeklyNudgeDismissed', weekStartOf(today)),
   };
 }
 
@@ -54,7 +51,6 @@ export function RitualSidebarItem({ rail }: { rail: boolean }) {
 
   return (
     <>
-      <RitualHost />
       {!visible ? null : rail ? (
         <Tooltip content={`Weekly review · ${why}`} side="right">
           <Button variant="ghost" icon aria-label="Weekly review" onClick={open} className="relative mx-auto w-9 text-accent-text">
@@ -93,8 +89,7 @@ export function RitualSettings() {
   const reviewDay = useSettingsStore((state) => state.weeklyReviewDay);
   const includeJournal = useSettingsStore((state) => state.includeJournalInSearch);
   const setSetting = useSettingsStore((state) => state.setSetting);
-  const nudge = useRitualStore((state) => state.weeklyNudge);
-  const setPrefs = useRitualStore((state) => state.setPrefs);
+  const nudge = useSettingsStore((state) => state.weeklyNudge);
 
   return (
     <SettingsGroup
@@ -117,7 +112,7 @@ export function RitualSettings() {
       <SettingsRow
         label="Show the weekly review in the sidebar"
         description="It appears on your review day and goes away once you’ve reviewed or dismissed it."
-        control={(id) => <Switch id={id} checked={nudge} onCheckedChange={(weeklyNudge) => setPrefs({ weeklyNudge })} />}
+        control={(id) => <Switch id={id} checked={nudge} onCheckedChange={(value) => setSetting('weeklyNudge', value)} />}
       />
       <SettingsRow
         label="Include journal pages in search"

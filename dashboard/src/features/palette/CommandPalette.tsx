@@ -6,6 +6,7 @@ import { ArtifactType, TodoStatus, type ArtifactSummary } from '@shared/types';
 import { toItemUrl } from '../../app/navigation';
 import { useArtifacts } from '../../data/selectors';
 import { useDataStore } from '../../data/store';
+import { useSettingsStore } from '../../store/settings';
 import { useUIStore } from '../../store/ui';
 import { Dialog, DialogContent, DialogTitle, Icon, Input, Kbd, cn } from '../../ui';
 import { kindLabel } from '../../lib/itemKinds';
@@ -67,7 +68,17 @@ function PaletteBody({ onClose }: { onClose: () => void }) {
   const [active, setActive] = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
 
-  const index = useMemo(() => buildIndex(artifacts), [artifacts]);
+  const includeJournal = useSettingsStore((state) => state.includeJournalInSearch);
+  // Templates are reached through New from template…; journal days only when Settings says so.
+  const index = useMemo(
+    () =>
+      buildIndex(
+        artifacts.filter(
+          (item) => item.type !== ArtifactType.TEMPLATE && (includeJournal || item.type !== ArtifactType.JOURNAL),
+        ),
+      ),
+    [artifacts, includeJournal],
+  );
   const projectTitles = useMemo(
     () => new Map(artifacts.filter((item) => item.type === ArtifactType.PROJECT).map((item) => [item.id, item.title])),
     [artifacts],

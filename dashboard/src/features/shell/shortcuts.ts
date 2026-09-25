@@ -10,6 +10,9 @@ export const SHORTCUTS = {
   help: '?',
   undo: 'mod+z',
   redo: 'mod+shift+z',
+  /** Bound in features/knowledge/KnowledgeLayer (FOCUS_SHORTCUT). */
+  focus: 'mod+.',
+  find: 'mod+f',
 } as const;
 
 interface ShortcutGroup {
@@ -38,6 +41,16 @@ export const SHORTCUT_GROUPS: ShortcutGroup[] = [
     ],
   },
   {
+    title: 'Writing',
+    items: [
+      { keys: SHORTCUTS.focus, label: 'Focus mode' },
+      { keys: 'escape', label: 'Leave focus mode' },
+      { keys: SHORTCUTS.find, label: 'Find in page' },
+      { keys: '/', label: 'Insert a block' },
+      { keys: '[[', label: 'Link to a page' },
+    ],
+  },
+  {
     title: 'Sorting the Inbox',
     items: [
       { keys: 't', label: 'Make task' },
@@ -59,6 +72,16 @@ export const SHORTCUT_GROUPS: ShortcutGroup[] = [
       { keys: 'alt+up', label: 'Move up in today’s plan' },
       { keys: 'alt+down', label: 'Move down in today’s plan' },
       { keys: 'backspace', label: 'Delete' },
+    ],
+  },
+  {
+    title: 'Reviewing notes',
+    items: [
+      { keys: 'mod+enter', label: 'Show note' },
+      { keys: '1', label: 'Again' },
+      { keys: '2', label: 'Hard' },
+      { keys: '3', label: 'Good' },
+      { keys: '4', label: 'Easy' },
     ],
   },
 ];

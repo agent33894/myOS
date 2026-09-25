@@ -29,6 +29,15 @@ export interface Command {
   run: () => void;
 }
 
+/** Other words that find a sidebar section in Go to. */
+const SECTION_KEYWORDS: Partial<Record<string, string>> = {
+  inbox: 'captures sort',
+  today: 'plan day agenda',
+  tasks: 'todo anytime upcoming someday',
+  notes: 'pages documents',
+  journal: 'diary daily write reflect',
+};
+
 const NEXT_THEME: Record<ThemeMode, ThemeMode> = { system: 'light', light: 'dark', dark: 'system' };
 const THEME_NAMES: Record<ThemeMode, string> = { system: 'Match system', light: 'Light', dark: 'Dark' };
 
@@ -56,6 +65,7 @@ export function usePaletteCommands(): Command[] {
         label: section.label,
         icon: section.icon,
         shortcut: section.shortcut,
+        keywords: SECTION_KEYWORDS[section.id],
         run: () => navigate(sectionUrl(section)),
       })),
       {

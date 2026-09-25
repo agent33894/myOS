@@ -6,6 +6,7 @@ import { subscribe } from '../data/ipc';
 import { useUndoShortcuts } from '../data/undo';
 import { CommandPalette } from '../features/palette/CommandPalette';
 import { FocusExit, KnowledgeLayer } from '../features/knowledge/KnowledgeLayer';
+import { RitualHost } from '../features/rituals/slots';
 import { KeyboardShortcutsDialog } from '../features/shell/KeyboardShortcutsDialog';
 import { useNavigationMemory } from '../features/shell/navigationMemory';
 import { Sidebar } from '../features/shell/sidebar/Sidebar';
@@ -58,6 +59,7 @@ export default function AppShell() {
       <CommandPalette />
       <KeyboardShortcutsDialog />
       <KnowledgeLayer />
+      <RitualHost />
       {isQuickCaptureOpen ? <QuickCapture /> : null}
     </div>
   );

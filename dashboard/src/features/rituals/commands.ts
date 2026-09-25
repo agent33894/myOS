@@ -1,14 +1,14 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BookOpen, CalendarCheck, CalendarRange, Moon } from 'lucide-react';
-import { paths, toWeekUrl } from '../../app/navigation';
+import { CalendarCheck, CalendarRange, Moon } from 'lucide-react';
+import { toWeekUrl } from '../../app/navigation';
 import type { Command } from '../palette/usePaletteCommands';
 import { startRitual } from './store';
 
 // Run after the palette has closed, so its focus handling doesn't close the ritual's dialog too.
 const later = (run: () => void) => () => setTimeout(run, 0);
 
-/** Palette commands for rituals and reflection. */
+/** Palette commands for rituals and reflection. Journal is in Go to with the other sidebar sections. */
 export function useRitualCommands(): Command[] {
   const navigate = useNavigate();
   return useMemo(
@@ -28,14 +28,6 @@ export function useRitualCommands(): Command[] {
         icon: CalendarCheck,
         keywords: 'fresh start week reset plan',
         run: later(() => startRitual('weekly-review')),
-      },
-      {
-        id: 'open-journal',
-        group: 'Go to',
-        label: 'Open journal',
-        icon: BookOpen,
-        keywords: 'today diary write reflect',
-        run: () => navigate(paths.journal),
       },
       {
         id: 'what-moved',

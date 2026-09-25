@@ -25,6 +25,10 @@ export interface StoredSettings {
   weeklyReviewDay: number;
   /** YYYY-MM-DD of the last finished Weekly review. */
   lastWeeklyReview: string | null;
+  /** Show the Weekly review item in the sidebar on the review day. */
+  weeklyNudge: boolean;
+  /** Monday (YYYY-MM-DD) of the week the user dismissed the sidebar item for. */
+  weeklyNudgeDismissed: string | null;
   /** Rename a file to match its title after the title is edited. */
   renameFilesWithTitles: boolean;
   /** Focus mode softly dims paragraphs other than the one being written. */
@@ -45,6 +49,8 @@ const DEFAULT_SETTINGS: StoredSettings = {
   showCapacity: true,
   weeklyReviewDay: 5,
   lastWeeklyReview: null,
+  weeklyNudge: true,
+  weeklyNudgeDismissed: null,
   renameFilesWithTitles: true,
   focusDimParagraphs: true,
   includeJournalInSearch: false,
@@ -86,10 +92,9 @@ export function normalizeStoredSettings(value: unknown): StoredSettings {
     showCapacity: isBoolean(parsed.showCapacity) ? parsed.showCapacity : defaults.showCapacity,
     weeklyReviewDay:
       isNumberIn(parsed.weeklyReviewDay, 0, 6) && Number.isInteger(parsed.weeklyReviewDay) ? parsed.weeklyReviewDay : defaults.weeklyReviewDay,
-    lastWeeklyReview:
-      typeof parsed.lastWeeklyReview === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(parsed.lastWeeklyReview)
-        ? parsed.lastWeeklyReview
-        : defaults.lastWeeklyReview,
+    lastWeeklyReview: isDay(parsed.lastWeeklyReview) ? parsed.lastWeeklyReview : defaults.lastWeeklyReview,
+    weeklyNudge: isBoolean(parsed.weeklyNudge) ? parsed.weeklyNudge : defaults.weeklyNudge,
+    weeklyNudgeDismissed: isDay(parsed.weeklyNudgeDismissed) ? parsed.weeklyNudgeDismissed : defaults.weeklyNudgeDismissed,
     renameFilesWithTitles: isBoolean(parsed.renameFilesWithTitles) ? parsed.renameFilesWithTitles : defaults.renameFilesWithTitles,
     focusDimParagraphs: isBoolean(parsed.focusDimParagraphs) ? parsed.focusDimParagraphs : defaults.focusDimParagraphs,
     includeJournalInSearch: isBoolean(parsed.includeJournalInSearch) ? parsed.includeJournalInSearch : defaults.includeJournalInSearch,
@@ -101,14 +106,38 @@ const isAreaList = (value: unknown): value is Domain[] =>
 
 const isBoolean = (value: unknown): value is boolean => typeof value === 'boolean';
 
+const isDay = (value: unknown): value is string => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value);
+
 const isNumberIn = (value: unknown, min: number, max: number): value is number =>
   typeof value === 'number' && Number.isFinite(value) && value >= min && value <= max;
+
+// 3.0 betas kept the weekly review's sidebar preferences under their own key.
+const LEGACY_RITUALS_KEY = 'myos-rituals';
+
+/** Fold the old ritual preferences into the settings once, then drop the old key. */
+function withLegacyRituals(parsed: Record<string, unknown>): Record<string, unknown> {
+  const legacy = window.localStorage.getItem(LEGACY_RITUALS_KEY);
+  if (legacy === null) return parsed;
+  const merged = { ...parsed };
+  try {
+    const { weeklyNudge, dismissedWeek } = JSON.parse(legacy) as Record<string, unknown>;
+    if (!('weeklyNudge' in merged)) merged.weeklyNudge = weeklyNudge;
+    if (!('weeklyNudgeDismissed' in merged)) merged.weeklyNudgeDismissed = dismissedWeek;
+  } catch {
+    // Unreadable: the defaults stand.
+  }
+  saveSettings(normalizeStoredSettings(merged));
+  window.localStorage.removeItem(LEGACY_RITUALS_KEY);
+  return merged;
+}
 
 export function loadSettings(): StoredSettings {
   if (typeof window === 'undefined') return getDefaultSettings();
   try {
     const stored = window.localStorage.getItem(STORAGE_KEY);
-    return stored ? normalizeStoredSettings(JSON.parse(stored)) : getDefaultSettings();
+    const parsed: unknown = stored ? JSON.parse(stored) : {};
+    const record = parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? (parsed as Record<string, unknown>) : {};
+    return normalizeStoredSettings(withLegacyRituals(record));
   } catch (error) {
     console.error('Failed to load settings:', error);
     return getDefaultSettings();
