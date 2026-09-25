@@ -71,11 +71,83 @@ const frontmatterBlock = (properties: Properties) => `---\n${dump(properties).tr
 // comments, and blank lines after it belong to that key.
 const KEY_LINE = /^(["']?)([^\s"'#:-][^:]*?|-[^\s:][^:]*?)\1[ \t]*:(?:[ \t]|$)/;
 
+type Scalar = string | number | boolean;
+const isScalar = (value: unknown): value is Scalar => ['string', 'number', 'boolean'].includes(typeof value);
+const scalarList = (value: unknown): value is Scalar[] => Array.isArray(value) && value.every(isScalar);
+
+/** The line with a trailing ` # comment` split off, when removing it doesn't change what the line means. */
+function trailingComment(line: string): { code: string; comment: string } | null {
+  const match = /^(.*?\S)([ \t]+#.*)$/.exec(line);
+  if (!match) return null;
+  const whole = loadBlock(line);
+  return whole && isDeepStrictEqual(whole, loadBlock(match[1])) ? { code: match[1], comment: match[2] } : null;
+}
+
+/**
+ * A block list (`key:` then `- item` lines) edited item by item: items that
+ * stay keep their line, with any comment on or between them; removed items
+ * lose only their line; new items go after the item before them.
+ */
+function editList(span: string[], key: string, before: Scalar[], after: Scalar[]): string[] | null {
+  if (after.length === 0 || !/^[^#]*:[ \t]*(#.*)?$/.test(span[0])) return null;
+  const items: { index: number; value: Scalar }[] = [];
+  for (const [index, line] of span.entries()) {
+    if (index === 0 || /^\s*(#.*)?$/.test(line)) continue;
+    const item = /^(\s*)-[ \t]/.exec(line) ? (yaml.safeLoad(line, { schema: yaml.CORE_SCHEMA }) as unknown) : null;
+    if (!Array.isArray(item) || item.length !== 1 || !isScalar(item[0])) return null;
+    items.push({ index, value: item[0] });
+  }
+  if (!isDeepStrictEqual(items.map((item) => item.value), before) || items.length === 0) return null;
+  const indent = /^(\s*-[ \t]+)/.exec(span[items[0].index])![1];
+  const lineFor = (value: Scalar) => indent + dump({ [key]: [value] }).trimEnd().split('\n')[1].replace(/^\s*-[ \t]+/, '');
+
+  // Match each new value to the next unused old item with the same value, in order.
+  const kept = new Set<number>();
+  const inserts = new Map<number, string[]>();
+  let cursor = 0;
+  let anchor = items[0].index - 1;
+  for (const value of after) {
+    const found = items.findIndex((item, at) => at >= cursor && item.value === value);
+    if (found >= 0) {
+      kept.add(items[found].index);
+      anchor = items[found].index;
+      cursor = found + 1;
+    } else {
+      inserts.set(anchor, [...(inserts.get(anchor) ?? []), lineFor(value)]);
+    }
+  }
+  const removed = new Set(items.filter((item) => !kept.has(item.index)).map((item) => item.index));
+  const next: string[] = [];
+  for (const [index, line] of span.entries()) {
+    if (!removed.has(index)) next.push(line);
+    next.push(...(inserts.get(index) ?? []));
+  }
+  return next;
+}
+
+/** The new lines for one key: item by item for block lists, else the value rewritten with its trailing comment kept. */
+function editSpan(span: string[], key: string, before: unknown, after: Properties): string[] {
+  if (!(key in after)) return [];
+  const value = after[key];
+  if (scalarList(before) && scalarList(value)) {
+    const listed = editList(span, key, before, value);
+    if (listed) return listed;
+  }
+  const flow = /^[^:]*:[ \t]*\[/.test(span[0]) && Array.isArray(value);
+  const dumped = flow
+    ? [`${span[0].slice(0, span[0].indexOf(':') + 1)} ${yaml.safeDump(value, { schema: yaml.CORE_SCHEMA, flowLevel: 0 }).trim()}`]
+    : dump({ [key]: value }).trimEnd().split('\n');
+  const comment = span.length === 1 ? trailingComment(span[0])?.comment : undefined;
+  if (comment && dumped.length === 1) dumped[0] += comment;
+  // Comment lines inside a rewritten value stay, after it.
+  return [...dumped, ...span.slice(1).filter((line) => /^\s*#/.test(line))];
+}
+
 /**
  * Rewrite only the lines of the keys that changed, in the file's own style.
  * Returns null when the block is not plain enough to edit line by line.
  */
-function editBlock(lines: string[], changed: string[], after: Properties): string[] | null {
+function editBlock(lines: string[], changed: string[], before: Properties, after: Properties): string[] | null {
   const spans = new Map<string, { start: number; end: number }>();
   let open: { start: number; end: number } | null = null;
   for (const [index, line] of lines.entries()) {
@@ -95,11 +167,12 @@ function editBlock(lines: string[], changed: string[], after: Properties): strin
   for (const span of spans.values()) {
     while (span.end > span.start + 1 && /^\s*(#.*)?$/.test(lines[span.end - 1])) span.end -= 1;
   }
-  const dumped = (key: string) => (key in after ? dump({ [key]: after[key] }).trimEnd().split('\n') : []);
   const next = [...lines];
   const edits = changed.filter((key) => spans.has(key)).map((key) => ({ ...spans.get(key)!, key }));
-  for (const edit of edits.sort((a, b) => b.start - a.start)) next.splice(edit.start, edit.end - edit.start, ...dumped(edit.key));
-  for (const key of changed) if (!spans.has(key)) next.push(...dumped(key));
+  for (const edit of edits.sort((a, b) => b.start - a.start)) {
+    next.splice(edit.start, edit.end - edit.start, ...editSpan(lines.slice(edit.start, edit.end), edit.key, before[edit.key], after));
+  }
+  for (const key of changed) if (!spans.has(key) && key in after) next.push(...dump({ [key]: after[key] }).trimEnd().split('\n'));
   return next;
 }
 
@@ -124,7 +197,7 @@ export function rewriteDocument(raw: string, before: Properties, after: Properti
     const eol = match?.[0].includes('\r\n') ? '\r\n' : '\n';
     const inner = match?.[1] ?? '';
     const lines = inner === '' ? [] : inner.split(/\r?\n/);
-    const edited = editBlock(lines, changed, after);
+    const edited = editBlock(lines, changed, before, after);
     // Keep the line edit only if it reads back as exactly the new properties.
     const reread = edited && loadBlock(edited.join(eol));
     const closing = match ? match[0].slice(match[0].lastIndexOf('---')) : `---${eol}`;

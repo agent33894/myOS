@@ -146,3 +146,16 @@ describe('task edits on disk', () => {
     expect(read('daily/2026-09-25.md')).toBe('## Log\n- [ ] First\n- second\n');
   });
 });
+
+describe('frontmatter lists', () => {
+  it('changes a block list item by item, keeping comments and untouched items', async () => {
+    const head = '---\ntitle: Plan  # working title\ntags:\n  # people first\n  - sam   # owner\n  - api\n  # later\n  - old\n---\nBody\n';
+    await put('list.md', head);
+    const note = await files.readNote('list.md');
+    expect(note.properties.tags).toEqual(['sam', 'api', 'old']);
+    const saved = await files.saveNote('list.md', { properties: { tags: ['sam', 'api', 'new'], title: 'Plan B' } }, note.rev);
+    expect(read('list.md')).toBe('---\ntitle: Plan B  # working title\ntags:\n  # people first\n  - sam   # owner\n  - api\n  - new\n  # later\n---\nBody\n');
+    await files.saveNote('list.md', { properties: { tags: ['first', 'sam', 'api', 'new'] } }, saved.rev);
+    expect(read('list.md')).toBe('---\ntitle: Plan B  # working title\ntags:\n  # people first\n  - first\n  - sam   # owner\n  - api\n  - new\n  # later\n---\nBody\n');
+  });
+});
