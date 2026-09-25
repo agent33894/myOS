@@ -38,11 +38,18 @@ export const toggleComplete = (task: ArtifactSummary) =>
 const plannedOn = (date: string) =>
   Object.values(useDataStore.getState().byPath).filter((item) => item.type === 'todo' && dayOf(item.planned) === date);
 
-/** @public Put a task in the plan for `date` (default today), at `order` or at the end. */
+/**
+ * @public Put a task in the plan for `date` (default today), at `order` or at the end.
+ * A task carried over from an earlier date moves to `date`, and a deferral past it
+ * is cleared, so the task shows in that day's plan rather than staying behind.
+ */
 export function plan(task: ArtifactSummary, date = formatLocalDate(), order?: number): Promise<Artifact> {
   const last = Math.max(0, ...plannedOn(date).map((item) => item.order ?? 0));
   const fields: ArtifactPatch = { planned: date, order: order ?? last + 1 };
   if (task.status === TodoStatus.SOMEDAY) fields.status = TodoStatus.PENDING;
+  const due = dayOf(task.due);
+  if (due && due < date) fields.due = date;
+  if ((dayOf(task.deferDate) ?? '') > date) fields.deferDate = null;
   return patch(task.filePath, fields, `Plan “${task.title}”`);
 }
 
