@@ -1,4 +1,4 @@
-import { mkdir, readFile, stat, unlink, writeFile } from 'fs/promises';
+import { mkdir, readFile, rmdir, stat, unlink, writeFile } from 'fs/promises';
 import { dirname, posix } from 'path';
 import { toggleCheckLine } from '../../shared/checklist';
 import { formatLocalDate } from '../../shared/date';
@@ -14,11 +14,11 @@ import {
   isStatusAllowed,
   normalizeField,
 } from '../../shared/spec';
-import type { Artifact, ArtifactDraft, ArtifactPatch, ArtifactSummary, Domain } from '../../shared/types';
+import type { Artifact, ArtifactDraft, ArtifactPatch, ArtifactSummary, ArtifactType, Domain } from '../../shared/types';
 import { DomainError, isMissingFile } from '../errors';
 import { listVersions, moveHistory, readVersion, snapshotBeforeWrite } from '../history/history';
 import { resolveInWorkspace, scanMarkdown, toWorkspacePath } from '../workspace/paths';
-import { parseDocument, replaceFrontmatter, revOf, serializeDocument } from './markdown';
+import { parseDocument, revOf, rewriteDocument, serializeDocument } from './markdown';
 
 /** Documents are Markdown files outside dot-folders; nothing here may touch `.git/` or other files. */
 function resolveDocument(path: string): string {
@@ -69,8 +69,21 @@ async function relocate({ absolute, artifact }: Loaded, to: string, text: string
     await unlink(resolveDocument(moved.filePath));
     throw error;
   }
+  await removeEmptyFolders(artifact.filePath);
   await moveHistory(artifact.filePath, moved.filePath);
   return moved;
+}
+
+/** Remove the folders a moved file leaves empty (`work/memos/`, then `work/`), never the workspace itself. */
+async function removeEmptyFolders(path: string): Promise<void> {
+  for (let folder = posix.dirname(path); folder !== '.' && folder !== '/'; folder = posix.dirname(folder)) {
+    try {
+      // rmdir only ever removes an empty folder.
+      await rmdir(resolveInWorkspace(folder));
+    } catch {
+      return;
+    }
+  }
 }
 
 /** Keep the file as it is now in version history before a change that replaces or moves it. */
@@ -155,6 +168,21 @@ const slugify = (title: string) =>
   title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 50).replace(/-$/, '') || 'untitled';
 
 const ID = /^[a-z0-9][a-z0-9-]*$/;
+
+/**
+ * A readable id, and so file name, for a new item: `<slug>`, then `<slug>-2`
+ * and on, unused both as an id and as a file in its folder. An untitled item
+ * gets a unique stamp instead; its file is renamed once it has a title.
+ */
+async function readableId(title: string, type: ArtifactType, domain: Domain | undefined): Promise<string> {
+  const slug = slugify(title);
+  if (slug === 'untitled' || slug === 'untitled-project') return `${slug}-${Date.now().toString(36)}`;
+  const ids = new Set((await listArtifacts()).map((artifact) => artifact.id));
+  for (let suffix = 1; ; suffix += 1) {
+    const id = suffix === 1 ? slug : `${slug}-${suffix}`;
+    if (!ids.has(id) && !(await exists(canonicalPath(id, type, domain)))) return id;
+  }
+}
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 /**
@@ -166,9 +194,9 @@ export async function createArtifact(draft: ArtifactDraft): Promise<Artifact> {
   if (!isArtifactType(type)) throw new DomainError('INVALID', `Unknown type ${String(type)}.`);
   const title = patch.title?.trim() || 'Untitled';
   const journal = type === 'journal';
-  const id = requestedId ?? (journal ? formatLocalDate() : `${slugify(title)}-${Date.now().toString(36)}`);
-  if (!ID.test(id) || (journal && !DATE.test(id))) throw new DomainError('INVALID', `${id} cannot name a ${type}.`);
   const resolvedDomain = domainFor(type, (await projectDomain(patch.project)) ?? domain);
+  const id = requestedId ?? (journal ? formatLocalDate() : await readableId(title, type, resolvedDomain));
+  if (!ID.test(id) || (journal && !DATE.test(id))) throw new DomainError('INVALID', `${id} cannot name a ${type}.`);
   const now = new Date();
   const base: Artifact = {
     id,
@@ -197,14 +225,14 @@ export async function saveArtifact(path: string, { fields, content }: ArtifactSa
   await snapshotBeforeWrite(artifact.filePath, loaded.raw, { throttle: true }).catch((error: unknown) =>
     console.warn(`Could not keep a version of ${artifact.filePath}:`, (error as Error).message),
   );
-  return write(artifact.filePath, serializeDocument({ ...applyPatch(artifact, fields), content }), 'w');
+  return write(artifact.filePath, rewriteDocument(loaded.raw, artifact, applyPatch(artifact, fields), content), 'w');
 }
 
 /** Frontmatter-only update; the body is written back exactly as it is on disk. */
 export async function patchArtifact(path: string, fields: ArtifactPatch, expectRev?: string): Promise<Artifact> {
   const { artifact, raw } = await load(path);
   assertRev(artifact, expectRev);
-  return write(artifact.filePath, replaceFrontmatter(raw, applyPatch(artifact, fields)), 'w');
+  return write(artifact.filePath, rewriteDocument(raw, artifact, applyPatch(artifact, fields)), 'w');
 }
 
 /** Change type and move to that type's canonical path; the original is removed only after the copy lands. */
@@ -228,7 +256,7 @@ export async function retypeArtifact(path: string, change: ArtifactRetype, expec
     patch,
   );
   await keepVersion(loaded);
-  const text = replaceFrontmatter(raw, next);
+  const text = rewriteDocument(raw, artifact, next);
   return next.filePath === artifact.filePath ? write(next.filePath, text, 'w') : relocate(loaded, next.filePath, text);
 }
 
@@ -260,9 +288,12 @@ export async function renameArtifact(path: string, expectRev?: string): Promise<
   assertRev(artifact, expectRev);
   const slug = slugify(artifact.title);
   const current = fileName(artifact.filePath);
-  if (artifact.type === 'journal' || current === slug || new RegExp(`^${slug}-\\d+$`).test(current)) return artifact;
   const folder = posix.dirname(artifact.filePath);
   const at = (name: string) => (folder === '.' ? `${name}.md` : `${folder}/${name}.md`);
+  if (artifact.type === 'journal' || current === slug) return artifact;
+  // `<slug>-2` is already right while another file owns `<slug>.md`; "Kitchen renovation 2026"
+  // retitled "Kitchen renovation" is not, and moves to `kitchen-renovation.md`.
+  if (/^-\d+$/.test(current.slice(slug.length)) && current.startsWith(slug) && (await exists(at(slug)))) return artifact;
   let target = at(slug);
   for (let suffix = 2; await exists(target); suffix += 1) target = at(`${slug}-${suffix}`);
   await keepVersion(loaded);
@@ -286,7 +317,7 @@ export async function moveToArea(path: string, domain: Domain, expectRev?: strin
   if (ARTIFACT_TYPES[artifact.type].domain === null) throw new DomainError('INVALID', `A ${artifact.type} has no area.`);
   const folder = posix.dirname(canonicalPath(artifact.id, artifact.type, domain));
   const target = `${folder}/${posix.basename(artifact.filePath)}`;
-  const text = replaceFrontmatter(raw, applyPatch(artifact, { domain }));
+  const text = rewriteDocument(raw, artifact, applyPatch(artifact, { domain }));
   await keepVersion(loaded);
   return target === artifact.filePath ? write(target, text, 'w') : relocate(loaded, target, text);
 }

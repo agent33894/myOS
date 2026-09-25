@@ -101,12 +101,31 @@ describe('writes', () => {
     expect(patched.extra.reviewer).toBe('Sam');
   });
 
+  it('rewrites only the frontmatter lines that changed', async () => {
+    const head = "---\r\n# my note\r\ntitle: Garden plan\r\ntags: [b, a]\r\nupdated: 2026-01-02\r\nreviewer: 'Sam'   # owner\r\ndue: 2026-02-01\r\n---\r\n";
+    await put('notes/garden.md', `${head}\r\nBody\r\n`);
+    const { rev } = await readArtifact('notes/garden.md');
+    await saveArtifact('notes/garden.md', { fields: {}, content: 'Second draft' }, rev);
+    const saved = readFileSync(join(root, 'notes/garden.md'), 'utf8');
+    expect(saved.replace(/updated: .*\r\n/, 'updated: 2026-01-02\r\n')).toBe(`${head}\r\nSecond draft\r\n`);
+
+    await patchArtifact('notes/garden.md', { due: null, flagged: true });
+    const patched = readFileSync(join(root, 'notes/garden.md'), 'utf8');
+    expect(patched).toMatch(/^---\r\n# my note\r\ntitle: Garden plan\r\ntags: \[b, a\]\r\nupdated: [^\r]+\r\nreviewer: 'Sam' {3}# owner\r\nflagged: true\r\n---\r\n\r\nSecond draft\r\n$/);
+
+    // Plain Markdown stays plain while only its body changes.
+    await put('notes/plain.md', '# Plain\n\nText');
+    const plain = await readArtifact('notes/plain.md');
+    await saveArtifact('notes/plain.md', { fields: {}, content: '# Plain\n\nMore text' }, plain.rev);
+    expect(readFileSync(join(root, 'notes/plain.md'), 'utf8')).toBe('# Plain\n\nMore text');
+  });
+
   it('writes back values it cannot use exactly as they were', async () => {
     await put('notes/book.md', '\uFEFF---\ntype: book\ndomain: hobby\nrelated: [[Some Note]]\ncreated: 1700000000\n---\nBody\n');
     const patched = await patchArtifact('notes/book.md', { tags: ['reading'] });
     expect(patched).toMatchObject({ type: 'memo', tags: ['reading'], content: 'Body' });
     const text = readFileSync(join(root, 'notes/book.md'), 'utf8');
-    for (const line of ['type: book', 'domain: hobby', 'related:\n  - - Some Note', 'created: 1700000000']) {
+    for (const line of ['type: book', 'domain: hobby', 'related: [[Some Note]]', 'created: 1700000000']) {
       expect(text).toContain(`\n${line}\n`);
     }
     expect(text.endsWith('---\nBody\n')).toBe(true);
@@ -136,6 +155,9 @@ describe('moves and versions', () => {
     expect(read('work/memos/garden-plan.md')).toBe('someone else');
     expect(existsSync(join(root, 'work/memos/untitled-abc.md'))).toBe(false);
     expect((await renameArtifact(renamed.filePath)).filePath).toBe(renamed.filePath);
+    // A name that merely ends in a number follows the title once that number leaves it.
+    await put('work/memos/kitchen-renovation-2026.md', '---\ntitle: Kitchen renovation\n---\n');
+    expect((await renameArtifact('work/memos/kitchen-renovation-2026.md')).filePath).toBe('work/memos/kitchen-renovation.md');
     // Undo moves it back exactly.
     const back = await moveArtifact(renamed.filePath, 'work/memos/untitled-abc.md');
     expect(read(back.filePath)).toBe(handWritten);
@@ -150,6 +172,9 @@ describe('moves and versions', () => {
     expect(read(moved.filePath).endsWith('---\n\n* bullet\n')).toBe(true);
     expect(moved.extra.custom).toEqual(['x']);
     expect(existsSync(join(root, 'work/memos/garden.md'))).toBe(false);
+    // The folder it left empty goes too; the workspace itself never does.
+    expect(existsSync(join(root, 'work'))).toBe(false);
+    expect(existsSync(root)).toBe(true);
   });
 
   it('keeps versions across a move and restores one without losing the current text', async () => {

@@ -8,23 +8,52 @@ import { resolveInWorkspace } from '../workspace/paths';
 // Countries that print on US Letter; everyone else gets A4.
 const LETTER = new Set(['US', 'CA', 'MX', 'PH']);
 
-/** Print self-contained HTML to PDF in a hidden window that runs no scripts. */
+const LOAD_TIMEOUT_MS = 20_000;
+
+/**
+ * Print self-contained HTML to PDF in a hidden window that runs no scripts,
+ * opens nothing, and navigates nowhere. A failure (the page never loads, the
+ * renderer goes away) becomes an error the page shows, never a crash.
+ */
 async function renderPdf(html: string): Promise<Buffer> {
   // A temporary file rather than a data: URL, which Chromium caps in size (inlined images add up).
   const folder = await mkdtemp(join(tmpdir(), 'myos-export-'));
-  const view = new BrowserWindow({ show: false, webPreferences: { javascript: false, sandbox: true } });
+  const view = new BrowserWindow({
+    show: false,
+    focusable: false,
+    skipTaskbar: true,
+    paintWhenInitiallyHidden: true,
+    webPreferences: { javascript: false, sandbox: true, contextIsolation: true, nodeIntegration: false, spellcheck: false },
+  });
+  const { webContents } = view;
+  webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+  webContents.on('will-navigate', (event) => event.preventDefault());
+  let timer: NodeJS.Timeout | undefined;
+  const gone = new Promise<never>((_, reject) => {
+    webContents.once('render-process-gone', (_event, details) => reject(new Error(`The export page stopped (${details.reason}).`)));
+    timer = setTimeout(() => reject(new Error('The export took too long.')), LOAD_TIMEOUT_MS);
+  });
+  // Handled by the races below; this keeps an early rejection from being reported as unhandled.
+  gone.catch(() => undefined);
   try {
     const file = join(folder, 'export.html');
     await writeFile(file, html, 'utf-8');
-    await view.loadFile(file);
-    return await view.webContents.printToPDF({
-      printBackground: true,
-      pageSize: LETTER.has(app.getLocaleCountryCode()) ? 'Letter' : 'A4',
-      margins: { top: 0.7, bottom: 0.7, left: 0.7, right: 0.7 },
-    });
+    await Promise.race([view.loadFile(file), gone]);
+    return await Promise.race([
+      webContents.printToPDF({
+        printBackground: true,
+        pageSize: LETTER.has(app.getLocaleCountryCode()) ? 'Letter' : 'A4',
+        margins: { top: 0.7, bottom: 0.7, left: 0.7, right: 0.7 },
+      }),
+      gone,
+    ]);
+  } catch (error) {
+    console.error('PDF export failed:', error);
+    throw new DomainError('INVALID', `Could not make the PDF. ${(error as Error).message}`.trim());
   } finally {
-    view.destroy();
-    await rm(folder, { recursive: true, force: true });
+    clearTimeout(timer);
+    if (!view.isDestroyed()) view.destroy();
+    await rm(folder, { recursive: true, force: true }).catch(() => undefined);
   }
 }
 
