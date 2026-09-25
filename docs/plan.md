@@ -68,14 +68,14 @@ Every call returns `Result<T>`; `src/data/ipc.ts` turns failures into `IpcError 
 | `daily:path` | `date?` (YYYY-MM-DD) → path (the file may not exist) |
 | `daily:capture` | `text, target?` → `Note` (the file written) |
 | `settings:get` / `settings:set` | → `Settings` / `Partial<Settings>` → `Settings` (an unknown key or bad value fails the whole change) |
-| `git:status` | → `{ repo, branch, upstream, ahead, behind, files: { path, from?, change, staged }[] }` |
+| `git:status` | → `{ repo, branch, upstream, hasOrigin, ahead, behind, files: { path, from?, change, staged }[] }` |
 | `git:commit` | `message, paths?` → hash (all changes in the folder when `paths` is omitted) |
 | `git:log` | `path?, limit?` → `{ hash, date, author, subject, path? }[]` (for one file, renames are followed and `path` is its name at that commit when it differs) |
 | `git:show` / `git:diff` | `path, hash` → text at that commit / `path?` → unified diff against HEAD (untracked files show as added) |
 | `git:commit-diff` / `git:commit-summary` | `hash` → diff / `{ files, totals, message, … }` |
 | `git:restore` | `path, hash, expectRev?, from?` → `Note` (the file's bytes at that commit, read from `from` when it was renamed since; the replaced text becomes the newest local copy) |
 | `git:init` | → `GitStatus` (`git init` in the open folder; `INVALID` when it is already inside a repository) |
-| `git:pull` / `git:push` | → Git's output (`pull --rebase --autostash`; only ever on request) |
+| `git:pull` / `git:push` | → Git's output (`pull --rebase --autostash`; only ever on request) / `setUpstream?` → Git's output (`push --set-upstream origin HEAD` for a branch that tracks nothing yet) |
 | `history:list` / `history:read` / `history:restore` | local copies of a file (`path`, `id`) |
 | `export:pdf` / `export:html` / `export:reveal` | `path, html` → saved path or null / `savedPath` |
 | `workspace:current` / `workspace:choose` / `workspace:create-starter` | → folder path or null (the starter is `~/Documents/Notes`, or `Notes 2`, … when taken, with `README.md`, `daily/`, and `First steps.md`) |

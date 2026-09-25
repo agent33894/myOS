@@ -3,7 +3,7 @@ import type { IpcErrorCode, IpcInvokeArgs, IpcInvokeChannel, IpcValue, Result } 
 import { DomainError, isMissingFile } from '../errors';
 
 /** `path`: non-empty string. `count`: a positive integer. A trailing `?` allows undefined; `string|null` allows null. */
-type ArgKind = 'path' | 'string' | 'object' | 'string?' | 'path?' | 'count?' | 'strings?' | 'string|null';
+type ArgKind = 'path' | 'string' | 'object' | 'string?' | 'path?' | 'count?' | 'strings?' | 'string|null' | 'boolean?';
 
 const CHECKS: Record<ArgKind, (value: unknown) => boolean> = {
   path: (value) => typeof value === 'string' && value.trim().length > 0,
@@ -14,6 +14,7 @@ const CHECKS: Record<ArgKind, (value: unknown) => boolean> = {
   'count?': (value) => value === undefined || (Number.isInteger(value) && (value as number) > 0),
   'strings?': (value) => value === undefined || (Array.isArray(value) && value.every(CHECKS.path)),
   'string|null': (value) => value === null || typeof value === 'string',
+  'boolean?': (value) => value === undefined || typeof value === 'boolean',
 };
 
 function failure(code: IpcErrorCode, message: string): Result<never> {

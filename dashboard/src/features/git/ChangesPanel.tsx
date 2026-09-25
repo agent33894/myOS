@@ -5,7 +5,7 @@ import type { PanelProps } from '../../app/panels';
 import { commit, pull, push, useGitStore } from '../../data/git';
 import { hasPrimaryModifier } from '../../lib/platform';
 import { Button, Checkbox, EmptyState, Icon, Input, Kbd, Spinner, Textarea, cn } from '../../ui';
-import { gitSays, initWithToast, lastLine, useCommitFocus } from './actions';
+import { firstPushTarget, gitSays, initWithToast, lastLine, useCommitFocus } from './actions';
 import { CHANGE_STYLE } from './changeStyle';
 import { COMMIT_SHORTCUT } from './commands';
 import { FileDiffDialog } from './FileDiffDialog';
@@ -17,9 +17,12 @@ function BranchHeader({ status }: { status: GitStatus }) {
   const syncing = useGitStore((state) => state.syncing);
   const [outcome, setOutcome] = useState<Outcome>(null);
 
+  // A branch with no upstream can be pushed to origin under its own name, which then tracks it.
+  const target = firstPushTarget(status);
+  const firstPush = target !== null;
   const run = (kind: 'pull' | 'push') => {
     setOutcome(null);
-    (kind === 'pull' ? pull() : push()).then(
+    (kind === 'pull' ? pull() : push(firstPush)).then(
       (output) => setOutcome({ tone: 'ok', text: lastLine(output) || (kind === 'pull' ? 'Pulled.' : 'Pushed.') }),
       (error: unknown) => setOutcome({ tone: 'error', text: gitSays(error) }),
     );
@@ -33,44 +36,27 @@ function BranchHeader({ status }: { status: GitStatus }) {
           <span className="truncate font-mono text-sm font-medium text-text">{status.branch ?? 'Detached HEAD'}</span>
           <span className="truncate font-mono text-xs text-text-tertiary">
             {status.upstream
-              ? [status.upstream, status.ahead ? `↑${status.ahead}` : '', status.behind ? `↓${status.behind}` : '', !status.ahead && !status.behind ? 'up to date' : '']
-                  .filter(Boolean)
-                  .join('  ')
-              : 'No upstream branch'}
+              ? [status.upstream, status.ahead ? `↑${status.ahead}` : '', status.behind ? `↓${status.behind}` : '', !status.ahead && !status.behind ? 'up to date' : ''].filter(Boolean).join('  ')
+              : firstPush
+                ? `Not on a remote yet. Push sends it to ${target}.`
+                : 'No upstream branch'}
           </span>
         </div>
       </div>
       <div className="flex gap-2">
-        <Button
-          variant="secondary"
-          size="sm"
-          className="flex-1"
-          leadingIcon={ArrowDownToLine}
-          loading={syncing === 'pull'}
-          disabled={syncing !== null}
-          onClick={() => run('pull')}
-        >
-          {syncing === 'pull' ? 'Pulling…' : status.behind ? `Pull ${status.behind}` : 'Pull'}
-        </Button>
-        <Button
-          variant="secondary"
-          size="sm"
-          className="flex-1"
-          leadingIcon={ArrowUpFromLine}
-          loading={syncing === 'push'}
-          disabled={syncing !== null}
-          onClick={() => run('push')}
-        >
-          {syncing === 'push' ? 'Pushing…' : status.ahead ? `Push ${status.ahead}` : 'Push'}
+        {firstPush ? null : (
+          <Button variant="secondary" size="sm" className="flex-1" leadingIcon={ArrowDownToLine} loading={syncing === 'pull'} disabled={syncing !== null} onClick={() => run('pull')}>
+            {syncing === 'pull' ? 'Pulling…' : status.behind ? `Pull ${status.behind}` : 'Pull'}
+          </Button>
+        )}
+        <Button variant="secondary" size="sm" className="flex-1" leadingIcon={ArrowUpFromLine} loading={syncing === 'push'} disabled={syncing !== null} onClick={() => run('push')}>
+          {syncing === 'push' ? 'Pushing…' : firstPush ? `Push and set upstream (${target})` : status.ahead ? `Push ${status.ahead}` : 'Push'}
         </Button>
       </div>
       {outcome ? (
         <p
           role={outcome.tone === 'error' ? 'alert' : 'status'}
-          className={cn(
-            'whitespace-pre-wrap break-words rounded-md px-3 py-2 font-mono text-xs',
-            outcome.tone === 'error' ? 'bg-danger-soft text-danger' : 'bg-sunken text-text-secondary',
-          )}
+          className={cn('whitespace-pre-wrap break-words rounded-md px-3 py-2 font-mono text-xs', outcome.tone === 'error' ? 'bg-danger-soft text-danger' : 'bg-sunken text-text-secondary')}
         >
           {outcome.text}
         </p>
@@ -148,20 +134,17 @@ function CommitBox({ files, all, onCommitted }: { files: GitFileStatus[]; all: b
         }
       }}
     >
-      <Input
-        ref={summaryRef}
-        aria-label="Summary"
-        placeholder="Summary"
-        value={summary}
-        className="font-medium"
-        onChange={(event) => setSummary(event.target.value)}
-      />
+      <Input ref={summaryRef} aria-label="Summary" placeholder="Summary" value={summary} className="font-medium" onChange={(event) => setSummary(event.target.value)} />
       <Textarea aria-label="Description" placeholder="Description (optional)" rows={3} value={body} onChange={(event) => setBody(event.target.value)} />
       <Button variant="primary" loading={busy} disabled={!summary.trim() || !count} onClick={() => void submit()} className="w-full">
         {count === 1 ? 'Commit 1 file' : `Commit ${count} files`}
         <Kbd shortcut={COMMIT_SHORTCUT} className="bg-transparent text-accent-on" />
       </Button>
-      {error ? <p role="alert" className="whitespace-pre-wrap break-words rounded-md bg-danger-soft px-3 py-2 font-mono text-xs text-danger">{error}</p> : null}
+      {error ? (
+        <p role="alert" className="whitespace-pre-wrap break-words rounded-md bg-danger-soft px-3 py-2 font-mono text-xs text-danger">
+          {error}
+        </p>
+      ) : null}
     </div>
   );
 }

@@ -8,7 +8,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 const repo = realpathSync(mkdtempSync(join(tmpdir(), 'myos-git-')));
 const folder = join(repo, 'docs');
 vi.mock('../workspace/root', () => ({ workspaceRoot: () => folder }));
-const { gitCommit, gitDiff, gitInit, gitLog, gitShow, gitStatus } = await import('./git');
+const { gitCommit, gitDiff, gitInit, gitLog, gitPush, gitShow, gitStatus } = await import('./git');
 
 const run = (...args: string[]) => execFileSync('git', args, { cwd: repo, encoding: 'utf8' });
 
@@ -23,7 +23,11 @@ beforeAll(() => {
   writeFileSync(join(folder, '-rf.md'), 'dash\n');
   writeFileSync(join(folder, ':(glob)*.md'), 'magic\n');
 });
-afterAll(() => rmSync(repo, { recursive: true, force: true }));
+const remote = realpathSync(mkdtempSync(join(tmpdir(), 'myos-remote-')));
+afterAll(() => {
+  rmSync(repo, { recursive: true, force: true });
+  rmSync(remote, { recursive: true, force: true });
+});
 
 describe('git in the open folder', () => {
   it('lists changes inside the folder only, with folder-relative paths', async () => {
@@ -74,5 +78,13 @@ describe('git in the open folder', () => {
     await expect(gitShow('roadmap.md', 'HEAD')).rejects.toMatchObject({ code: 'INVALID' });
     await expect(gitCommit('   ')).rejects.toMatchObject({ code: 'INVALID' });
     await expect(gitCommit('nothing to do', ['roadmap.md'])).rejects.toMatchObject({ code: 'GIT' });
+  });
+
+  it('pushes a branch without upstream to origin and tracks it there', async () => {
+    execFileSync('git', ['init', '--quiet', '--bare', remote]);
+    run('remote', 'add', 'origin', remote);
+    expect(await gitStatus()).toMatchObject({ upstream: null, hasOrigin: true });
+    await gitPush(true);
+    expect(await gitStatus()).toMatchObject({ upstream: 'origin/main', ahead: 0 });
   });
 });

@@ -69,10 +69,10 @@ async function withRefresh<T>(work: Promise<T>): Promise<T> {
 /** Commit `paths`, or every change in the folder; resolves to the new commit's hash. */
 export const commit = (message: string, paths?: string[]) => withRefresh(invoke('git:commit', message, paths));
 
-async function sync(kind: 'pull' | 'push'): Promise<string> {
+async function sync(kind: 'pull' | 'push', setUpstream = false): Promise<string> {
   useGitStore.setState({ syncing: kind });
   try {
-    return await withRefresh(invoke(kind === 'pull' ? 'git:pull' : 'git:push'));
+    return await withRefresh(kind === 'pull' ? invoke('git:pull') : invoke('git:push', setUpstream));
   } finally {
     useGitStore.setState({ syncing: null });
   }
@@ -80,8 +80,11 @@ async function sync(kind: 'pull' | 'push'): Promise<string> {
 
 /** `git pull --rebase --autostash`; resolves to Git's output. Only ever runs when asked. */
 export const pull = () => sync('pull');
-/** `git push`; resolves to Git's output. Only ever runs when asked. */
-export const push = () => sync('push');
+/**
+ * `git push`; resolves to Git's output. Only ever runs when asked. With
+ * `setUpstream`, a branch that tracks nothing yet is pushed to `origin` and tracks it.
+ */
+export const push = (setUpstream = false) => sync('push', setUpstream);
 
 /** Commits that touched `path` (or the folder), newest first. */
 export const log = (path?: string, limit?: number) => invoke('git:log', path, limit);

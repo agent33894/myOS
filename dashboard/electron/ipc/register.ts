@@ -65,7 +65,7 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
   handle('git:restore', ['path', 'string', 'string?', 'path?'], async (path, hash, expectRev, from) => restoreText(path, await gitShow(from ?? path, hash), expectRev));
   handle('git:init', [], gitInit);
   handle('git:pull', [], gitPull);
-  handle('git:push', [], gitPush);
+  handle('git:push', ['boolean?'], (setUpstream) => gitPush(setUpstream === true));
 
   handle('history:list', ['path'], listHistory);
   handle('history:read', ['path', 'string'], readHistory);

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { toast } from 'sonner';
+import type { GitStatus } from '@shared/ipc/contracts';
 import type { PanelId } from '../../app/panels';
 import { initRepo, pull, push } from '../../data/git';
 import { updateSettings, useSettings } from '../../store/settings';
@@ -33,10 +34,13 @@ export const lastLine = (output: string) =>
     .filter(Boolean)
     .pop() ?? '';
 
+/** `origin/<branch>` when the branch tracks nothing yet and a remote named origin exists: where a first push goes. */
+export const firstPushTarget = (status: GitStatus | null) => (status && !status.upstream && status.branch && status.hasOrigin ? `origin/${status.branch}` : null);
+
 /** Pull or push from a command: progress and outcome as toasts. */
-export function syncWithToast(kind: 'pull' | 'push'): void {
+export function syncWithToast(kind: 'pull' | 'push', setUpstream = false): void {
   const id = toast.loading(kind === 'pull' ? 'Pulling…' : 'Pushing…');
-  (kind === 'pull' ? pull() : push()).then(
+  (kind === 'pull' ? pull() : push(setUpstream)).then(
     (output) => toast.success(kind === 'pull' ? 'Pulled' : 'Pushed', { id, description: lastLine(output) || undefined }),
     (error: unknown) => toast.error(kind === 'pull' ? 'Pull failed' : 'Push failed', { id, description: gitSays(error), duration: 10_000 }),
   );

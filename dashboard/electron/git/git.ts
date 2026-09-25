@@ -67,7 +67,7 @@ const CHANGE: Record<string, GitChange> = { M: 'modified', T: 'modified', A: 'ad
 
 /** Parse `git status --porcelain=v2 --branch -z`; paths come relative to the repository root and lose `prefix`. */
 export function parseStatus(output: string, prefix: string): GitStatus {
-  const status: GitStatus = { repo: true, branch: null, upstream: null, ahead: 0, behind: 0, files: [] };
+  const status: GitStatus = { repo: true, branch: null, upstream: null, hasOrigin: false, ahead: 0, behind: 0, files: [] };
   const local = (path: string) => (path.startsWith(prefix) ? path.slice(prefix.length) : path);
   const records = output.split('\0');
   for (let index = 0; index < records.length; index += 1) {
@@ -103,8 +103,9 @@ export function parseStatus(output: string, prefix: string): GitStatus {
 
 export async function gitStatus(): Promise<GitStatus> {
   const prefix = await repoPrefix();
-  if (prefix === null) return { repo: false, branch: null, upstream: null, ahead: 0, behind: 0, files: [] };
-  return parseStatus(await git(['status', '--porcelain=v2', '--branch', '-z', '--untracked-files=all', '--', '.']), prefix);
+  if (prefix === null) return { repo: false, branch: null, upstream: null, hasOrigin: false, ahead: 0, behind: 0, files: [] };
+  const [output, remotes] = await Promise.all([git(['status', '--porcelain=v2', '--branch', '-z', '--untracked-files=all', '--', '.']), git(['remote']).catch(() => '')]);
+  return { ...parseStatus(output, prefix), hasOrigin: remotes.split('\n').some((name) => name.trim() === 'origin') };
 }
 
 /** Commit `paths`, or every change in the folder, with `message`. Returns the new commit's hash. */
@@ -207,4 +208,6 @@ export async function gitCommitSummary(hash: string): Promise<CommitSummary> {
 
 export const gitPull = (): Promise<string> => git(['pull', '--rebase', '--autostash'], { timeout: NETWORK_TIMEOUT_MS, withProgress: true });
 
-export const gitPush = (): Promise<string> => git(['push'], { timeout: NETWORK_TIMEOUT_MS, withProgress: true });
+/** `git push`. With `setUpstream`, the current branch goes to `origin` under its own name and tracks it there. */
+export const gitPush = (setUpstream = false): Promise<string> =>
+  git(setUpstream ? ['push', '--set-upstream', 'origin', 'HEAD'] : ['push'], { timeout: NETWORK_TIMEOUT_MS, withProgress: true });

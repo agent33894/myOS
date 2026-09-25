@@ -63,6 +63,8 @@ export interface GitStatus {
   /** Null on a detached HEAD. */
   branch: string | null;
   upstream: string | null;
+  /** Whether a remote named `origin` exists (a branch without upstream can then be pushed there and tracked). */
+  hasOrigin: boolean;
   ahead: number;
   behind: number;
   files: GitFileStatus[];
@@ -148,7 +150,8 @@ export interface IpcInvokeMap {
   /** `git init` in the open folder; fails when the folder is already inside a repository. */
   'git:init': { args: []; value: GitStatus };
   'git:pull': { args: []; value: string };
-  'git:push': { args: []; value: string };
+  /** `git push`; with `setUpstream`, `git push --set-upstream origin HEAD` for a branch that tracks nothing yet. */
+  'git:push': { args: [setUpstream?: boolean]; value: string };
   /** Local copies of a file, newest first. */
   'history:list': { args: [path: string]; value: VersionInfo[] };
   'history:read': { args: [path: string, id: string]; value: string };
