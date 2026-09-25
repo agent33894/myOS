@@ -6,7 +6,8 @@
     "public/theme-init.js",
     "scripts/*.{js,mjs,ts}",
     "src/ui/index.ts",
-    "src/features/views/ViewBlock.tsx"
+    "src/features/views/ViewBlock.tsx",
+    "src/features/export/ExportMenuItems.tsx"
   ],
   "project": [
     "src/**/*.{ts,tsx,js,jsx}",
