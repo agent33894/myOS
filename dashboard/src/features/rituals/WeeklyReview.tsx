@@ -280,7 +280,7 @@ export function WeeklyReview() {
         title={needsNext.length > 0 ? 'What’s next for these projects?' : 'Every project has a next step.'}
         description={
           needsNext.length > 0
-            ? 'A single concrete step makes a project easier to pick up. Leave any of them blank.'
+            ? 'A concrete step makes a project easier to pick up. Leave any blank.'
             : 'Each active project already knows where it’s going.'
         }
         onContinue={() => {
