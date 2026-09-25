@@ -101,14 +101,13 @@ export function resolveAccent(choice: string, systemAccent: string | null): Reso
 }
 
 interface Swatch {
-  /** Stable name persisted in project frontmatter (`swatch:`). */
   name: string;
   displayName: string;
-  /** Mid-tone that reads on both themes. Decorative only: dots and covers. */
+  /** Mid-tone that reads on both themes. Decorative only: chart series. */
   hex: string;
 }
 
-export const projectSwatches: readonly Swatch[] = [
+export const chartSwatches: readonly Swatch[] = [
   { name: 'terracotta', displayName: 'Terracotta', hex: '#BE6A4C' },
   { name: 'marigold', displayName: 'Marigold', hex: '#D9A03C' },
   { name: 'olive', displayName: 'Olive', hex: '#8B8B3E' },
@@ -122,22 +121,3 @@ export const projectSwatches: readonly Swatch[] = [
   { name: 'slate', displayName: 'Slate', hex: '#6E7B8A' },
   { name: 'umber', displayName: 'Umber', hex: '#8A6B4F' },
 ];
-
-// Deterministic project → swatch mapping: FNV-1a 64-bit over the lowercased
-// UTF-8 name, modulo the swatch count. Changing this recolors every project.
-const FNV_OFFSET_64 = 0xcbf29ce484222325n;
-const FNV_PRIME_64 = 0x100000001b3n;
-const MASK_64 = 0xffffffffffffffffn;
-
-export function projectSwatchFor(projectName: string, storedSwatch?: string): Swatch {
-  if (storedSwatch) {
-    const stored = projectSwatches.find((swatch) => swatch.name === storedSwatch);
-    if (stored) return stored;
-  }
-  let hash = FNV_OFFSET_64;
-  for (const byte of new TextEncoder().encode(projectName.toLowerCase())) {
-    hash ^= BigInt(byte);
-    hash = (hash * FNV_PRIME_64) & MASK_64;
-  }
-  return projectSwatches[Number(hash % BigInt(projectSwatches.length))];
-}

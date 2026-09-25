@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { completionSummary, describeRule, firstOccurrence, formatRule, nextOccurrence, parseRule, type RepeatRule } from './recurrence';
+import { firstOccurrence, nextOccurrence, parseRule, ruleText, type RepeatRule } from './recurrence';
 
 const rule = (text: string) => {
   const parsed = parseRule(text);
@@ -15,18 +15,19 @@ const walk = (repeat: RepeatRule, from: string, steps: number) => {
 
 describe('repeat rules', () => {
   it.each([
-    ['every day', 'every day', 'Every day'],
-    ['Every Weekday', 'every weekday', 'Every weekday'],
-    ['every week', 'every week', 'Every week'],
-    ['every 2 weeks', 'every 2 weeks', 'Every 2 weeks'],
-    ['every tuesday', 'every tue', 'Every Tue'],
-    ['every thurs and mon', 'every mon, thu', 'Every Mon, Thu'],
-    ['every month on the 15th', 'every month on 15', 'Every month on the 15th'],
-    ['every 3 days', 'every 3 days', 'Every 3 days'],
-    ['monthly', 'every month', 'Every month'],
-  ])('reads "%s"', (text, stored, described) => {
-    expect(formatRule(rule(text))).toBe(stored);
-    expect(describeRule(rule(text))).toBe(described);
+    ['every day', 'every day'],
+    ['Every Weekday', 'every weekday'],
+    ['every week', 'every week'],
+    ['every 2 weeks', 'every 2 weeks'],
+    ['every tuesday', 'every week on Tuesday'],
+    ['every week on Tuesday', 'every week on Tuesday'],
+    ['every thurs and mon', 'every week on Monday, Thursday'],
+    ['every month on the 15th', 'every month on the 15th'],
+    ['every 3 months on the 1st', 'every 3 months on the 1st'],
+    ['monthly', 'every month'],
+  ])('reads "%s"', (text, written) => {
+    expect(ruleText(rule(text))).toBe(written);
+    expect(rule(ruleText(rule(text)))).toEqual(rule(text));
   });
 
   it.each(['every', 'every blue moon', 'every 0 days', 'every month on 32', 'sometimes'])('rejects "%s"', (text) => {
@@ -55,18 +56,5 @@ describe('next occurrence', () => {
     expect(firstOccurrence(rule('every wed'), '2026-09-23')).toBe('2026-09-23');
     expect(firstOccurrence(rule('every month on 1'), '2026-09-23')).toBe('2026-10-01');
     expect(firstOccurrence(rule('every week'), '2026-09-23')).toBe('2026-09-23');
-  });
-});
-
-describe('completion summary', () => {
-  it('counts the last ten expected times, honestly', () => {
-    const daily = ['2026-09-12', '2026-09-14', '2026-09-15', '2026-09-16', '2026-09-17', '2026-09-18', '2026-09-19', '2026-09-20', '2026-09-22', '2026-09-23'];
-    expect(completionSummary(daily, rule('every day'), '2026-09-23')).toEqual({ done: 9, of: 10 });
-    // Tuesdays; one done a day late, one missed.
-    const weekly = ['2026-09-01', '2026-09-09', '2026-09-22'];
-    expect(completionSummary(weekly, rule('every tue'), '2026-09-23')).toEqual({ done: 3, of: 4 });
-    expect(completionSummary([], rule('every tue'), '2026-09-23')).toEqual({ done: 0, of: 0 });
-    // Due today and not done yet: today is not a miss.
-    expect(completionSummary(['2026-09-17', '2026-09-20'], rule('every 3 days'), '2026-09-23')).toEqual({ done: 2, of: 2 });
   });
 });

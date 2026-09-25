@@ -13,8 +13,6 @@ export function nextMonday(now: Date = new Date()): Date {
   return date;
 }
 
-/** The YYYY-MM-DD part of a stored date or timestamp. */
-export const dayOf = (value?: string | null): string | undefined => value?.slice(0, 10) || undefined;
 
 /** A YYYY-MM-DD stamp as local midnight. */
 export const parseLocalDate = (stamp: string): Date => new Date(`${stamp.slice(0, 10)}T00:00:00`);
@@ -25,3 +23,6 @@ export function shiftDate(stamp: string, days: number): string {
   date.setDate(date.getDate() + days);
   return formatLocalDate(date);
 }
+
+/** Days since the epoch for a YYYY-MM-DD stamp, for counting days between dates. */
+export const dayNumber = (stamp: string) => Math.round(Date.UTC(+stamp.slice(0, 4), +stamp.slice(5, 7) - 1, +stamp.slice(8, 10)) / 86_400_000);

@@ -1,4 +1,4 @@
-import { dayOf, formatLocalDate, parseLocalDate, shiftDate } from './date';
+import { formatLocalDate, parseLocalDate, shiftDate } from './date';
 
 /** A parsed `repeatRule`. Week days are 0 (Sunday) to 6. */
 export type RepeatRule =
@@ -44,37 +44,30 @@ export function parseRule(text: string | undefined | null): RepeatRule | null {
   }
   if (words === 'day' || words === 'week' || words === 'month' || words === 'year') return { unit: words, every: 1 };
   if (words === 'weekday' || words === 'weekdays') return { unit: 'weekday' };
-  const monthDay = /^month on (?:the )?(\d{1,2})(?:st|nd|rd|th)?$/.exec(words);
+  const monthDay = /^(?:(\d{1,3}) months? |month )on (?:the )?(\d{1,2})(?:st|nd|rd|th)?$/.exec(words);
   if (monthDay) {
-    const day = Number(monthDay[1]);
-    return day >= 1 && day <= 31 ? { unit: 'month', every: 1, day } : null;
+    const every = Number(monthDay[1] ?? 1);
+    const day = Number(monthDay[2]);
+    return every >= 1 && day >= 1 && day <= 31 ? { unit: 'month', every, day } : null;
   }
-  const days = words.split(/\s*(?:,|&|\band\b)\s*|\s+/).filter(Boolean).map(weekdayIndex);
+  const days = words.replace(/^week on /, '').split(/\s*(?:,|&|\band\b)\s*|\s+/).filter(Boolean).map(weekdayIndex);
   if (days.length === 0 || days.includes(-1)) return null;
   return { unit: 'week', every: 1, days: [...new Set(days)].sort() };
 }
 
-const plural = (every: number, unit: string) => (every === 1 ? unit : `${every} ${unit}s`);
-
-/** The canonical `repeatRule` text: "every tue", "every mon, thu", "every 2 weeks", "every month on 15". */
-export function formatRule(rule: RepeatRule): string {
-  if (rule.unit === 'weekday') return 'every weekday';
-  if (rule.unit === 'week' && rule.days) return `every ${rule.days.map((day) => SHORT_DAYS[day].toLowerCase()).join(', ')}`;
-  if (rule.unit === 'month' && rule.day) return `every ${plural(rule.every, 'month')} on ${rule.day}`;
-  return `every ${plural(rule.every, rule.unit)}`;
-}
+const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 const ordinal = (day: number) => {
   const suffix = day % 10 === 1 && day !== 11 ? 'st' : day % 10 === 2 && day !== 12 ? 'nd' : day % 10 === 3 && day !== 13 ? 'rd' : 'th';
   return `${day}${suffix}`;
 };
 
-/** For people: "Every Tue", "Every Mon, Thu", "Every 2 weeks", "Every month on the 15th". */
-export function describeRule(rule: RepeatRule): string {
-  if (rule.unit === 'week' && rule.days) return `Every ${rule.days.map((day) => SHORT_DAYS[day]).join(', ')}`;
-  if (rule.unit === 'month' && rule.day) return `Every ${plural(rule.every, 'month')} on the ${ordinal(rule.day)}`;
-  const text = formatRule(rule);
-  return text[0].toUpperCase() + text.slice(1);
+/** The rule as Obsidian Tasks writes it after `🔁`: "every week on Tuesday", "every month on the 15th". */
+export function ruleText(rule: RepeatRule): string {
+  if (rule.unit === 'weekday') return 'every weekday';
+  if (rule.unit === 'week' && rule.days) return `every week on ${rule.days.map((day) => DAY_NAMES[day]).join(', ')}`;
+  const every = rule.every === 1 ? rule.unit : `${rule.every} ${rule.unit}s`;
+  return rule.unit === 'month' && rule.day ? `every ${every} on the ${ordinal(rule.day)}` : `every ${every}`;
 }
 
 /** `stamp` moved by `months`, landing on `day` (default: its own), clamped to the month's last day. */
@@ -124,53 +117,4 @@ const isFixed = (rule: RepeatRule) =>
 export function firstOccurrence(rule: RepeatRule, from: string): string {
   const stamp = from.slice(0, 10);
   return isFixed(rule) ? nextOccurrence(rule, shiftDate(stamp, -1)) : stamp;
-}
-
-const dayNumber = (stamp: string) => Math.round(Date.UTC(+stamp.slice(0, 4), +stamp.slice(5, 7) - 1, +stamp.slice(8, 10)) / 86_400_000);
-
-const WINDOW = 10;
-
-/**
- * How many of the last ten expected occurrences (up to `today`) were done:
- * "done 9 of the last 10 times". Each completion counts for the nearest
- * occurrence, so doing it a day early or late still counts. Occurrences
- * start from the first recorded completion, never before.
- */
-export function completionSummary(completions: readonly string[], rule: RepeatRule, today: string): { done: number; of: number } {
-  const dates = [...new Set(completions.map((date) => dayOf(date)).filter((date): date is string => Boolean(date)))]
-    .filter((date) => date <= today)
-    .sort();
-  if (dates.length === 0) return { done: 0, of: 0 };
-
-  // Fixed rules may have been due just before the first completion (done late); counted rules start at it.
-  const occurrences: string[] = [];
-  let stamp = isFixed(rule) ? nextOccurrence(rule, shiftDate(dates[0], -32)) : dates[0];
-  while (stamp < dates[0]) {
-    const next = nextOccurrence(rule, stamp);
-    if (next > dates[0]) break;
-    stamp = next;
-  }
-  for (; occurrences.length < 5000; stamp = nextOccurrence(rule, stamp)) {
-    occurrences.push(stamp);
-    if (stamp > today) break;
-  }
-
-  const hit = new Set<number>();
-  let firstHit = Infinity;
-  for (const date of dates) {
-    let nearest = 0;
-    for (let index = 1; index < occurrences.length; index += 1) {
-      const gap = Math.abs(dayNumber(occurrences[index]) - dayNumber(date));
-      if (gap < Math.abs(dayNumber(occurrences[nearest]) - dayNumber(date))) nearest = index;
-    }
-    hit.add(nearest);
-    firstHit = Math.min(firstHit, nearest);
-  }
-
-  // Today's occurrence counts once it is done; until then it is not missed.
-  const due = occurrences
-    .map((_, index) => index)
-    .filter((index) => index >= firstHit && (occurrences[index] < today || (occurrences[index] === today && hit.has(index))));
-  const counted = due.slice(-WINDOW);
-  return { done: counted.filter((index) => hit.has(index)).length, of: counted.length };
 }
