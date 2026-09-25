@@ -33,6 +33,8 @@ export interface Settings {
   /** A curated accent id, `system` to follow the desktop theme, or a custom `#rrggbb`. */
   accent: string;
   readingFont: 'sans' | 'serif';
+  /** How wide the sheet a note sits on is: about 60, 70, or 85 characters of text. */
+  lineWidth: 'narrow' | 'normal' | 'wide';
   pinnedViews: PinnedView[];
   sidebar: { left: ColumnPrefs; right: ColumnPrefs };
   /** Paths opened recently, newest first. */
@@ -49,6 +51,7 @@ export const DEFAULT_SETTINGS: Settings = {
   theme: 'system',
   accent: DEFAULT_ACCENT_ID,
   readingFont: 'sans',
+  lineWidth: 'normal',
   pinnedViews: [
     { id: 'this-week', name: 'This week', query: 'open due<=today+7 sort:due', kind: 'tasks' },
   ],
@@ -84,6 +87,7 @@ const CHECKS: Check = {
   theme: (value) => (oneOf(['system', 'light', 'dark'] as const)(value) ? value : undefined),
   accent: (value) => (isString(value) && (value === SYSTEM_ACCENT || isHexColor(value) || accentById(value)) ? value.toLowerCase() : undefined),
   readingFont: (value) => (oneOf(['sans', 'serif'] as const)(value) ? value : undefined),
+  lineWidth: (value) => (oneOf(['narrow', 'normal', 'wide'] as const)(value) ? value : undefined),
   pinnedViews: (value) => (Array.isArray(value) ? value.filter(isView) : undefined),
   sidebar: (value, fallback) => {
     const record = (value && typeof value === 'object' ? value : {}) as Partial<Settings['sidebar']>;

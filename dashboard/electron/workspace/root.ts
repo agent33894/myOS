@@ -60,13 +60,22 @@ export function selectWorkspace(path: string): string {
   return resolved;
 }
 
-/** Create (or reuse) `~/Documents/myOS Next` and select it. A new or empty folder gets the welcome note. */
+const isEmpty = (path: string) => !existsSync(path) || readdirSync(path).every((name) => name.startsWith('.'));
+
+/**
+ * Create `~/Documents/Notes` with the starter files and select it. A folder
+ * of that name that already has files is left alone: `Notes 2`, `Notes 3`, …
+ */
 export function createStarterWorkspace(): string {
   const documents = app.getPath('documents');
   // Electron falls back to HOME when XDG_DOCUMENTS_DIR does not exist yet.
   const parent = process.platform === 'linux' && documents === app.getPath('home') ? join(documents, 'Documents') : documents;
-  const target = join(parent, 'myOS Next');
+  let target = join(parent, 'Notes');
+  for (let count = 2; !isEmpty(target); count += 1) target = join(parent, `Notes ${count}`);
   mkdirSync(target, { recursive: true });
-  if (!existsSync(target) || readdirSync(target).every((name) => name.startsWith('.'))) writeStarterContent(target);
+  writeStarterContent(target);
   return selectWorkspace(target);
 }
+
+/** Whether the open folder is an Obsidian vault. */
+export const isObsidianVault = (): boolean => isDirectory(join(workspaceRoot(), '.obsidian'));

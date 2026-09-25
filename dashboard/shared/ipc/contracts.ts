@@ -155,8 +155,10 @@ export interface IpcInvokeMap {
   'export:reveal': { args: [savedPath: string]; value: void };
   'workspace:current': { args: []; value: string | null };
   'workspace:choose': { args: []; value: string | null };
-  /** Create (or reuse) `~/Documents/myOS Next` with a welcome note and select it. */
+  /** Create `~/Documents/Notes` (or `Notes 2`, … when that is taken) with a README, `daily/`, and an example note, and select it. */
   'workspace:create-starter': { args: []; value: string };
+  /** Whether the open folder is an Obsidian vault (it has a `.obsidian` folder). */
+  'workspace:obsidian': { args: []; value: boolean };
   'shell:reveal': { args: [path: string]; value: void };
   'shell:open-external': { args: [url: string]; value: void };
   'shell:open-in-editor': { args: [path: string]; value: void };
@@ -207,6 +209,7 @@ export const IPC_INVOKE_CHANNELS = Object.keys({
   'workspace:current': 1,
   'workspace:choose': 1,
   'workspace:create-starter': 1,
+  'workspace:obsidian': 1,
   'shell:reveal': 1,
   'shell:open-external': 1,
   'shell:open-in-editor': 1,

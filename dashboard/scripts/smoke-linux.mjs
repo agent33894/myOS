@@ -122,12 +122,13 @@ try {
   await evaluate(`document.querySelector('[data-testid="onboarding-start-fresh"]').click()`);
   const workspacePath = await until('starter folder', async () => {
     const state = await evaluate('(async () => ({welcome: !!document.querySelector("#welcome-title"), path: (await window.electronAPI.invoke("workspace:current")).value}))()');
-    return !state.welcome && state.path?.endsWith('/Documents/myOS Next') ? state.path : null;
+    return !state.welcome && state.path?.endsWith('/Documents/Notes') ? state.path : null;
   });
   if (!workspacePath.startsWith(home + '/')) throw new Error(`The starter folder escaped the temporary home: ${workspacePath}`);
-  await stat(join(workspacePath, 'Welcome.md'));
+  await stat(join(workspacePath, 'README.md'));
+  await stat(join(workspacePath, 'daily'));
   await until('the shell shows Today and the files', () =>
-    evaluate(`!!document.querySelector('nav[aria-label="Places"]') && document.body.innerText.includes('Welcome') && !document.body.innerText.includes('hit a problem')`),
+    evaluate(`!!document.querySelector('nav[aria-label="Places"]') && document.body.innerText.includes('First steps') && !document.body.innerText.includes('hit a problem')`),
   );
 
   await evaluate(`(() => {
@@ -156,7 +157,7 @@ try {
     const versions = await call('history:list', moved.path);
     const snapshot = await call('files:delete', moved.path, moved.rev);
     const restored = await call('files:restore', snapshot);
-    const welcome = await call('files:read', 'Welcome.md');
+    const welcome = await call('files:read', 'First steps.md');
     const toggled = await call('tasks:toggle', welcome.tasks[0], welcome.rev);
     const captured = await call('daily:capture', 'Smoke capture tomorrow #smoke');
     await call('folders:create', 'empty/inner');
@@ -190,7 +191,7 @@ try {
     ['INVALID', 'OUTSIDE_WORKSPACE'].includes(roundTrip.outside),
   ];
   if (expectations.includes(false)) throw new Error(`IPC round trip returned unexpected data: ${JSON.stringify(roundTrip)}`);
-  const welcomeText = await readFile(join(workspacePath, 'Welcome.md'), 'utf8');
+  const welcomeText = await readFile(join(workspacePath, 'First steps.md'), 'utf8');
   if (!/^- \[x\] Check this task off ✅ \d{4}-\d{2}-\d{2}$/m.test(welcomeText)) throw new Error(`The task line was not checked off:\n${welcomeText}`);
   try {
     await stat(join(workspacePath, 'moved'));
