@@ -8,6 +8,9 @@ import { ProjectDot } from '../tasks/ProjectDot';
 import { ProjectPicker } from '../tasks/ProjectPicker';
 import { useProjectRefs } from '../tasks/projectRefs';
 import { kindLabel } from '../../lib/itemKinds';
+import { AreaProperty } from '../files/slots';
+import { KnowledgeProperties } from '../knowledge/slots';
+import { PlanningTaskProperties } from '../planning/slots';
 import { TagEditor } from './TagEditor';
 
 function ProjectProperty({ item }: { item: ArtifactSummary }) {
@@ -60,6 +63,7 @@ function TaskProperties({ task }: { task: ArtifactSummary }) {
       >
         {task.flagged ? 'Flagged' : null}
       </Property>
+      <PlanningTaskProperties task={task} />
       <ProjectProperty item={task} />
       <TagEditor item={task} />
     </>
@@ -112,8 +116,10 @@ export function PageProperties({ item, flush, onMoved }: MoveProps & { item: Art
           {kind ? <Pill className="mr-1">{kind}</Pill> : null}
           <ProjectProperty item={item} />
           <TagEditor item={item} />
+          <KnowledgeProperties item={item} />
         </>
       )}
+      {item.type === ArtifactType.INBOX ? null : <AreaProperty item={item} flush={flush} onMoved={onMoved} />}
     </PropertyRow>
   );
 }

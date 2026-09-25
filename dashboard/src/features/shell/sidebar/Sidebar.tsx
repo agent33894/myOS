@@ -12,6 +12,7 @@ import { SHORTCUTS } from '../shortcuts';
 import { WindowStrip } from '../WindowStrip';
 import { SidebarActions } from './SidebarActions';
 import { SidebarLink } from './SidebarLink';
+import { RitualSidebarItem } from '../../rituals/slots';
 import { SidebarProjects } from './SidebarProjects';
 import { SidebarResizer } from './SidebarResizer';
 
@@ -73,6 +74,7 @@ export function Sidebar({ rail, narrow }: SidebarProps) {
             );
           })}
         </nav>
+        <RitualSidebarItem rail={rail} />
       </div>
 
       <div className={cn('min-h-0 flex-1 overflow-y-auto pb-4', rail ? 'px-2' : 'px-3')}>

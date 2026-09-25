@@ -1,3 +1,7 @@
+import { FileSettings } from '../files/slots';
+import { KnowledgeSettings } from '../knowledge/slots';
+import { PlanningSettings } from '../planning/slots';
+import { RitualSettings } from '../rituals/slots';
 import { toast } from 'sonner';
 import { FolderOpen } from 'lucide-react';
 import { invoke } from '../../data/ipc';
@@ -56,6 +60,11 @@ export function GeneralSettings() {
           control={(id) => <Switch id={id} checked={remind} onCheckedChange={setRemind} />}
         />
       </SettingsGroup>
+
+      <FileSettings />
+      <PlanningSettings />
+      <RitualSettings />
+      <KnowledgeSettings />
     </>
   );
 }

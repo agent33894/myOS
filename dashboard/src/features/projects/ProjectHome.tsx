@@ -159,7 +159,8 @@ export function ProjectHome({ project }: { project: ProjectWithStats }) {
         findSlot={setFindSlot}
       >
         <SaveState saving={doc.saving} dirty={doc.dirty} saved={doc.lastSaved !== null} />
-        <PageMenu item={project} flush={doc.saveNow} onDeleted={() => navigate(paths.projects)} />
+        {/* Projects open by id, so a moved file keeps the same URL. */}
+        <PageMenu item={project} flush={doc.saveNow} onDeleted={() => navigate(paths.projects)} onMoved={() => undefined} />
       </PageTopBar>
 
       {doc.conflict ? (

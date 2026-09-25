@@ -10,6 +10,10 @@ import type { ThemeMode } from '../../store/settingsPersistence';
 import { useUIStore } from '../../store/ui';
 import { sectionUrl } from '../shell/navigationMemory';
 import { SHORTCUTS } from '../shell/shortcuts';
+import { useFileCommands } from '../files/commands';
+import { useKnowledgeCommands } from '../knowledge/commands';
+import { usePlanningCommands } from '../planning/commands';
+import { useRitualCommands } from '../rituals/commands';
 import { useCreate } from '../shell/useCreate';
 
 export interface Command {
@@ -36,6 +40,11 @@ function cycleTheme() {
 export function usePaletteCommands(): Command[] {
   const navigate = useNavigate();
   const { newNote, newTask, newProject } = useCreate();
+  const planning = usePlanningCommands();
+  const rituals = useRitualCommands();
+  const knowledge = useKnowledgeCommands();
+  const files = useFileCommands();
+  const extra = useMemo(() => [...planning, ...rituals, ...knowledge, ...files], [planning, rituals, knowledge, files]);
 
   return useMemo(() => {
     const goTo: Command[] = [
@@ -80,6 +89,6 @@ export function usePaletteCommands(): Command[] {
         run: () => setTimeout(() => useUIStore.getState().openKeyboardShortcuts(), 0),
       },
     ].map((action) => ({ ...action, group: 'Actions' as const }));
-    return [...goTo, ...actions];
-  }, [navigate, newNote, newTask, newProject]);
+    return [...goTo, ...actions, ...extra];
+  }, [navigate, newNote, newTask, newProject, extra]);
 }

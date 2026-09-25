@@ -8,7 +8,16 @@ export const paths = {
   projects: '/projects',
   page: '/page',
   settings: '/settings',
+  tasks: '/tasks',
+  journal: '/journal',
+  tags: '/tags',
+  review: '/review',
+  week: '/review/week',
 } as const;
+
+export const toTagUrl = (tag: string) => `${paths.tags}/${encodeURIComponent(tag)}`;
+/** `weekStart` is the Monday of the week (YYYY-MM-DD); omitted means this week. */
+export const toWeekUrl = (weekStart?: string) => (weekStart ? `${paths.week}?week=${weekStart}` : paths.week);
 
 interface OpenOptions {
   /**

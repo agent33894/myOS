@@ -65,7 +65,7 @@ export function Page({ path, leading, onDeleted, onMoved, missingAction }: PageP
     <PageLayout document>
       <PageTopBar leading={leading} findSlot={setFindSlot}>
         <SaveState saving={doc.saving} dirty={doc.dirty} saved={doc.lastSaved !== null} />
-        {item ? <PageMenu item={item} flush={doc.saveNow} onDeleted={onDeleted} /> : null}
+        {item ? <PageMenu item={item} flush={doc.saveNow} onDeleted={onDeleted} onMoved={onMoved} /> : null}
       </PageTopBar>
 
       {doc.conflict ? (
