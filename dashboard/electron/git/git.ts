@@ -120,12 +120,25 @@ export async function gitCommit(message: string, paths?: string[]): Promise<stri
 const FIELD = '\x1f';
 const RECORD = '\x1e';
 
+/**
+ * Commits that touched `path` (following renames) or the folder, newest first.
+ * For one file, a commit also carries the file's name at that commit when it
+ * differs, so its old text can still be read.
+ */
 export async function gitLog(path?: string, limit = 50): Promise<GitCommit[]> {
   const count = Number.isInteger(limit) && limit > 0 ? Math.min(limit, 1000) : 50;
-  const target = path === undefined ? ['.'] : [pathspec(path)];
+  const target = path === undefined ? '.' : pathspec(path);
+  const prefix = path === undefined ? '' : ((await repoPrefix()) ?? '');
   let output: string;
   try {
-    output = await git(['log', `--max-count=${count}`, `--format=%H${FIELD}%aI${FIELD}%an${FIELD}%s${RECORD}`, ...(path ? ['--follow'] : []), '--', ...target]);
+    output = await git([
+      'log',
+      `--max-count=${count}`,
+      `--format=${RECORD}%H${FIELD}%aI${FIELD}%an${FIELD}%s`,
+      ...(path === undefined ? [] : ['--follow', '--name-only']),
+      '--',
+      target,
+    ]);
   } catch (error) {
     // A repository without commits has no history yet.
     if (error instanceof DomainError && /does not have any commits|bad default revision/i.test(error.message)) return [];
@@ -133,12 +146,23 @@ export async function gitLog(path?: string, limit = 50): Promise<GitCommit[]> {
   }
   return output
     .split(RECORD)
-    .map((entry) => entry.trim())
-    .filter(Boolean)
+    .filter((entry) => entry.trim())
     .map((entry) => {
-      const [hash, date, author, subject] = entry.split(FIELD);
-      return { hash, date, author, subject };
+      const [header, ...names] = entry.split('\n');
+      const [hash, date, author, subject] = header.split(FIELD);
+      const commit: GitCommit = { hash, date, author, subject };
+      // Repository-relative; a name outside the open folder cannot be read through it.
+      const name = names.find((line) => line.trim());
+      if (name && name.startsWith(prefix) && name.slice(prefix.length) !== target) commit.path = name.slice(prefix.length);
+      return commit;
     });
+}
+
+/** `git init` in the open folder. Refuses when the folder is already inside a repository. */
+export async function gitInit(): Promise<GitStatus> {
+  if ((await repoPrefix()) !== null) throw new DomainError('INVALID', 'This folder is already in a Git repository.');
+  await git(['init', '--quiet']);
+  return gitStatus();
 }
 
 /** The file's text at `hash`. */
