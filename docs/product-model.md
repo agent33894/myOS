@@ -13,7 +13,7 @@ myOS turns a folder of Markdown files into a calm place to capture thoughts, pla
 
 Plain Markdown files without frontmatter are Notes.
 
-Users never choose a folder, "domain", or type directory. Paths are derived. A new item inherits its project's `domain`, and otherwise uses the spec default. The `domain` field is still read and written for compatibility, but the interface never asks for it or shows it.
+Users never choose a folder or type directory. Paths are derived. The `domain` field is shown as an **Area** (Work, Personal, Learning stored as `research`, Creative). A new item inherits its project's area, and otherwise takes the default area from Settings (Personal unless changed). Journal pages live at `journal/YYYY-MM-DD.md` and templates in `templates/`; neither has an area.
 
 ## Navigation
 
@@ -52,3 +52,4 @@ Git ignore rules live under **Settings → Advanced**; "Open in editor" and "Sho
 - Undo restores exactly: same path, same frontmatter (including custom keys), same body.
 - Opening a page never rewrites its file. Editing one block rewrites only that block; every untouched block keeps the exact Markdown it was written in.
 - New items start empty. There are no template placeholders.
+- Version history is kept outside the folder, under the app's data directory, one tree per workspace.

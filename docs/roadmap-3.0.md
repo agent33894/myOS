@@ -74,3 +74,40 @@ Everything else, including unknown keys, round-trips unchanged. `domain` is surf
 - **Wave B (surfaces, in parallel).** Tasks and planning (1–8), rituals (9–12), notes and knowledge (13–17), files and trust (18–20).
 - **Wave C.** End-to-end QA and polish in both themes at 900px and 1600px, packaged smoke test, install.
 - **Wave D.** The launch magazine.
+
+## Wave A contracts
+
+What Wave B builds on. Everything below is in place, typed, and covered where it guards data.
+
+### Shared rules (`dashboard/shared/`)
+
+| Module | Exports |
+| --- | --- |
+| `spec` | Fields `planned`, `completions`, `when`, `next`, `review`, `reviewInterval`; todo status `someday`; types `journal` and `template`; `AREAS` (domain → Work, Personal, Learning, Creative). Types with an area fall back to `personal` |
+| `date.ts` | `nextMonday` (the one meaning of "next week"), `dayOf`, `parseLocalDate`, `shiftDate` |
+| `recurrence.ts` | `parseRule`, `formatRule` (stored text), `describeRule` ("Every Tue"), `nextOccurrence`, `firstOccurrence`, `completionSummary(completions, rule, today)` → `{ done, of }` over the last ten, `weekdayIndex` |
+| `inbox.ts` | `parseCapture` (adds `repeatRule`, `estimatedMinutes`), `captureDraft(parsed, defaultArea)`, `suggest(text, caret)` → `{ trigger: '@' \| '#', query, start, end } \| null`, `matchProject` |
+| `today.ts` | `selectToday(tasks, now, checks)` → `{ carriedOver, today, upcoming, doneToday }` (entries are tasks or `CheckEntry`), `plannedMinutes(entries)`, `isOpenTask`, `UPCOMING_DAYS` |
+| `tasks.ts` | `selectTasks` → `{ anytime, upcoming, someday }`, `groupByProject(items, projects)`, `groupByArea(items)` → `{ key, label, items }[]` |
+| `checklist.ts` | `CheckEntry { kind: 'check', path, line, text, due, done, project, noteTitle }`, `isCheckEntry`, `checkEntries`, `extractChecks`, `toggleCheckLine` |
+| `recall.ts` | `schedule(answer, interval, today)` → `{ review, reviewInterval }`, `dueForReview(notes, today, cap = 10)` |
+| `templates.ts` | `expandTemplate(body, { title, date, time })`, `STARTER_TEMPLATES` |
+| `journal.ts` | `journalPath(date)`, `journalDate(item)`, `appendUnderHeading(content, heading, line)` |
+| `week.ts` | `selectWeek(artifacts, weekStart)` → `{ start, end, groups: [{ project, finished, written, edited }], journal: [{ date, path, lines }] }` |
+
+### IPC channels (`shared/ipc/contracts.ts`)
+
+`artifacts:toggle-check(path, line, expectedText, expectRev?)`, `artifacts:rename(path, expectRev?)`, `artifacts:move(path, to, expectRev?)`, `artifacts:move-area(path, domain, expectRev?)`, `history:list(path)` → `VersionInfo[]`, `history:read(path, id)` → text, `history:restore(path, id, expectRev?)`, `export:pdf(path, html)` and `export:html(path, html)` → saved path or null. Templates and journal pages come through `artifacts:list` and `artifacts:create` (a draft may carry `id`; journal pages use the date). Listed notes carry `checks`.
+
+### Renderer data (`dashboard/src/data/`)
+
+- **Hooks** (`selectors.ts`): `useToday`, `useTasks`, `useChecks`, `useTemplates`, `useJournal` → `{ date, page }[]`, `useReviewQueue`, `useWeek(weekStart)`, `useCounts` (Today = carried over + today), `useNotes` (no journal pages or templates), `useProjects` (each project has `checks` for "From notes").
+- **Gateway** (`gateway.ts`): `create` and `capture` send the default area; `toggleCheck(entry)`, `rename(item)`, `moveToArea(item, domain)`, `listVersions(item)`, `readVersion(item, id)`, `restoreVersion(item, id)`. Each write records one undo step. `rename` and `moveToArea` resolve to the file at its new path, so a page showing the old path must follow it.
+- **Planning** (`planning.ts`): `completeTask`, `toggleComplete` (repeating tasks advance `due` and record `completions`), `plan(task, date?, order?)`, `unplan`, `reorderToday(paths)`, `setSomeday`, `replan(tasks, 'today' | 'tomorrow' | 'next-week' | 'someday' | 'none')`, `startReviewing`, `stopReviewing`, `answerReview(note, answer)`.
+- **Pages** (`pages.ts`): `createFromTemplate(template, { title, project?, domain? })`, `createProjectFromTemplate(template, { title, domain? })`, `ensureStarterTemplates()`, `openJournal(date)` → path, `createJournal(date)`, `appendToJournal(date, section, line)`.
+- **Export** (`exporter.ts`): `buildExportDocument({ title, bodyHtml, css? })`, `exportPdf(item, html)`, `exportHtml(item, html)`, `copyAsRichText(html, markdown)`, `copyAsMarkdown(markdown)`.
+- **Settings** (`store/settings.ts`, set any with `setSetting(key, value)`): `defaultArea` (personal), `availableHours` (6), `showCapacity` (true), `weeklyReviewDay` (5, Friday), `lastWeeklyReview` (null), `renameFilesWithTitles` (true), `focusDimParagraphs` (true), `includeJournalInSearch` (false).
+
+### Left for Wave B
+
+Search still includes journal pages (apply `includeJournalInSearch`), nothing calls `ensureStarterTemplates` yet, and no screen calls rename after a title edit. `src/data/pages.ts` and `src/data/exporter.ts` are listed as knip entries until a screen imports them.
