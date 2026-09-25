@@ -1,6 +1,6 @@
 import { useMemo, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { format } from 'date-fns';
-import { ArrowRight, CalendarDays, Check, Plus, Sunrise, Timer, X } from 'lucide-react';
+import { ArrowRight, CalendarDays, Check, Plus, Timer, X } from 'lucide-react';
 import { isCheckEntry } from '@shared/checklist';
 import { dayOf, formatLocalDate } from '@shared/date';
 import { isOpenTask, plannedMinutes } from '@shared/today';
@@ -77,9 +77,10 @@ function Details({ children }: { children: ReactNode[] }) {
   return <div className="mt-0.5 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-sm text-text-tertiary">{shown}</div>;
 }
 
-function TaskDetails({ task }: { task: ArtifactSummary }) {
+function TaskDetails({ task, inPlan = false }: { task: ArtifactSummary; inPlan?: boolean }) {
   const project = useProjectRefs().find(task.project);
-  const due = dayOf(task.due);
+  // In today's plan, "Today" goes without saying.
+  const due = dayOf(task.due) === formatLocalDate() && inPlan ? undefined : dayOf(task.due);
   return (
     <Details>
       {[
@@ -178,7 +179,7 @@ function PlanRow({ task, index, onMove }: { task: ArtifactSummary; index: number
       <span className="grid size-6 shrink-0 place-items-center rounded-full bg-accent-soft text-xs font-medium tabular-nums text-accent-text">{index + 1}</span>
       <div className="min-w-0 flex-1">
         <p className="truncate text-base text-text">{task.title}</p>
-        <TaskDetails task={task} />
+        <TaskDetails task={task} inPlan />
       </div>
       <IconButton
         icon={X}
@@ -280,10 +281,7 @@ export function PlanMyDay({ onClose }: { onClose: () => void }) {
           <>
             <header className="flex flex-wrap items-start gap-4 px-3">
               <div className="flex min-w-0 flex-1 flex-col gap-1">
-                <h1 className="flex items-center gap-2 text-xl font-semibold text-text">
-                  <Icon icon={Sunrise} className="text-accent-text" />
-                  Plan my day
-                </h1>
+                <h1 className="text-xl font-semibold text-text">Plan my day</h1>
                 <p className="text-base text-text-secondary">
                   {format(new Date(), 'EEEE, MMMM d')} · Pick what you’d like to do today. You can change it any time.
                 </p>

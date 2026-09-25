@@ -106,7 +106,7 @@ function TaskDetails({ task, showDue, hideProject, onToday, inSomeday }: Details
         {dayLabel(due)}
       </span>
     ) : null,
-    !onToday && planned === today ? (
+    !onToday && planned === today && !(showDue && due === today) ? (
       <span key="planned" className="inline-flex items-center gap-1 text-accent-text">
         <Icon icon={Sun} size="sm" />
         Today

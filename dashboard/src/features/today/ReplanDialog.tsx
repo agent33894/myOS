@@ -88,7 +88,7 @@ export function ReplanDialog({ open, onOpenChange, tasks, checks }: ReplanDialog
         <DialogHeader>
           <DialogTitle>Re-plan carried over</DialogTitle>
           <DialogDescription>
-            Pick a new day for each task, or move them all at once. Leaving something where it is is fine too.
+            Pick a new day for each task, or move them all at once. It’s fine to leave something where it is.
           </DialogDescription>
         </DialogHeader>
 

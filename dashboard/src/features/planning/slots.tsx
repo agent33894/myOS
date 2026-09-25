@@ -193,9 +193,9 @@ export function PlanningTaskProperties({ task }: { task: ArtifactSummary }) {
   return (
     <>
       <RepeatProperty task={task} />
+      <CompletionLine task={task} />
       <WhenProperty task={task} />
       <EstimateProperty task={task} />
-      <CompletionLine task={task} />
     </>
   );
 }
