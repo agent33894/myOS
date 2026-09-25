@@ -14,12 +14,13 @@ import {
   readHistory,
   readNote,
   restoreNote,
+  restoreText,
   restoreVersion,
   saveNote,
 } from '../documents/files';
 import { appendToFile, editTask, setTaskDateOn, toggleTask } from '../documents/tasks';
 import { exportDocument, revealExport } from '../export/export';
-import { gitCommit, gitCommitDiff, gitCommitSummary, gitDiff, gitLog, gitPull, gitPush, gitShow, gitStatus } from '../git/git';
+import { gitCommit, gitCommitDiff, gitCommitSummary, gitDiff, gitInit, gitLog, gitPull, gitPush, gitShow, gitStatus } from '../git/git';
 import { getSettings, setSettings } from '../settings/settings';
 import { openExternal, openInEditor, reveal } from '../shell/shell';
 import { readOmarchyAccent } from '../utils/omarchy-theme';
@@ -61,6 +62,8 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
   handle('git:diff', ['path?'], gitDiff);
   handle('git:commit-diff', ['string'], gitCommitDiff);
   handle('git:commit-summary', ['string'], gitCommitSummary);
+  handle('git:restore', ['path', 'string', 'string?', 'path?'], async (path, hash, expectRev, from) => restoreText(path, await gitShow(from ?? path, hash), expectRev));
+  handle('git:init', [], gitInit);
   handle('git:pull', [], gitPull);
   handle('git:push', [], gitPush);
 

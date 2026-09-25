@@ -74,6 +74,8 @@ export interface GitCommit {
   date: string;
   author: string;
   subject: string;
+  /** From `git:log` for one file: its folder-relative name at this commit, when that differs (it was renamed since). */
+  path?: string;
 }
 
 export interface CommitFileStat {
@@ -141,6 +143,10 @@ export interface IpcInvokeMap {
   'git:commit-diff': { args: [hash: string]; value: string };
   'git:commit-summary': { args: [hash: string]; value: CommitSummary };
   /** `git pull --rebase --autostash`; returns Git's output. */
+  /** Write the file as it was at `hash` (named `from` then, when it has moved since); the text it replaces becomes the newest local copy. */
+  'git:restore': { args: [path: string, hash: string, expectRev?: string, from?: string]; value: Note };
+  /** `git init` in the open folder; fails when the folder is already inside a repository. */
+  'git:init': { args: []; value: GitStatus };
   'git:pull': { args: []; value: string };
   'git:push': { args: []; value: string };
   /** Local copies of a file, newest first. */
@@ -196,6 +202,8 @@ export const IPC_INVOKE_CHANNELS = Object.keys({
   'git:diff': 1,
   'git:commit-diff': 1,
   'git:commit-summary': 1,
+  'git:restore': 1,
+  'git:init': 1,
   'git:pull': 1,
   'git:push': 1,
   'history:list': 1,

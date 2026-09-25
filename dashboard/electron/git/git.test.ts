@@ -8,7 +8,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 const repo = realpathSync(mkdtempSync(join(tmpdir(), 'myos-git-')));
 const folder = join(repo, 'docs');
 vi.mock('../workspace/root', () => ({ workspaceRoot: () => folder }));
-const { gitCommit, gitDiff, gitLog, gitShow, gitStatus } = await import('./git');
+const { gitCommit, gitDiff, gitInit, gitLog, gitShow, gitStatus } = await import('./git');
 
 const run = (...args: string[]) => execFileSync('git', args, { cwd: repo, encoding: 'utf8' });
 
@@ -57,11 +57,22 @@ describe('git in the open folder', () => {
     expect(run('status', '--porcelain')).toContain('outside.txt');
   });
 
+  it('follows a renamed file back to its old name, and never nests a new repository', async () => {
+    run('mv', 'docs/plan.md', 'docs/roadmap.md');
+    await gitCommit('Rename the plan');
+    const commits = await gitLog('roadmap.md');
+    expect(commits[0]).not.toHaveProperty('path');
+    const old = commits.find((commit) => commit.subject === 'Add the plan');
+    expect(old?.path).toBe('plan.md');
+    expect(await gitShow(old!.path!, old!.hash)).toBe('# Plan\n');
+    await expect(gitInit()).rejects.toMatchObject({ code: 'INVALID' });
+  });
+
   it('refuses paths outside the folder and anything that is not a hash', async () => {
     await expect(gitCommit('x', ['../outside.txt'])).rejects.toMatchObject({ code: 'OUTSIDE_WORKSPACE' });
-    await expect(gitShow('plan.md', '--output=/tmp/pwned')).rejects.toMatchObject({ code: 'INVALID' });
-    await expect(gitShow('plan.md', 'HEAD')).rejects.toMatchObject({ code: 'INVALID' });
+    await expect(gitShow('roadmap.md', '--output=/tmp/pwned')).rejects.toMatchObject({ code: 'INVALID' });
+    await expect(gitShow('roadmap.md', 'HEAD')).rejects.toMatchObject({ code: 'INVALID' });
     await expect(gitCommit('   ')).rejects.toMatchObject({ code: 'INVALID' });
-    await expect(gitCommit('nothing to do', ['plan.md'])).rejects.toMatchObject({ code: 'GIT' });
+    await expect(gitCommit('nothing to do', ['roadmap.md'])).rejects.toMatchObject({ code: 'GIT' });
   });
 });

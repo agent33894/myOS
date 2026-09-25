@@ -250,3 +250,11 @@ export async function restoreVersion(path: string, id: string, expectRev?: strin
   await keepVersion(loaded);
   return write(loaded.note.path, text, 'w');
 }
+
+/** Write `text` (a file's earlier bytes, e.g. from a Git commit) over the file; the text it replaces becomes the newest version. */
+export async function restoreText(path: string, text: string, expectRev?: string): Promise<Note> {
+  const loaded = await load(path);
+  assertRev(loaded.note, expectRev);
+  await keepVersion(loaded);
+  return write(loaded.note.path, text, 'w');
+}

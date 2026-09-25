@@ -1,9 +1,10 @@
+import { markWords, type DiffHunk, type DiffLine, type FileDiff } from '../git/diff';
+
 export interface DiffRow {
   type: 'same' | 'added' | 'removed';
   text: string;
 }
 
-export type DiffPiece = { kind: 'rows'; rows: DiffRow[] } | { kind: 'gap'; count: number };
 
 const splitLines = (text: string) => text.replace(/\r\n/g, '\n').replace(/\n+$/, '').split('\n');
 
@@ -62,28 +63,35 @@ export function diffLines(before: string, after: string): DiffRow[] {
   return rows;
 }
 
-/** Changed rows with `context` unchanged lines around them; longer unchanged runs fold into gaps. */
-export function foldUnchanged(rows: DiffRow[], context = 2): DiffPiece[] {
-  const keep = rows.map(() => false);
-  rows.forEach((row, index) => {
-    if (row.type === 'same') return;
-    for (let k = Math.max(0, index - context); k <= Math.min(rows.length - 1, index + context); k += 1) keep[k] = true;
+/** Rows as numbered hunks with `context` unchanged lines around each change, and word marks on edited lines. */
+export function toFileDiff(rows: DiffRow[], context = 3): FileDiff {
+  let oldNo = 1;
+  let newNo = 1;
+  const lines: DiffLine[] = rows.map((row) =>
+    row.type === 'same' ? { ...row, old: oldNo++, new: newNo++ } : row.type === 'removed' ? { ...row, old: oldNo++ } : { ...row, new: newNo++ },
+  );
+  markWords(lines);
+  const keep = lines.map(() => false);
+  lines.forEach((line, index) => {
+    if (line.type === 'same') return;
+    for (let k = Math.max(0, index - context); k <= Math.min(lines.length - 1, index + context); k += 1) keep[k] = true;
   });
-  const pieces: DiffPiece[] = [];
-  let gap = 0;
-  rows.forEach((row, index) => {
+  const hunks: DiffHunk[] = [];
+  let open: DiffHunk | null = null;
+  lines.forEach((line, index) => {
     if (!keep[index]) {
-      gap += 1;
+      open = null;
       return;
     }
-    if (gap) pieces.push({ kind: 'gap', count: gap });
-    gap = 0;
-    const last = pieces[pieces.length - 1];
-    if (last?.kind === 'rows') last.rows.push(row);
-    else pieces.push({ kind: 'rows', rows: [row] });
+    if (!open) hunks.push((open = { heading: '', lines: [] }));
+    open.lines.push(line);
   });
-  if (gap) pieces.push({ kind: 'gap', count: gap });
-  return pieces;
+  return {
+    hunks,
+    added: lines.filter((line) => line.type === 'added').length,
+    removed: lines.filter((line) => line.type === 'removed').length,
+    binary: false,
+  };
 }
 
 /** Split a saved file into its properties block and its body, the way the reading view sees it. */

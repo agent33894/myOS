@@ -1,7 +1,11 @@
 import { useEffect } from 'react';
 import { create } from 'zustand';
-import type { GitFileStatus, GitStatus } from '@shared/ipc/contracts';
+import type { GitCommit, GitFileStatus, GitStatus } from '@shared/ipc/contracts';
+import type { Note } from '@shared/spec';
+import { currentRev } from './gateway';
 import { invoke, subscribe } from './ipc';
+import { applyNote } from './store';
+import { record } from './undo';
 
 interface GitState {
   /** Null until the first status arrives. */
@@ -81,9 +85,38 @@ export const push = () => sync('push');
 
 /** Commits that touched `path` (or the folder), newest first. */
 export const log = (path?: string, limit?: number) => invoke('git:log', path, limit);
-/** @public A file's text at a commit. */
+/** A file's text at a commit. */
 export const showAt = (path: string, hash: string) => invoke('git:show', path, hash);
-/** @public The working tree against HEAD, for one file or the folder. */
+/** The working tree against HEAD, for one file or the folder. */
 export const diff = (path?: string) => invoke('git:diff', path);
+/** @public */
 export const commitDiff = (hash: string) => invoke('git:commit-diff', hash);
+/** @public */
 export const commitSummary = (hash: string) => invoke('git:commit-summary', hash);
+
+/** `git init` in the open folder (only offered outside a repository). */
+export async function initRepo(): Promise<void> {
+  useGitStore.setState({ status: await invoke('git:init'), error: null });
+}
+
+/**
+ * Write the file as it was at `commit`. The text it replaces becomes the
+ * newest local copy, which undo puts back. Fails with CONFLICT when the file
+ * changed since the store last saw it.
+ */
+export async function restoreCommit(path: string, commit: GitCommit): Promise<Note> {
+  const put = async (write: Promise<Note>) => {
+    const note = await write;
+    applyNote(note);
+    void refreshGit();
+    return note;
+  };
+  const restored = await put(invoke('git:restore', path, commit.hash, currentRev(path), commit.path));
+  const [replaced] = await invoke('history:list', path);
+  record({
+    label: `Restore ${path} from commit ${commit.hash.slice(0, 7)}`,
+    undo: () => put(invoke('history:restore', path, replaced.id, currentRev(path))),
+    redo: () => put(invoke('git:restore', path, commit.hash, currentRev(path), commit.path)),
+  });
+  return restored;
+}

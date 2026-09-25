@@ -238,9 +238,16 @@ export interface CapturedBody {
   hasCode: boolean;
 }
 
-/** The open editor for `path`'s page, if it is on screen. */
-export function findEditor(): HTMLElement | null {
-  return document.querySelector<HTMLElement>('.ProseMirror[aria-label="Page body"]');
+/**
+ * The rendered editor for `path`, if it is on screen: an element marked
+ * `data-export-body` with `data-path` (set by the note editor), or the one
+ * rendered editor when only one is open. Otherwise the Markdown is rendered.
+ */
+export function findEditor(path: string): HTMLElement | null {
+  const marked = Array.from(document.querySelectorAll<HTMLElement>('[data-export-body]')).find((element) => element.dataset.path === path);
+  if (marked) return marked;
+  const editors = document.querySelectorAll<HTMLElement>('.ProseMirror[aria-label="Page body"]');
+  return editors.length === 1 ? editors[0] : null;
 }
 
 /** Serialize the open editor (see the note at the top). */

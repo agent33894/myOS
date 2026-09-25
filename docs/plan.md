@@ -70,9 +70,11 @@ Every call returns `Result<T>`; `src/data/ipc.ts` turns failures into `IpcError 
 | `settings:get` / `settings:set` | → `Settings` / `Partial<Settings>` → `Settings` (an unknown key or bad value fails the whole change) |
 | `git:status` | → `{ repo, branch, upstream, ahead, behind, files: { path, from?, change, staged }[] }` |
 | `git:commit` | `message, paths?` → hash (all changes in the folder when `paths` is omitted) |
-| `git:log` | `path?, limit?` → `{ hash, date, author, subject }[]` |
+| `git:log` | `path?, limit?` → `{ hash, date, author, subject, path? }[]` (for one file, renames are followed and `path` is its name at that commit when it differs) |
 | `git:show` / `git:diff` | `path, hash` → text at that commit / `path?` → unified diff against HEAD (untracked files show as added) |
 | `git:commit-diff` / `git:commit-summary` | `hash` → diff / `{ files, totals, message, … }` |
+| `git:restore` | `path, hash, expectRev?, from?` → `Note` (the file's bytes at that commit, read from `from` when it was renamed since; the replaced text becomes the newest local copy) |
+| `git:init` | → `GitStatus` (`git init` in the open folder; `INVALID` when it is already inside a repository) |
 | `git:pull` / `git:push` | → Git's output (`pull --rebase --autostash`; only ever on request) |
 | `history:list` / `history:read` / `history:restore` | local copies of a file (`path`, `id`) |
 | `export:pdf` / `export:html` / `export:reveal` | `path, html` → saved path or null / `savedPath` |
@@ -96,7 +98,7 @@ Events: `files:changed { path, entry: 'file' | 'folder', kind, rev? }`, `app:cap
 - Selectors: `useNotes`, `useNote(path)`, `useTree()` (`TreeFolder { path, name, folders, files }`), `useTasks`, `useTodayTasks()` (`{ overdue, today }`), `useView(kind, query)`, `useRecentNotes`, `useDataStatus`.
 - Gateway (every write; records undo): `read`, `save`, `createNote(path, content?)`, `freeName(folder)`, `remove`, `move(path, to)`, `rename(path, name)`, `createFolder`, `moveFolder`, `renameFolder`, `removeFolder`, `toggleTask`, `setTaskDate`, `editTask`, `appendLine`, `capture(text, target?)`, `dailyPath(date?)`, `listVersions`, `readVersion`, `restoreVersion`.
 - Documents: `useDocument(path, { createOnWrite })` → `{ note, content, edit(content), saveNow, dirty, saving, conflict, keepMine, loadTheirs, missing }`.
-- Git: `useGitStore` (`status`, `error`, `syncing`), `useGitSync`, `useGitStatus`, `useGitFile(path)`, `commit`, `pull`, `push`, `log`, `showAt`, `diff`, `commitDiff`, `commitSummary`.
+- Git: `useGitStore` (`status`, `error`, `syncing`), `useGitSync`, `useGitStatus`, `useGitFile(path)`, `commit`, `pull`, `push`, `log`, `showAt`, `diff`, `commitDiff`, `commitSummary`, `initRepo`, `restoreCommit(path, commit)` (undoable).
 - Settings: `useSettings` (all `Settings` keys plus `loaded`, `accentPreview`), `loadSettings`, `updateSettings(patch)`, `setAccentPreview`, `addRecentFile`.
 - UI: `useUIStore` (`tabs: { path, mode }[]`, `activeTab`, `split`, `overlay`, `focusMode`, `rightPanel`), `showTab`, `closeTab`, `setActiveTab`, `setTabMode`, `setSplit`, `followMove`, `openOverlay`/`closeOverlay`/`toggleOverlay`, `setFocusMode`, `setRightPanel`, `useActivePath`.
 
@@ -115,7 +117,7 @@ Events: `files:changed { path, entry: 'file' | 'folder', kind, rev? }`, `app:cap
 | B1 Shell | `src/app/**`, `src/features/{shell,palette,switcher,onboarding,settings}/**` | `Shell`, `Sidebar`, `FileTree`, `RightPanel`, `StatusBar`, `CommandPalette`, `FileSwitcher`, `Welcome`, `SettingsScreen`, `shellCommands` |
 | B2 Editor | `src/editor/**`, `src/features/note/**` | `NoteTab`, `noteCommands`, `OutlinePanel`, `BacklinksPanel`, `PropertiesPanel`, `NoteStatusItem`; renders ```` ```tasks ```` / ```` ```notes ```` fences with `ViewBlock` |
 | B3 Tasks | `src/features/{today,tasks,views,capture}/**` | `TodayScreen`, `TasksScreen`, `ViewScreen`, `QuickCapture`, `taskCommands`, `ViewBlock({ kind, query, sourcePath })`, `TaskRow`, `ViewResults` |
-| B4 Git and safety | `src/features/{git,history,export}/**` | `ChangesPanel`, `HistoryPanel`, `GitStatusBarItem`, `useFileGitStatus(path)`, `gitCommands`, `exportCommands` |
+| B4 Git and safety | `src/features/{git,history,export}/**` | `ChangesPanel`, `HistoryPanel`, `GitStatusBarItem` (also binds ⌘⇧Enter), `useFileGitStatus(path)`, `GitDot({ path })`, `gitCommands`, `exportCommands`, `ExportMenuItems({ path, flush? })` |
 
 Registries, each a small table in `src/app/`:
 

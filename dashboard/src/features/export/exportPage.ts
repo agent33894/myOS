@@ -46,7 +46,7 @@ async function buildPage(path: string, flush: () => Promise<void>): Promise<Page
   await flush();
   const file = await read(path);
   const title = file.title.trim() || 'Untitled';
-  const editor = findEditor();
+  const editor = findEditor(path);
   const body = editor ? await captureEditor(editor, file.content) : await renderMarkdown(file.content);
   const faces = await fontFaces({ serifBody: useSettings.getState().readingFont === 'serif', code: body.hasCode });
   const html = buildExportDocument({

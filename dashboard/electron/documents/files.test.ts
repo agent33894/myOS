@@ -36,6 +36,16 @@ describe('saving', () => {
     expect(read('a.md')).toBe('Edited elsewhere\n');
   });
 
+  it('restores earlier text only against the current revision, keeping the replaced text as a local copy', async () => {
+    await put('a.md', '---\ntitle: A\n---\nNow\n');
+    const { rev } = await files.readNote('a.md');
+    await expect(files.restoreText('a.md', 'Old\n', 'stale')).rejects.toMatchObject({ code: 'CONFLICT' });
+    await files.restoreText('a.md', 'Old\r\n', rev);
+    expect(read('a.md')).toBe('Old\r\n');
+    const [kept] = await files.listHistory('a.md');
+    expect(await files.readHistory('a.md', kept.id)).toBe('---\ntitle: A\n---\nNow\n');
+  });
+
   it('rewrites only the frontmatter lines that changed, and never touches the body for a property change', async () => {
     const head = "---\r\n# my note\r\ntitle: Garden plan\r\ntags: [b, a]\r\nreviewer: 'Sam'   # owner\r\ndue: 2026-02-01\r\n---\r\n";
     const body = '\r\n\r\n  Indented first line\r\n\r\n| a | b |\r\n|---|---|\r\nno trailing newline';
