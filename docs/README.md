@@ -7,3 +7,4 @@
 - [`artifact-schema-spec.md`](artifact-schema-spec.md): the frontmatter contract, field table, and per-type rules
 - [`building-and-updating.md`](building-and-updating.md): local builds, installers, and verification
 - [`design/design-system.md`](design/design-system.md): tokens, components, motion, and voice
+- [`magazine/`](magazine/): *myOS* Issue 03, the launch magazine for 3.0 ([PDF](magazine/myOS-Issue-03.pdf))
