@@ -1,4 +1,4 @@
-import { Suspense, useState, type ReactNode } from 'react';
+import { Suspense, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent, type ReactNode } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { Command, FileSearch, PanelLeft, PanelRight, X } from 'lucide-react';
 import { ErrorBoundary } from '../../app/ErrorBoundary';
@@ -8,6 +8,7 @@ import { invoke } from '../../data/ipc';
 import { isLinux } from '../../lib/platform';
 import { useSettings } from '../../store/settings';
 import { focusGroup, openOverlay, pinTab, useUIStore, type GroupId, type Tab } from '../../store/ui';
+import { readSplitRatio, writeSplitRatio } from '../../store/uiSession';
 import { Button, IconButton, Kbd, LoadingState, cn } from '../../ui';
 import { FocusExit } from './focus/FocusMode';
 import { toggleColumn } from './layout';
@@ -55,13 +56,14 @@ function TabScreen({ tab }: { tab: Tab }) {
   );
 }
 
-function Group({ group, leading, trailing }: { group: GroupId; leading?: ReactNode; trailing?: ReactNode }) {
+function Group({ group, leading, trailing, style }: { group: GroupId; leading?: ReactNode; trailing?: ReactNode; style?: CSSProperties }) {
   const tab = useUIStore((state) => state.tabs.find((entry) => entry.id === state.current[group]) ?? null);
   const focusMode = useUIStore((state) => state.focusMode);
   return (
     <section
       aria-label={group === 0 ? 'Editor' : 'Editor on the right'}
       className="flex min-w-0 flex-1 flex-col"
+      style={style}
       onPointerDownCapture={() => focusGroup(group)}
       onFocusCapture={() => focusGroup(group)}
       // Typing in a preview tab keeps it.
@@ -73,12 +75,69 @@ function Group({ group, leading, trailing }: { group: GroupId; leading?: ReactNo
   );
 }
 
+const RATIO_MIN = 0.2;
+const RATIO_MAX = 0.8;
+const clampRatio = (ratio: number) => Math.min(RATIO_MAX, Math.max(RATIO_MIN, ratio));
+
+/** Between the two groups: drag or use the arrow keys to share the width; double-click to even it out. The ratio is remembered. */
+function SplitDivider({ ratio, onChange }: { ratio: number; onChange: (ratio: number, keep: boolean) => void }) {
+  const dragging = useRef<DOMRect | null>(null);
+  const at = (event: PointerEvent) => {
+    const box = dragging.current!;
+    return clampRatio((event.clientX - box.left) / box.width);
+  };
+  return (
+    <div
+      role="separator"
+      aria-orientation="vertical"
+      aria-label="Resize the two sides"
+      aria-valuenow={Math.round(ratio * 100)}
+      aria-valuemin={RATIO_MIN * 100}
+      aria-valuemax={RATIO_MAX * 100}
+      tabIndex={0}
+      onPointerDown={(event) => {
+        const area = event.currentTarget.parentElement;
+        if (!area) return;
+        event.preventDefault();
+        event.currentTarget.setPointerCapture(event.pointerId);
+        dragging.current = area.getBoundingClientRect();
+        document.documentElement.dataset.resizing = '';
+      }}
+      onPointerMove={(event) => {
+        if (dragging.current) onChange(at(event), false);
+      }}
+      onPointerUp={(event) => {
+        if (!dragging.current) return;
+        const next = at(event);
+        dragging.current = null;
+        delete document.documentElement.dataset.resizing;
+        onChange(next, true);
+      }}
+      onDoubleClick={() => onChange(0.5, true)}
+      onKeyDown={(event: KeyboardEvent) => {
+        const step = { ArrowLeft: -0.05, ArrowRight: 0.05 }[event.key];
+        if (!step) return;
+        event.preventDefault();
+        onChange(clampRatio(ratio + step), true);
+      }}
+      className="group relative z-10 -mx-2 w-2 shrink-0 cursor-col-resize outline-none"
+    >
+      <span className="absolute inset-y-3 left-1/2 w-0.5 -translate-x-1/2 rounded-full bg-transparent transition-colors duration-fast group-hover:bg-border-strong group-focus-visible:bg-focus group-active:bg-accent" />
+    </div>
+  );
+}
+
 /** The middle of the window: one group of tabs, or two side by side. Drop a tab or file on the right edge to split. */
 export function EditorArea() {
   const split = useUIStore((state) => state.current[1] !== null);
   const leftCollapsed = useSettings((state) => state.sidebar.left.collapsed);
   const rightCollapsed = useSettings((state) => state.sidebar.right.collapsed);
   const [splitHint, setSplitHint] = useState(false);
+  const [ratio, setRatio] = useState(readSplitRatio);
+  const resize = (next: number, keep: boolean) => {
+    setRatio(next);
+    if (keep) writeSplitRatio(next);
+  };
 
   const showFiles = leftCollapsed ? (
     <IconButton icon={PanelLeft} label="Show the files" shortcut={SHORTCUTS.left} size="sm" className="no-drag" onClick={() => toggleColumn('left')} />
@@ -116,8 +175,9 @@ export function EditorArea() {
         if (acceptDrop(event, 1, null)) event.preventDefault();
       }}
     >
-      <Group group={0} leading={showFiles} trailing={split ? undefined : edge} />
-      {split ? <Group group={1} trailing={edge} /> : null}
+      <Group group={0} leading={showFiles} trailing={split ? undefined : edge} style={split ? { flexGrow: ratio, flexBasis: 0 } : undefined} />
+      {split ? <SplitDivider ratio={ratio} onChange={resize} /> : null}
+      {split ? <Group group={1} trailing={edge} style={{ flexGrow: 1 - ratio, flexBasis: 0 }} /> : null}
       {splitHint ? (
         <div aria-hidden="true" className="pointer-events-none absolute bottom-3 right-3 top-12 grid w-1/3 place-items-center rounded-xl bg-accent-soft text-sm font-medium text-accent-text animate-fade-in">
           Open to the side

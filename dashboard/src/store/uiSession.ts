@@ -59,6 +59,15 @@ export function keepTabSession(folder: string): () => void {
 export const readExpanded = (folder: string): string[] => read<string[]>(key(folder, 'expanded')) ?? [];
 export const writeExpanded = (folder: string, expanded: Iterable<string>) => write(key(folder, 'expanded'), [...expanded]);
 
+const SPLIT_RATIO = 'myos-next:split-ratio';
+
+/** The left group's share of the width when split (0.5 is even). */
+export const readSplitRatio = (): number => {
+  const ratio = read<number>(SPLIT_RATIO);
+  return typeof ratio === 'number' && ratio >= 0.2 && ratio <= 0.8 ? ratio : 0.5;
+};
+export const writeSplitRatio = (ratio: number) => write(SPLIT_RATIO, ratio);
+
 const RECENT_COMMANDS = 'myos-next:recent-commands';
 const RECENT_LIMIT = 6;
 
