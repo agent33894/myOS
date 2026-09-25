@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useReducer, useRef } from 'react';
 import { toast } from 'sonner';
+import { create } from 'zustand';
 import type { Note } from '@shared/spec';
 import { createNote, read, save } from './gateway';
 import { IpcError, isConflict } from './ipc';
@@ -28,6 +29,16 @@ interface Session {
   lastSaved: Date | null;
   queue: Promise<void>;
 }
+
+/** Paths with edits not yet on disk, for the tab bar's dots. */
+const useUnsavedStore = create<Record<string, boolean>>(() => ({}));
+
+function markUnsaved(path: string, unsaved: boolean): void {
+  if (path && Boolean(useUnsavedStore.getState()[path]) !== unsaved) useUnsavedStore.setState({ [path]: unsaved });
+}
+
+/** Whether an open document at `path` has edits that are not saved yet. */
+export const useUnsaved = (path: string | null) => useUnsavedStore((state) => (path ? Boolean(state[path]) : false));
 
 const versionOf = (note: Note): Version => ({ rev: note.rev, content: note.content });
 
@@ -145,7 +156,7 @@ export function useDocument(path: string | null, { createOnWrite = false } = {})
     window.addEventListener('beforeunload', onBeforeUnload);
     return () => {
       window.removeEventListener('beforeunload', onBeforeUnload);
-      void flush(session);
+      void flush(session).finally(() => markUnsaved(session.path, session.draft !== null));
     };
   }, [path, createOnWrite, enqueue, flush, update]);
 
@@ -193,13 +204,15 @@ export function useDocument(path: string | null, { createOnWrite = false } = {})
   const saveNow = useCallback(() => flush(), [flush]);
 
   const session = sessionRef.current;
+  const dirty = session.draft !== null;
+  useEffect(() => markUnsaved(path ?? '', dirty), [path, dirty]);
   return {
     /** Live metadata for the file (undefined once it is gone, or before a new file is made). */
     note,
     /** The body; null while loading or when the file no longer exists. */
     content: session.draft ?? session.base?.content ?? null,
     missing: session.missing,
-    dirty: session.draft !== null,
+    dirty,
     saving: session.saving,
     lastSaved: session.lastSaved,
     conflict: session.conflict,

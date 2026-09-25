@@ -2,6 +2,7 @@ import { useState, type DragEvent, type ReactNode } from 'react';
 import { FileText, ListChecks, Search, Settings, SunMedium, X, type LucideIcon } from 'lucide-react';
 import { openNote, paths } from '../../app/navigation';
 import { useDataStore } from '../../data/store';
+import { useUnsaved } from '../../data/useDocument';
 import { useSettings } from '../../store/settings';
 import { activateTab, closeTabById, moveTab, pinTab, useUIStore, type GroupId, type Tab } from '../../store/ui';
 import { Icon, IconButton, cn } from '../../ui';
@@ -47,6 +48,7 @@ export const isTabOrFileDrag = (event: DragEvent) => event.dataTransfer.types.in
 
 function TabItem({ tab, active, focused, index, dropBefore, onDropHover }: { tab: Tab; active: boolean; focused: boolean; index: number; dropBefore: boolean; onDropHover: (id: string | null) => void }) {
   const { label, icon } = useTabLabel(tab);
+  const unsaved = useUnsaved(tab.path);
   return (
     <div
       role="tab"
@@ -86,13 +88,19 @@ function TabItem({ tab, active, focused, index, dropBefore, onDropHover }: { tab
       <Icon icon={icon} size="sm" className={cn('shrink-0', active && focused ? 'text-accent-text' : 'text-text-tertiary')} />
       <span className={cn('truncate', tab.preview && 'italic')}>{label}</span>
       {index < 9 ? <span className="sr-only">, tab {index + 1}</span> : null}
+      {unsaved ? (
+        <span title="Not saved yet" className="grid size-5 shrink-0 place-items-center group-hover/tab:hidden">
+          <span className="size-1.5 rounded-full bg-text-secondary" />
+          <span className="sr-only">, not saved yet</span>
+        </span>
+      ) : null}
       <IconButton
         icon={X}
         label={`Close ${label}`}
         shortcut={active ? SHORTCUTS.closeTab : undefined}
         size="sm"
         tabIndex={-1}
-        className={cn('size-5 shrink-0 rounded-sm opacity-0 group-hover/tab:opacity-100 focus-visible:opacity-100', active && 'opacity-100')}
+        className={cn('size-5 shrink-0 rounded-sm opacity-0 group-hover/tab:opacity-100 focus-visible:opacity-100', active && 'opacity-100', unsaved && 'hidden group-hover/tab:inline-flex')}
         onClick={(event) => {
           event.stopPropagation();
           closeTabById(tab.id);
