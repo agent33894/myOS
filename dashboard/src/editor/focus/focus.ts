@@ -22,6 +22,17 @@ const focusKey = new PluginKey<FocusOptions>('focus-mode');
 export const setFocusMode = (tr: Transaction, options: FocusOptions) =>
   tr.setMeta(focusKey, options).setMeta('preventUpdate', true).setMeta('addToHistory', false);
 
+interface FocusStorage {
+  /** The current options, so a document loaded while focus mode is on starts in it. */
+  options: FocusOptions;
+}
+
+declare module '@tiptap/core' {
+  interface Storage {
+    focusMode: FocusStorage;
+  }
+}
+
 function currentBlock(state: EditorState): DecorationSet {
   const options = focusKey.getState(state);
   if (!options?.dim || state.doc.childCount === 0) return DecorationSet.empty;
@@ -50,15 +61,23 @@ function centerCaret(view: EditorView) {
   if (Math.abs(offset) > 4) container.scrollTop += offset;
 }
 
-export const FocusMode = Extension.create({
+export const FocusMode = Extension.create<object, FocusStorage>({
   name: 'focusMode',
+  addStorage() {
+    return { options: OFF };
+  },
   addProseMirrorPlugins() {
+    const storage = this.storage;
     return [
       new Plugin<FocusOptions>({
         key: focusKey,
         state: {
-          init: () => OFF,
-          apply: (tr, options) => (tr.getMeta(focusKey) as FocusOptions | undefined) ?? options,
+          init: () => storage.options,
+          apply: (tr, options) => {
+            const next = tr.getMeta(focusKey) as FocusOptions | undefined;
+            if (next) storage.options = next;
+            return next ?? options;
+          },
         },
         props: { decorations: currentBlock },
         view: () => ({
