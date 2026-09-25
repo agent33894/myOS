@@ -4,7 +4,7 @@ import { execFileSync } from 'child_process';
 import { homedir } from 'os';
 import { isAbsolute, join, relative, resolve } from 'path';
 import { formatLocalDate } from '../shared/date';
-import { runView } from '../shared/query';
+import { runView, splitKind } from '../shared/query';
 import { todayBucket, type Task } from '../shared/tasks';
 import { capture, dailyNotePath } from './documents/daily';
 import { listFiles } from './documents/files';
@@ -24,7 +24,7 @@ const USAGE = `Usage: myos-next [command]
   myos-next today              Late tasks and tasks due, scheduled, or starting today,
                                and the daily note's path
   myos-next tasks [query]      Tasks matching a view, such as "open #work due<=today"
-                               (default: open)
+                               (default: open; kind:notes lists notes instead)
   myos-next find <words>       Notes whose title or text has every word
   myos-next open <path>        Show a file in myOS Next, starting it when needed
   myos-next --capture          Open quick capture in myOS Next
@@ -119,13 +119,15 @@ async function today(): Promise<number> {
 }
 
 async function tasks(args: string[]): Promise<number> {
-  const query = args.join(' ').trim() || 'open';
-  const result = runView('tasks', query, (await listFiles()).notes, formatLocalDate());
+  // `kind:notes` lists notes, as in a ```view block.
+  const { kind, query } = splitKind(args.join(' ').trim() || 'open');
+  const result = runView(kind, query, (await listFiles()).notes, formatLocalDate());
   for (const error of result.errors) console.error(error);
-  if (result.kind !== 'tasks') return 1;
+  const root = currentWorkspace() ?? '';
   for (const group of result.groups) {
     if (group.label) console.log(`${group.label} (${group.items.length})`);
-    for (const task of group.items) console.log(taskLine(task));
+    if (result.kind === 'tasks') for (const task of group.items as Task[]) console.log(taskLine(task));
+    else for (const note of group.items as Array<{ title: string; path: string }>) console.log(`${note.title}\t${join(root, note.path)}`);
   }
   return result.total > 0 ? 0 : 1;
 }

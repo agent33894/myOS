@@ -58,8 +58,9 @@ export const ListRow = forwardRef<HTMLDivElement, ListRowProps>(function ListRow
       {...props}
     >
       {leading ? <span className="flex shrink-0 items-center">{leading}</span> : null}
-      <span className="min-w-0 flex-1 truncate">{children}</span>
-      {meta ? <span className="shrink-0 text-sm text-text-tertiary">{meta}</span> : null}
+      {/* The title keeps room to be read; the meta gives way first in a narrow column. */}
+      <span className="min-w-24 flex-1 truncate">{children}</span>
+      {meta ? <span className="flex min-w-0 shrink justify-end overflow-hidden text-sm text-text-tertiary">{meta}</span> : null}
       {trailing ? <span className="flex shrink-0 items-center gap-1">{trailing}</span> : null}
     </div>
   );

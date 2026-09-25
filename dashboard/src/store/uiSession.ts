@@ -64,7 +64,7 @@ const SPLIT_RATIO = 'myos-next:split-ratio';
 /** The left group's share of the width when split (0.5 is even). */
 export const readSplitRatio = (): number => {
   const ratio = read<number>(SPLIT_RATIO);
-  return typeof ratio === 'number' && ratio >= 0.2 && ratio <= 0.8 ? ratio : 0.5;
+  return typeof ratio === 'number' && ratio >= 0.3 && ratio <= 0.7 ? ratio : 0.5;
 };
 export const writeSplitRatio = (ratio: number) => write(SPLIT_RATIO, ratio);
 

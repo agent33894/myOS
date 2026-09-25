@@ -352,14 +352,14 @@ export function TaskRow({ task, showPath = true }: TaskRowProps) {
             />
           }
           meta={
-            <span className="flex items-center gap-2">
+            <span className="flex min-w-0 items-center gap-2">
               <TaskDates task={task} today={today} />
               {task.recurrence ? (
                 <span title={`Repeats ${task.recurrence}`} className="flex text-text-tertiary">
                   <Icon icon={Repeat} size="sm" />
                 </span>
               ) : null}
-              {where(task, showPath) ? <span className="max-w-56 truncate font-mono text-xs text-text-tertiary">{where(task, showPath)}</span> : null}
+              {where(task, showPath) ? <span className="min-w-0 max-w-56 truncate font-mono text-xs text-text-tertiary">{where(task, showPath)}</span> : null}
             </span>
           }
           trailing={

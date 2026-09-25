@@ -75,8 +75,8 @@ function Group({ group, leading, trailing, style }: { group: GroupId; leading?: 
   );
 }
 
-const RATIO_MIN = 0.2;
-const RATIO_MAX = 0.8;
+const RATIO_MIN = 0.3;
+const RATIO_MAX = 0.7;
 const clampRatio = (ratio: number) => Math.min(RATIO_MAX, Math.max(RATIO_MIN, ratio));
 
 /** Between the two groups: drag or use the arrow keys to share the width; double-click to even it out. The ratio is remembered. */

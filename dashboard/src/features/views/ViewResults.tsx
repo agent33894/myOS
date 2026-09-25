@@ -20,9 +20,9 @@ export function NoteRow({ note }: { note: ViewNote }) {
       data-note-row=""
       leading={<Icon icon={FileText} className="text-text-tertiary" />}
       meta={
-        <span className="flex items-center gap-3">
-          <span className="max-w-56 truncate font-mono text-xs">{note.path}</span>
-          <span className="w-24 text-right text-xs tabular-nums">{formatDistanceToNowStrict(new Date(note.modified), { addSuffix: true })}</span>
+        <span className="flex min-w-0 items-center gap-3">
+          <span className="min-w-0 max-w-56 truncate font-mono text-xs">{note.path}</span>
+          <span className="w-24 shrink-0 text-right text-xs tabular-nums">{formatDistanceToNowStrict(new Date(note.modified), { addSuffix: true })}</span>
         </span>
       }
       onClick={(event) => {
