@@ -27,9 +27,9 @@ An **artifact** is one Markdown file: YAML frontmatter plus a body. This is the 
 | Module | Responsibility |
 | --- | --- |
 | `workspace/` | The selected root, which can only be set through the native folder dialog or starter creation. It provides one `resolveInWorkspace()` (realpath and symlink aware) used by every handler and by the `myos://` asset protocol. Scans skip `.git`, `node_modules`, and dot-folders |
-| `documents/` | Parse and serialize, list (metadata, rev, and checkbox lines, with a cache keyed by rev), read, create, save (`expectRev` → `CONFLICT`), frontmatter-only patch, retype (moves to the type's folder), checkbox toggle, rename, move, area move, delete, restore (exact undo), assets |
+| `documents/` | Parse and serialize, list (metadata, rev, and checkbox lines, with a cache keyed by rev), read, create (readable `<slug>.md` names), save (`expectRev` → `CONFLICT`), frontmatter-only patch, retype (moves to the type's folder), checkbox toggle, rename, move, area move (removing folders it leaves empty), delete, restore (exact undo), assets. Writes rewrite only the frontmatter lines whose values changed, so a file's own key order, list style, quoting, and comments survive |
 | `history/` | Version snapshots under `<userData>/history/<sha1 of workspace>/<path>/`, taken before saves (throttled) and before destructive changes, pruned to 50 per file and 60 days |
-| `export/` | The native save dialog, and PDF printing of renderer-built HTML in a hidden window that runs no scripts |
+| `export/` | The native save dialog, and PDF printing of renderer-built HTML in a hidden window that runs no scripts, opens nothing, navigates nowhere, and times out; failures come back as errors |
 | `watch/` | Debounced change events, `{ path, kind, rev }` |
 | `git/` | Commit summary and diff, only for the workspace or a project's registered `localPath` |
 | `shell/` | Reveal, open externally, notifications |
@@ -41,8 +41,8 @@ An **artifact** is one Markdown file: YAML frontmatter plus a body. This is the 
 
 ## Renderer (`dashboard/src/`)
 
-- `data/`: the artifacts store (`byPath`, bodies keyed by path), updated only from gateway results and watcher events; memoized selectors (Inbox, Today, Tasks, Projects, Notes, templates, journal, review queue, week, counts); the gateway, which is the single write path and records undo, with `planning.ts` (complete, plan, re-plan, recall) and `pages.ts` (templates, journal) built on it; `exporter.ts` (PDF, HTML, clipboard); and undo/redo.
-- `features/`: one folder per surface (shell, inbox, today, notes, projects, page, capture, palette, settings, onboarding). Each owns its components and hooks.
+- `data/`: the artifacts store (`byPath`, bodies keyed by path, and this session's file moves so an open page follows a rename or area move, and its undo), updated only from gateway results and watcher events; memoized selectors (Inbox, Today, Tasks, Projects, Notes, templates, journal, review queue, week, counts); the gateway, which is the single write path and records undo, with `planning.ts` (complete, plan, re-plan, recall) and `pages.ts` (templates, journal) built on it; `exporter.ts` (PDF, HTML, clipboard); and undo/redo.
+- `features/`: one folder per surface (shell, inbox, today, tasks, notes, journal, projects, page, capture, palette, planning, rituals, knowledge, files, settings, onboarding). Each owns its components and hooks; the app shell mounts the overlays that must work everywhere (palette, Quick Capture, rituals, templates, focus mode).
 - `editor/`: TipTap composition (`index.tsx`, the `Editor` contract), `extensions.ts`, `useMarkdownSync.ts` (value in, edits out, never an echo), the `/` insert menu, the selection toolbar, find in page, link routing, commit diffs, and rich blocks: fenced `chart`, `callout`, `kpi`, `roadmap`, and `mermaid` code rendered as React node views through a shared `BlockFrame` and `useBlockDraft`. Shiki grammars, recharts, and mermaid load on first use.
 - `ui/`: the design system (see [`design/design-system.md`](design/design-system.md)).
 

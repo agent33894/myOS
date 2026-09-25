@@ -20,27 +20,31 @@ Users never choose a folder or type directory. Paths are derived. The `domain` f
 ```
 Search ⌘K                     + New ⌘N
 Inbox        (count)   captures waiting to be sorted
-Today        (count)   overdue · due today · flagged · in progress
-Notes                  every note, search-first
+Today        (count)   carried over · due or planned today · flagged · in progress
+Tasks                  Anytime · Upcoming · Someday, by project or area
+Notes                  every note, search-first; tags, filters, review
+Journal                one page per day
 Projects               index; active projects are listed underneath
+Weekly review          only on the review day you choose, until opened or dismissed
 ─────
 Settings  (General · Appearance · Advanced)
 ```
 
-Every sidebar count equals exactly the number of rows its page shows.
+Every sidebar count equals exactly the number of rows its page shows. Tasks has no count: an Anytime task that is also planned for today is listed in both places, but counted only in Today.
 
 ## Core journeys
 
 - **Capture (⌘N from anywhere, `myos --capture`).** Type and press ⏎. This makes zero decisions. Inline syntax is optional: `tomorrow`, `fri`, `next week`, and `in 3 days` set a date; `#tag` adds a tag; `@project` files it into a project; `!` flags it. Anything with a date, flag, or project becomes a Task in that place. Everything else lands in the Inbox.
 - **Sort the Inbox.** A single keyboard-first flow handles one item at a time: *Make task* (t), *Make note* (n), *Move to project* (p), *Delete* (⌫), *Skip* (→). Nothing else is required.
-- **Plan today.** Today is one list: **Overdue**, **Today** (due today, flagged, or in progress), then a quiet **Upcoming** (next 7 days) and **Done today**. Deferred tasks stay hidden until their defer date. Completing a task plays a short spring animation and shows "Done · Undo".
+- **Plan today.** Today is one list: **Carried over** (neutral, never red, with a **Re-plan** batch action), **Today** (due or planned today, flagged, or in progress, in your order), project **Next steps**, then a quiet **Upcoming** (next 7 days) and **Done today**. Dated `- [ ]` lines in notes appear beside tasks. Deferred and Someday tasks stay hidden until their time. Completing a task plays a short spring animation and shows "Done · Undo"; a repeating task records the date and moves to its next occurrence.
+- **Rituals, only when you want them.** *Plan my day* picks today's tasks against your available hours. *Close the day* starts with what got done, gives each unfinished planned task a new day, and can add one line to the journal. The *Weekly review* clears the Inbox, carried-over tasks, projects without a next step, and quiet projects, then glances at Someday. *What moved* is a list of the week's work, never a score. None of them starts on its own.
 - **Write.** Choose *New note* (⌘⇧N or the palette) to open a blank page with the cursor in the title. `/` opens the insert menu with basic blocks first; charts, KPIs, roadmaps, and diagrams sit under *More blocks*.
 - **Manage a project.** The project page shows a title, a short description (free text, no template), **Tasks** with inline add, and **Notes** with inline add. Properties (status, color, dates) sit in a small property row.
 - **Find.** ⌘K searches titles and full text together, with recent items first, and also lists commands (New note, New task, New project, Toggle theme, Settings, …).
 
 ## Every page has properties, inline
 
-The top of a Task page shows a property row: **Status · Due · Defer · Flag · Project · Tags**. Notes show **Project · Tags**. Projects show **Status · Color · Tags**. Every property can be edited in place.
+The top of a Task page shows a property row: **Status · Due · Defer · Flag · Repeat · When · Estimate · Project · Tags · Area**. Notes show **Project · Tags · Spaced review · Area**. Projects show **Status · Next step · Color · Tags · Area**. Journal pages show their date; templates say what they are for. Every property can be edited in place, and choosing an area moves the file to that area's folder.
 
 ## Things that are advanced, not gone
 
@@ -49,7 +53,8 @@ Git ignore rules live under **Settings → Advanced**; "Open in editor" and "Sho
 ## Data safety
 
 - Every save is conditional on the revision the editor last read. If the file changed on disk (another editor, Git, sync), myOS shows **"This page changed on disk"** with *Load theirs* and *Keep mine* and never overwrites silently.
-- Undo restores exactly: same path, same frontmatter (including custom keys), same body.
-- Opening a page never rewrites its file. Editing one block rewrites only that block; every untouched block keeps the exact Markdown it was written in.
+- Undo restores exactly: same path, same frontmatter (including custom keys), same body. A page follows its file when it is renamed, moved to another area, or either is undone.
+- Opening a page never rewrites its file. Editing one block rewrites only that block; every untouched block keeps the exact Markdown it was written in. Changing a property rewrites only that property's line in the frontmatter, and a save with no property changes touches only `updated:`. Ticking a checklist item from Today or a project changes that one line.
+- File names follow titles: after you stop editing a title, the file is renamed to `<slug>.md` in its folder (unique, revision-checked, undoable; off in Settings). Moves leave no empty folders behind.
 - New items start empty. There are no template placeholders.
-- Version history is kept outside the folder, under the app's data directory, one tree per workspace.
+- Version history keeps a copy before saves (at most one per file every ten minutes) and before every delete, retype, rename, or move, outside the folder under the app's data directory, one tree per workspace: the latest 50 per file, for 60 days. Restoring a version is revision-checked and undoable.

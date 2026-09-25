@@ -1,5 +1,7 @@
 # myOS 3.0: twenty features
 
+**Status: shipped.** All twenty features are in myOS 3.0.0 (Waves A, B, and C are complete; Wave D, the launch magazine, follows).
+
 This plan comes from three research tracks: the market (Obsidian and its most-downloaded plugins, Things, Todoist, Sunsama, NotePlan, Bear, Logseq, Tana, Anytype), UX (heuristic walkthroughs as a household organizer, a student, and an indie developer), and behavioral science (implementation intentions, plan-making, the fresh-start effect, peak-end, retrieval practice, self-determination theory).
 
 It holds to the product contract: local files, plain Markdown, no account, no network, no bundled AI. The four nouns stay: Note, Task, Project, Inbox. Everything here builds on the 2.0 foundation (see `product-model.md`, `design/design-system.md`, `architecture-overview.md`).
@@ -35,6 +37,8 @@ These are binding for every feature.
 Everything else, including unknown keys, round-trips unchanged. `domain` is surfaced to users as an **Area**: Work, Personal, Learning (stored as `research`), and Creative.
 
 ## The twenty features
+
+Each feature below is shipped.
 
 ### Tasks and planning
 
@@ -72,7 +76,7 @@ Everything else, including unknown keys, round-trips unchanged. `domain` is surf
 
 - **Wave A (platform).** Spec fields and types, shared logic (recurrence, capture 2.0, Today/Tasks selectors, checklist extraction, recall scheduling, template expansion), main-process capabilities (`artifacts:toggle-check`, `artifacts:rename`, `artifacts:move-area`, history list/read/restore, export PDF/HTML, templates list), and renderer data hooks and gateway functions. Each gets the minimum critical tests.
 - **Wave B (surfaces, in parallel).** Tasks and planning (1–8), rituals (9–12), notes and knowledge (13–17), files and trust (18–20).
-- **Wave C.** End-to-end QA and polish in both themes at 900px and 1600px, packaged smoke test, install.
+- **Wave C (done).** End-to-end QA and polish in both themes at 900px and 1600px, packaged smoke test. Integration fixes: rituals mount with the app shell (so they work in focus mode), ritual preferences live in Settings, search leaves out templates and (unless chosen) journal pages, pages follow renames and area moves including undo, saves rewrite only the frontmatter lines that changed, and focus mode on a task shows its When cue, estimate, and checklist.
 - **Wave D.** The launch magazine.
 
 ## Wave A contracts
@@ -108,9 +112,9 @@ What Wave B builds on. Everything below is in place, typed, and covered where it
 - **Export** (`exporter.ts`): `buildExportDocument({ title, bodyHtml, css? })`, `exportPdf(item, html)`, `exportHtml(item, html)`, `copyAsRichText(html, markdown)`, `copyAsMarkdown(markdown)`.
 - **Settings** (`store/settings.ts`, set any with `setSetting(key, value)`): `defaultArea` (personal), `availableHours` (6), `showCapacity` (true), `weeklyReviewDay` (5, Friday), `lastWeeklyReview` (null), `renameFilesWithTitles` (true), `focusDimParagraphs` (true), `includeJournalInSearch` (false), `usedAreas` (all four; the areas chosen in onboarding, listed first in the Area menu).
 
-### Left for Wave B
+### Left for Wave B (done)
 
-Search still includes journal pages (apply `includeJournalInSearch`), nothing calls `ensureStarterTemplates` yet, `src/data/pages.ts` is listed as a knip entry until a screen imports it.
+Search applies `includeJournalInSearch` and never lists templates, starter templates are written with the starter workspace and from Settings, and `src/data/pages.ts` is used by the journal, templates, and rituals.
 
 ### Files and trust (Wave B)
 

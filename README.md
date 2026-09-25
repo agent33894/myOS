@@ -4,17 +4,20 @@ myOS is a local-first Markdown editor and project workspace for macOS and Linux 
 
 No account is required. myOS has no hosted sync service, telemetry, advertising, or bundled model provider. Your files stay in the folder you choose and remain usable in any text editor.
 
-![myOS Today: overdue, today, and upcoming tasks with their projects and tags, beside the sidebar of places and projects](docs/images/myos-today.png)
+![myOS Today: carried-over, today, and upcoming tasks with their projects and tags, beside the sidebar of places and projects](docs/images/myos-today.png)
 
 ## What it does
 
-- **Capture** anything with ⌘N. Type and press Enter; `tomorrow`, `#tag`, `@project`, and `!` are optional.
+- **Capture** anything with ⌘N. Type and press Enter; `tomorrow`, `every tue`, `~30m`, `#tag`, `@project`, and `!` are optional, and `@` and `#` autocomplete.
 - **Inbox** holds captures until you sort them, one at a time, into tasks, notes, or projects.
-- **Today** shows what is overdue, due today, flagged, or in progress, with a quiet look at the week ahead.
-- **Notes** is a search-first home for everything you write, with a calm editor, `/` blocks, tables, code, charts, KPIs, roadmaps, callouts, and diagrams.
-- **Projects** gather a short description, tasks, and notes in one place.
-- Every page edits its properties inline (dates, flags, project, tags) and autosaves.
-- Edits made in another editor or by Git are picked up live. If a page changed on disk while you were typing, myOS asks instead of overwriting.
+- **Today** shows what was carried over, what is due or planned today, your projects' next steps, and a quiet look at the week ahead, with an honest "About 3 h planned · 6 h available" line.
+- **Plan my day** and **Close the day** are short, optional rituals; a **Weekly review** appears on the day you choose, and **What moved** looks back at the week without scores or streaks.
+- **Tasks** lists everything without a date, later tasks, and Someday, by project or area. Tasks can repeat, carry an estimate and a "when" cue, and `- [ ]` lines in any note count as tasks too.
+- **Notes** is a search-first home for everything you write, with a calm editor, `/` blocks, `[[links]]` with backlinks and unlinked mentions, tag pages, templates, spaced review, and a focus mode.
+- **Journal** keeps one page per day.
+- **Projects** gather a short description, a next step, tasks, checklist items from their notes, and notes in one place.
+- Every page edits its properties inline and autosaves. Areas (Work, Personal, Learning, Creative) keep files in tidy folders, and file names follow titles.
+- Your files stay yours: saves change only what you changed, **Version history** keeps earlier copies outside your folder, and pages export as PDF or HTML. Edits made in another editor or by Git are picked up live, and myOS asks instead of overwriting.
 - Light and dark themes, a choice of accent colors, and an optional serif reading font.
 
 ## Install
