@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
+import { ArtifactType } from '@shared/types';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, ArrowUpDown, FileText, Plus, Search, SearchX } from 'lucide-react';
+import { ArrowLeft, ArrowUpDown, Brain, FileText, Plus, Search, SearchX } from 'lucide-react';
 import { paths, toNoteUrl } from '../../app/navigation';
-import { useDataStatus, useNotes } from '../../data/selectors';
+import { useDataStatus, useJournal, useNotes, useReviewQueue } from '../../data/selectors';
+import { useUIStore } from '../../store/ui';
 import {
   Button,
   EmptyState,
@@ -20,6 +22,7 @@ import { Page } from '../page/Page';
 import { useNarrowWindow } from '../page/useNarrowWindow';
 import { useCreate } from '../shell/useCreate';
 import { useProjectRefs } from '../tasks/projectRefs';
+import { applyNoteFilter, NoteFilters, TagsList, type NoteFilter } from './NoteFilters';
 import { NoteRow } from './NoteRow';
 import { searchNotes, type NoteSort } from './noteSearch';
 
@@ -29,8 +32,19 @@ const isSort = (value: unknown): value is NoteSort => typeof value === 'string' 
 
 /** Every note, search-first, beside the one that is open. */
 export default function NotesPage() {
-  const notes = useNotes();
+  const allNotes = useNotes();
+  const journal = useJournal();
+  const due = useReviewQueue().length;
+  const focusMode = useUIStore((state) => state.focusMode);
   const status = useDataStatus();
+  const [filter, setFilter] = useState<NoteFilter>({});
+  // Journal pages stay out of Notes unless the Kind filter asks for them.
+  const pool = useMemo(() => [...allNotes, ...journal.map((entry) => entry.page)], [allNotes, journal]);
+  const notes = useMemo(
+    () => applyNoteFilter(filter.kind === ArtifactType.JOURNAL ? pool : allNotes, filter),
+    [pool, allNotes, filter],
+  );
+  const filtering = Object.values(filter).some(Boolean);
   const projects = useProjectRefs();
   const narrow = useNarrowWindow();
   const navigate = useNavigate();
@@ -62,7 +76,7 @@ export default function NotesPage() {
     }
   };
 
-  const showList = !narrow || !path;
+  const showList = (!narrow || !path) && !focusMode;
   const showPage = !narrow || Boolean(path);
 
   const list = (
@@ -70,7 +84,14 @@ export default function NotesPage() {
       aria-label="Notes"
       className={narrow ? 'flex h-full w-full flex-col bg-canvas' : 'flex h-full w-80 shrink-0 flex-col border-r border-border bg-canvas'}
     >
-      <h1 className="px-4 pt-6 text-lg font-semibold text-text">Notes</h1>
+      <div className="flex items-center gap-2 px-4 pt-6">
+        <h1 className="flex-1 text-lg font-semibold text-text">Notes</h1>
+        {due > 0 ? (
+          <Button size="sm" variant="ghost" leadingIcon={Brain} onClick={() => navigate(paths.review)} className="-mr-2 text-accent-text hover:text-accent-text">
+            Review {due}
+          </Button>
+        ) : null}
+      </div>
       <div className="flex items-center gap-1 px-3 pb-2 pt-3">
         <Input
           icon={Search}
@@ -102,14 +123,23 @@ export default function NotesPage() {
             ))}
           </MenuContent>
         </Menu>
+        <TagsList />
         <IconButton icon={Plus} label="New note" shortcut="mod+shift+n" onClick={newNote} />
+      </div>
+      <div className="px-3 pb-2">
+        <NoteFilters notes={pool} filter={filter} onChange={setFilter} />
       </div>
       <div role="listbox" aria-label="Notes" className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-2 pb-6">
         {status !== 'ready' ? (
           <LoadingState rows={6} />
         ) : results.length === 0 ? (
-          query ? (
-            <EmptyState icon={SearchX} title="No matching notes." description="Try fewer or different words." />
+          query || filtering ? (
+            <EmptyState
+              icon={SearchX}
+              title="No matching notes."
+              description={filtering ? 'Try clearing a filter.' : 'Try fewer or different words.'}
+              action={filtering ? <Button size="sm" onClick={() => setFilter({})}>Clear filters</Button> : undefined}
+            />
           ) : (
             <EmptyState icon={FileText} title="No notes yet." description="Your writing will gather here." />
           )
