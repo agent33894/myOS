@@ -1,0 +1,4 @@
+# Font sources (npm install of @fontsource packages); only issue/fonts/ is kept
+.fonts-src/
+# Temporary paginator input
+issue/.source.html

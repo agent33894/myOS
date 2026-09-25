@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<title>myOS Next · Issue 04 · The Plain Text Issue</title>
+<link rel="stylesheet" href="magazine.css">
+</head>
+<body>
+<main id="book"><section class="page cover nofolio recto" data-n="1">
+    <div class="cv-top"><span>Issue 04</span><span>Winter 2026</span><span>Markdown · macOS and Linux</span></div>
+    <h1 class="cv-mast">myOS<span class="cv-next">Next<span class="caret"></span></span></h1>
+    <p class="cv-issue"><span class="md-mark">#</span> The Plain Text Issue</p>
+    <div class="cv-shot"><div class="shot " style="width:198mm;height:124mm;background:#16171E"><img src="images/00-hero-dark--0-0-3200-2000-1715.jpg" style="object-position:center" alt=""></div></div>
+    <div class="cv-lines">
+      <p><span class="cl-n">03</span>A Line Is a Task <em>Checkbox lines, anywhere</em></p>
+      <p><span class="cl-n">04</span>One Line of Query <em>Views, in four places</em></p>
+      <p><span class="cl-n">06</span>Your Files Stay Yours <em>Saves that check first</em></p>
+      <p><span class="cl-n">18</span>The Capabilities <em>Photographed, light and dark</em></p>
+    </div>
+    <div class="cv-num">04</div>
+    <p class="cv-foot"><code>- [ ] Read this issue 📅 2026-12-01 #plain-text</code></p>
+  </section><section class="page inside-cover dark nofolio verso" data-n="2">
+    <div class="shot bleed" style="width:230mm;height:300mm;background:#16171E"><img src="images/02-today-dark--864-0-2240-2000-1992.jpg" style="object-position:center" alt=""></div>
+    <p class="bleed-caption"><span class="lbl">Today</span>Friday, 25 September. The daily note on top, and below it what is late and what is due, gathered from the whole folder.</p>
+  </section><section class="page contents recto" data-n="3">
+    <p class="kicker-line"><span>Contents</span><span>Issue 04 · Winter 2026</span></p>
+    <h2 class="ct-title"><span class="md-mark">##</span> In this issue</h2>
+    <div class="ct-grid">
+      <ol class="ct-arts">
+        <li><span class="ct-p" data-ref="a-01">04</span><span class="ct-b"><span class="ct-k">Letter</span><span class="ct-t">A Folder, Opened as It Is</span><span class="ct-d">Set as the Markdown file it was written in.</span></span></li>
+        <li><span class="ct-p" data-ref="a-02">07</span><span class="ct-b"><span class="ct-k">Cover story</span><span class="ct-t">The Folder Is the Product</span><span class="ct-d">Why a directory of Markdown files is the right home for notes and tasks.</span></span></li><li><span class="ct-p" data-ref="a-03">10</span><span class="ct-b"><span class="ct-k">Tasks</span><span class="ct-t">A Line Is a Task</span><span class="ct-d">A task is a checkbox line in any note, and every edit touches that line only.</span></span></li><li><span class="ct-p" data-ref="a-04">15</span><span class="ct-b"><span class="ct-k">Views</span><span class="ct-t">One Line of Query</span><span class="ct-d">A search written as one line of text, in four places.</span></span></li><li><span class="ct-p" data-ref="a-05">18</span><span class="ct-b"><span class="ct-k">The daily note</span><span class="ct-t">Where Things Land</span><span class="ct-d">A file named for today, where captured lines go.</span></span></li><li><span class="ct-p" data-ref="a-06">23</span><span class="ct-b"><span class="ct-k">Safety</span><span class="ct-t">Your Files Stay Yours</span><span class="ct-d">How saves are checked, what is kept, and when the network is used.</span></span></li><li><span class="ct-p" data-ref="a-07">26</span><span class="ct-b"><span class="ct-k">Keyboard</span><span class="ct-t">Hands on the Keys</span><span class="ct-d">Files, commands, source mode, Vim keys, tabs, and splits.</span></span></li><li><span class="ct-p" data-ref="a-08">31</span><span class="ct-b"><span class="ct-k">Design</span><span class="ct-t">A Sheet on a Tinted Table</span><span class="ct-d">One raised page, two thin columns, and a monospace for facts.</span></span></li><li><span class="ct-p" data-ref="a-09">35</span><span class="ct-b"><span class="ct-k">Terminal</span><span class="ct-t">From the Prompt</span><span class="ct-d">What each myos-next subcommand does, and what it prints.</span></span></li>
+      </ol>
+      <div class="ct-side">
+        <p class="ct-sh"><span data-ref="caps">39</span>The Capabilities</p>
+        <ol class="ct-caps"><li><span class="cc-n">01</span><span class="cc-t">Folder</span><span class="cc-p" data-ref="c-01">40</span></li><li><span class="cc-n">02</span><span class="cc-t">Notes &amp; links</span><span class="cc-p" data-ref="c-02">41</span></li><li><span class="cc-n">03</span><span class="cc-t">Tasks as lines</span><span class="cc-p" data-ref="c-03">42</span></li><li><span class="cc-n">04</span><span class="cc-t">Today</span><span class="cc-p" data-ref="c-04">43</span></li><li><span class="cc-n">05</span><span class="cc-t">Tasks screen</span><span class="cc-p" data-ref="c-05">44</span></li><li><span class="cc-n">06</span><span class="cc-t">Views</span><span class="cc-p" data-ref="c-06">46</span></li><li><span class="cc-n">07</span><span class="cc-t">View blocks</span><span class="cc-p" data-ref="c-07">47</span></li><li><span class="cc-n">08</span><span class="cc-t">Capture</span><span class="cc-p" data-ref="c-08">48</span></li><li><span class="cc-n">09</span><span class="cc-t">Source &amp; Vim</span><span class="cc-p" data-ref="c-09">50</span></li><li><span class="cc-n">10</span><span class="cc-t">Properties</span><span class="cc-p" data-ref="c-10">52</span></li><li><span class="cc-n">11</span><span class="cc-t">Backlinks</span><span class="cc-p" data-ref="c-11">53</span></li><li><span class="cc-n">12</span><span class="cc-t">Switcher &amp; command bar</span><span class="cc-p" data-ref="c-12">54</span></li><li><span class="cc-n">13</span><span class="cc-t">Split &amp; tabs</span><span class="cc-p" data-ref="c-13">55</span></li><li><span class="cc-n">14</span><span class="cc-t">Git changes</span><span class="cc-p" data-ref="c-14">56</span></li><li><span class="cc-n">15</span><span class="cc-t">History</span><span class="cc-p" data-ref="c-15">57</span></li><li><span class="cc-n">16</span><span class="cc-t">Conflicts &amp; safety</span><span class="cc-p" data-ref="c-16">58</span></li><li><span class="cc-n">17</span><span class="cc-t">Focus</span><span class="cc-p" data-ref="c-17">59</span></li><li><span class="cc-n">18</span><span class="cc-t">Terminal</span><span class="cc-p" data-ref="c-18">60</span></li></ol>
+        <p class="ct-sh"><span data-ref="ref">62</span>Quick reference</p>
+        <p class="ct-sh"><span data-ref="colophon">65</span>Colophon</p>
+      </div>
+    </div>
+    <div class="folio "><span class="num">003</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div>
+  </section><section class="page manuscript verso" id="a-01" data-n="4">
+    <div class="ms-bar"><span>01-letter.md</span><span>Letter from the editors</span><span>Markdown · UTF-8 · LF</span></div>
+    <div class="ms-body"><div class="ln"><span class="n">1</span><span class="t"><span class="t-fence">---</span></span></div><div class="ln"><span class="n">2</span><span class="t"><span class="t-key">title</span>: A Folder, Opened as It Is</span></div><div class="ln"><span class="n">3</span><span class="t"><span class="t-key">issue</span>: 04</span></div><div class="ln"><span class="n">4</span><span class="t"><span class="t-key">season</span>: Winter 2026</span></div><div class="ln"><span class="n">5</span><span class="t"><span class="t-key">tags</span>: [letter, plain-text]</span></div><div class="ln"><span class="n">6</span><span class="t"><span class="t-fence">---</span></span></div><div class="ln"><span class="n">7</span><span class="t">&nbsp;</span></div><div class="ln"><span class="n">8</span><span class="t"><span class="t-h1"><span class="md-mark">#</span> A Folder, Opened as It Is</span></span></div><div class="ln"><span class="n">9</span><span class="t">&nbsp;</span></div><div class="ln"><span class="n">10</span><span class="t"><span class="md-mark">**</span><b>This issue is about one app and one decision behind it: your notes and tasks belong in files you can read without us.</b><span class="md-mark">**</span></span></div><div class="ln"><span class="n">11</span><span class="t">&nbsp;</span></div><div class="ln"><span class="n">12</span><span class="t">By the myOS Editors</span></div><div class="ln"><span class="n">13</span><span class="t">&nbsp;</span></div><div class="ln"><span class="n">14</span><span class="t">Most people who work at a keyboard already have a folder. It might be a <span class="md-mark">`</span><span class="t-code">docs/</span><span class="md-mark">`</span> directory inside a repository, a folder of meeting notes that has moved between three laptops, or an Obsidian vault that has grown for years. The files in it are Markdown. They open in any editor. Git can track them. Nothing about them depends on a company staying in business.</span></div><div class="ln"><span class="n">15</span><span class="t">&nbsp;</span></div><div class="ln"><span class="n">16</span><span class="t">myOS Next is an editor for that folder. It opens the folder as it is. It shows the real folders and files in the sidebar. It treats any <span class="md-mark">`</span><span class="t-code">.md</span><span class="md-mark">`</span> file as a note and any checkbox line as a task. It does not ask you to move anything, rename anything, or add fields to your files. It adds nothing to a file that you did not type or ask for. When you check off a task, it writes the date, on that one line, and nowhere else.</span></div><div class="ln"><span class="n">17</span><span class="t">&nbsp;</span></div><div class="ln"><span class="n">18</span><span class="t"><span class="t-quote"><span class="md-mark">&gt;</span> The app is a way of looking at the folder. The folder is still the thing.</span></span></div><div class="ln"><span class="n">19</span><span class="t">&nbsp;</span></div><div class="ln"><span class="n">20</span><span class="t">That sentence is the subject of this issue. The cover story explains why a folder of plain files is a good home for a developer's notes and tasks, and what the app deliberately leaves out. Then we go page by page: how a single line becomes a task, how a one-line query becomes a view, why the daily note is where captured thoughts land, how saves are checked so that nothing is overwritten by accident, and how Git fits in without taking over. There is a tour of the keyboard, a look at the design, and a page on the <span class="md-mark">`</span><span class="t-code">myos-next</span><span class="md-mark">`</span> command for people who would rather not leave the terminal.</span></div><div class="ln"><span class="n">21</span><span class="t">&nbsp;</span></div><div class="ln"><span class="n">22</span><span class="t">We have tried to write the way the app is meant to work: say what a thing does, in plain words, and stop. Where we describe a shortcut or a line the app writes, we checked it against the source code. Where we quote the app, the words are the app's.</span></div><div class="ln"><span class="n">23</span><span class="t">&nbsp;</span></div><div class="ln"><span class="n">24</span><span class="t">Each article carries a boxed reference: a syntax table, a list of keys, a sample of output. Tear them out if you like.</span></div><div class="ln"><span class="n">25</span><span class="t">&nbsp;</span></div><div class="ln"><span class="n">26</span><span class="t"><span class="t-quote"><span class="md-mark">&gt;</span> Every example in this issue is a line of text you could type into any editor.</span></span></div><div class="ln"><span class="n">27</span><span class="t">&nbsp;</span></div><div class="ln"><span class="n">28</span><span class="t">Thank you for reading.</span></div><div class="ln"><span class="n">29</span><span class="t">&nbsp;</span></div><div class="ln"><span class="n">30</span><span class="t"><span class="md-mark">*</span><i>The myOS Editors</i><span class="md-mark">*</span></span></div></div>
+    <div class="ms-status"><span>main</span><span>422 words</span><span>Saved</span></div>
+    <div class="folio "><span class="num">004</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div>
+  </section><section class="page always recto" data-n="5">
+    <p class="kicker-line"><span>Always true</span><span>From the product model</span></p>
+    <h2 class="at-title">Three sentences<br><em>every feature has to pass.</em></h2>
+    <ol class="at-list">
+      <li><span class="at-n">1</span><span>Plain Markdown in, plain Markdown out. <em>Untouched text is never reformatted.</em></span></li>
+      <li><span class="at-n">2</span><span>No account, no telemetry, no bundled AI. <em>The network is used only when you click Pull or Push.</em></span></li>
+      <li><span class="at-n">3</span><span>The folder works the same in any other editor, in Obsidian, and in Git.</span></li>
+    </ol>
+    <div class="folio "><span class="num">005</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div>
+  </section><section class="page verso bleed-page nofolio dark" data-n="6"><div class="shot bleed" style="width:230mm;height:300mm;background:#16171E"><img src="images/00-hero-dark--0-0-3200-2000-1992.jpg" style="object-position:center" alt=""></div><p class="bleed-caption"><span class="lbl">02</span>The whole window, dark theme: the folder on the left, the note on its sheet, the Outline on the right, and the status bar along the bottom.</p></section><section class="page recto opener opener-noir after-bleed " data-n="7" id="a-02"><header class="flow-head">
+      <p class="op-kicker"><span class="op-no">02</span>Cover story</p>
+      <h1 class="op-title"><span class="md-mark">#</span>The Folder Is the Product</h1>
+      <p class="op-dek">Why a directory of Markdown files is the right home for a developer’s notes and tasks, and what an editor built around that idea chooses to do, and not do.</p>
+      
+    </header><div class="grid"><div class="margin-col"><p class="byline">By the myOS Editors</p><blockquote class="pull"><p>A database would have made some things easier. It would also have made the folder a copy of the truth instead of the truth.</p></blockquote></div><div class="frame"><div class="cols"><p class="first">Open a terminal and type <code>ls</code> in the place where you keep your notes. What comes back is the whole of the data model. There are folders, and inside them there are files ending in <code>.md</code>. Some have a block of YAML at the top. Some have checkbox lines. Some link to each other with <code>[[double brackets]]</code>. That listing is everything myOS Next knows about, and everything it needs.</p><p>The product documentation puts it in one sentence: myOS Next “opens the folder as it is.” It needs no special layout, no special fields, and no account. It reads Markdown, and when it writes, it writes Markdown. Nothing else is stored in the folder. Settings, the list of saved views, and the local copies of files it keeps for safety live in the app’s own data folder: <code>~/.config/myOS Next</code> on Linux, <code>~/Library/Application Support/myOS Next</code> on macOS.</p><h2>Why plain files</h2><p>The case for plain files is not new, but it is worth stating in terms a developer will recognize.</p><p><strong>Plain files are durable.</strong> A Markdown file does not depend on a server, a sync service, or a database format to be read.</p><p><strong>Plain files are portable.</strong> The same folder can be opened in Vim, in VS Code, in Obsidian, and in myOS Next, on the same afternoon. Each tool sees the same bytes.</p><p><strong>Plain files work with the tools you already use.</strong> <code>grep</code> finds things in them. <code>git diff</code> shows exactly what changed. A shell script can append a line to one. A code review can include one.</p><p><strong>Plain files are already where the work is.</strong> A project’s <code>docs/</code> folder, a vault of meeting notes, a <code>TODO.md</code> at the top of a repository: the notes and tasks already exist. An app that requires moving them into its own structure asks you to maintain two copies, or to give up the one you had.</p><p>The decision record behind myOS Next states the context directly: developers and power users “already keep Markdown in folders, repos, and Obsidian vaults,” and typed one-file-per-task storage and derived folder layouts “get in their way.” The chosen approach, in its words, “works on existing vaults and repos with zero migration and interoperates with Obsidian and Git.” Two alternatives were considered and set aside: keeping a typed model, which imposes structure, and a database index, which “breaks plain-file ownership.”</p></div></div></div><div class="folio"><span class="num">007</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div></section><section class="page verso textpage " data-n="8"><div class="runhead"><span class="rh-no">02</span><span>Cover story</span><span class="rh-title">The Folder Is the Product</span></div><div class="grid"><div class="margin-col"><figure class="mfig"><div class="shot " style="width:44mm;height:48mm;background:#E3E5F0"><img src="images/19-onboarding-light--1120-456-960-1047-381.jpg" style="object-position:center" alt=""></div><figcaption>The first screen. Open a folder, or start a small one in Documents/Notes.</figcaption></figure></div><div class="frame"><div class="cols"><h2>What the app does</h2><p>The window has three columns. On the left, the folder’s real folders and files, with Today, Tasks, and any pinned views above them. In the middle, the note, centered on a raised page. On the right, a panel with the note’s Outline, Backlinks, Properties, Changes, and History. Both side columns fold away. A status bar along the bottom shows the branch, the number of changed files, the note’s word count, and whether it is saved.</p><p>Within that frame, the app does a short list of things:</p><ul>
+<li><strong>Shows files as they are.</strong> Create, rename, move, and delete files and folders in the app or anywhere else. The file watcher picks up changes on disk, and the sidebar updates.</li>
+<li><strong>Finds tasks in any note.</strong> A checkbox line such as <code>- [ ] Fix the login redirect 📅 2026-10-02 #auth</code> is a task, wherever it sits. The dates use the syntax of the Obsidian Tasks plugin; a plain <code>due:2026-10-02</code> works too.</li>
+<li><strong>Collects what is due.</strong> Today shows today’s daily note, and below it the tasks that are due, scheduled, or starting today, plus anything late. Tasks lists every open task in the folder.</li>
+<li><strong>Runs views.</strong> A view is a search written as one line of text, such as <code>open due&lt;=today #work group:file</code>. It can be saved to the sidebar or placed inside a note as a <code>view</code> block whose results update as files change.</li>
+<li><strong>Captures.</strong> <kbd>⌘N</kbd>, or <code>myos-next add "…"</code> in a terminal, adds one line to today’s daily note.</li>
+<li><strong>Works with Git.</strong> If the folder is in a Git repository, the app shows changed files, commits with a message, shows a file’s history with diffs, and pulls or pushes when you click.</li>
+<li><strong>Keeps edits safe.</strong> Saves check that the file has not changed on disk since it was loaded. Editing one block never rewrites the rest of the file. A local copy is kept before saves.</li>
+<li><strong>Exports.</strong> PDF, HTML, or a copy as Markdown or rich text.</li>
+</ul><p>Frontmatter is optional. When a note has it, every key shows as an editable property. Changing a property rewrites only that key’s lines; key order, quoting, list style, and comments stay as they were. Frontmatter that is not valid YAML is left untouched.</p><h2>What it deliberately does not do</h2><p>The list of things left out is as considered as the list of features.</p><p><strong>It does not impose a structure.</strong> There is no required folder for projects, no inbox directory, no file per task. New files go where you create them. The daily notes folder and file name pattern are settings, and when the folder is an Obsidian vault with daily notes configured, those settings are used.</p><p><strong>It does not add metadata you did not ask for.</strong> Opening a note never changes it. The title shown above a note comes from its frontmatter <code>title</code> or its file name; nothing is written to the file to make a title. The lines the app does write, such as the completion date on a checked task, are documented, and they are the same lines the Obsidian Tasks plugin writes.</p><p><strong>It does not reformat your text.</strong> If you edit one paragraph, the other paragraphs, tables, and lists are saved exactly as they were typed. A file with Windows line endings keeps them.</p><p><strong>It does not use the network, except when you click Pull or Push.</strong> There is no account, no sync service, no telemetry, and no bundled AI.</p><p><strong>It does not replace your other tools.</strong> Show in file manager puts any note in front of the programs you already use, and a terminal command runs the same queries as the app.</p><h2>The promise, in practice</h2><p>That last sentence is listed in the product documentation under “Always true,” and it is the test every feature has to pass.</p><p class="split">In any other editor, the files are Markdown with no hidden fields. A task is a line you can edit by hand. A view block is a </p></div></div></div><div class="folio"><span class="num">008</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div></section><section class="page recto textpage " data-n="9"><div class="runhead"><span class="rh-no">02</span><span>Cover story</span><span class="rh-title">The Folder Is the Product</span></div><div class="grid"><div class="margin-col"><blockquote class="pull"><p>The promise is narrow on purpose: the folder works the same in any other editor, in Obsidian, and in Git.</p></blockquote></div><div class="frame"><div class="cols balanced"><p class="cont">fenced code block named <code>view</code>; other editors show it as a line or two of query text.</p><p>In Obsidian, the task syntax is the Obsidian Tasks syntax, so dates, priorities, repeats, and completion markers mean the same thing in both. <code>[[Links]]</code> resolve by path, then file name, then title. Daily notes follow <code>.obsidian/daily-notes.json</code>. The first-run screen says it plainly when it finds a vault: “Obsidian vault found. Daily notes and links will work the same.”</p><p>In Git, every change the app makes is a change to a text file, which shows up in <code>git status</code> and reads cleanly in a diff. When the open folder is a subfolder of a repository, such as a project’s <code>docs/</code>, the Changes panel lists only files inside that folder and leaves the rest of the repository alone.</p><p>It all comes from one choice: the folder is the data, and every Markdown file in it is a note. The rest of this issue follows from that.<span class="endmark"></span></p></div><aside class="ref"><p><strong>What myOS Next understands in a folder</strong></p>
+<table class="tbl">
+<thead>
+<tr>
+<th>Thing</th>
+<th>On disk</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Folder</td>
+<td>The folder you opened, shown as it is, empty folders included</td>
+</tr>
+<tr>
+<td>Note</td>
+<td>Any <code>.md</code> file outside dot folders and <code>node_modules</code></td>
+</tr>
+<tr>
+<td>Task</td>
+<td>A checkbox line in any note, or a file with <code>type: todo</code></td>
+</tr>
+<tr>
+<td>Daily note</td>
+<td><code>daily/2026-09-25.md</code> by default; folder and pattern are settings</td>
+</tr>
+<tr>
+<td>View</td>
+<td>One line of query text, saved to the sidebar or in a <code>view</code> block in a note</td>
+</tr>
+</tbody></table>
+<p>Stored outside the folder: settings, saved views, local copies.</p>
+</aside></div></div><div class="folio"><span class="num">009</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div></section><section class="page verso opener opener-numeral " data-n="10" id="a-03"><div class="op-numeral">03</div><header class="flow-head">
+      <p class="op-kicker"><span class="op-no">03</span>Tasks</p>
+      <h1 class="op-title"><span class="md-mark">#</span>A Line Is a Task</h1>
+      <p class="op-dek">In myOS Next a task is a checkbox line in any note. Everything the app does to it is a precise edit to that one line.</p>
+      
+    </header><div class="grid"><div class="margin-col"><p class="byline">By the myOS Editors</p><blockquote class="pull"><p>There is no task database. The task is the line, and the line lives where you wrote it.</p></blockquote></div><div class="frame"><div class="cols"><p>Here is a task:</p><pre class="lang-markdown"><code>- <span class="t-box">[ ]</span> Fix the login redirect 📅 2026-10-02 <span class="t-tag">#auth</span>
+</code></pre><p>It is a Markdown list item with a checkbox, some text, a due date, and a tag. It can sit in a meeting note, a project plan, a daily note, or a <code>TODO.md</code> at the root of a repository. It can be indented under another item. It can start with <code>*</code> or <code>1.</code> instead of <code>-</code>. The only place it does not count is inside a fenced code block, where it is example text.</p><p>myOS Next reads every such line in the folder and treats it as a task. There is no task database and no separate task file. The task is the line, and the line lives where you wrote it.</p><h2>The date tokens</h2><p>The app reads the syntax of the Obsidian Tasks plugin, so a folder behaves the same in both. Dates are written <code>YYYY-MM-DD</code> after an emoji:</p><pre class="lang-markdown"><code>- <span class="t-box">[ ]</span> Fix the login redirect ⏫ 🔁 every week 🛫 2026-09-28 ⏳ 2026-09-30 📅 2026-10-02 <span class="t-tag">#auth</span>
+  * <span class="t-box">[x]</span> Write the test ✅ 2026-09-25
+1. <span class="t-box">[ ]</span> Call Sam due:2026-10-02
+- <span class="t-box">[-]</span> Dropped idea
+</code></pre><p>📅 is due, ⏳ is scheduled, 🛫 is start, and ✅ is the date it was done. 🔁 introduces a repeat rule. Five emoji set priority, from 🔺 highest to ⏬ lowest. For people who would rather not type emoji, a plain <code>due:2026-10-02</code> works as a due date.</p><p>The checkbox itself has three states that matter. <code>[ ]</code> is open, <code>[x]</code> is done, and <code>[-]</code> is cancelled. Any other character in the box also counts as open, so custom markers from other tools do not break anything.</p><h2>Completing a task</h2><p class="split">When you check a task off, in the note, on the Today screen, in the Tasks list, or in a view, the app makes one edit to one line. <code>[ ]</code> becomes <code>[x]</code>, and <code> ✅</code> with today’s date is </p></div></div></div><div class="folio"><span class="num">010</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div></section><section class="page recto textpage " data-n="11"><div class="runhead"><span class="rh-no">03</span><span>Tasks</span><span class="rh-title">A Line Is a Task</span></div><div class="grid"><div class="margin-col"></div><div class="frame"><div class="cols"><p class="cont">added at the end. If the line ends in a block id such as <code>^a1b2</code>, the date goes before it.</p><pre class="lang-markdown"><code>- <span class="t-box">[x]</span> Fix the login redirect 📅 2026-10-02 <span class="t-tag">#auth</span> ✅ 2026-09-29
+</code></pre><p>Unchecking reverses it: <code>[x]</code> becomes <code>[ ]</code> and the ✅ date is removed. Nothing else in the file moves.</p><h2>Repeating</h2><p>A repeating task is where most task tools start rewriting things. Here the rule is the same one Obsidian Tasks follows. When you check off a task with a 🔁 rule, the checked line stays where it is as a record, and a new unchecked copy is written on the line directly above it, with each date moved forward by one step of the rule.</p><p>Before, checked on 29 September:</p><pre class="lang-markdown"><code>- <span class="t-box">[ ]</span> Review open pull requests 🔁 every week 📅 2026-09-28 <span class="t-tag">#team</span>
+</code></pre><p>After:</p><pre class="lang-markdown"><code>- <span class="t-box">[ ]</span> Review open pull requests 🔁 every week 📅 2026-10-05 <span class="t-tag">#team</span>
+- <span class="t-box">[x]</span> Review open pull requests 🔁 every week 📅 2026-09-28 <span class="t-tag">#team</span> ✅ 2026-09-29
+</code></pre><p>The step is counted from the due date, or the scheduled date if there is no due date, or the start date if there is neither. Every date on the line moves by that same step, so a task that starts two days before it is due still does. A rule ending in <code>when done</code> counts from the day it was checked instead. The new copy has no ✅ date and no block id. A repeating task with no dates at all repeats without dates.</p><p>The rules read like speech: <code>every day</code>, <code>every weekday</code>, <code>every 2 weeks</code>, <code>every week on Tuesday</code>, <code>every month on the 15th</code>, <code>every year</code>.</p><h2>Rescheduling</h2><p>Setting a date is also a one-line edit. If the token is already there, only the date changes. If it is not, a new token is added before the ✅ date, which is the order Obsidian Tasks writes. A plain <code>due:</code> stays plain: moving <code>- [ ] Call Sam due:2026-10-02</code> to the fifth gives <code>- [ ] Call Sam due:2026-10-05</code>, and no emoji appears.</p><p>In any task list, a task row has a menu with Due date and Scheduled date, each offering Today, Tomorrow, Next week (the coming Monday), and Pick a date…, plus Clear when the task already has that date. From the keyboard, a focused row takes <code>d</code> for the due date, <code>s</code> for scheduled, <code>t</code> to add a tag, and <code>x</code> or Space to check it off. <code>j</code> and <code>k</code> move between rows. Enter opens the note at that line; <kbd>⌘Enter</kbd> opens it to the side.</p><p>Adding a tag puts <code>#tag</code> at the end of the task’s text, before any dates or repeat, and leaves every other character as it was.</p><h2>Why edits are checked</h2><p>Each of these edits carries the exact text of the line as the app last read it, along with its line number. Before writing, the app checks that the line still reads that way. If you edited the file in another editor a moment ago, or a <code>git pull</code> moved things around, the check fails, nothing is written, and the app says so. A stale edit never lands on the wrong line. When an edit does go through, a short confirmation such as “Done · Fix the login redirect” offers Undo, and undo restores the file exactly.</p><h2>Files with <code>type: todo</code></h2><p>Some folders keep one file per task, with frontmatter like this:</p><pre class="lang-yaml"><code><span class="t-fence">---</span>
+type: todo
+status: pending
+due: 2026-10-01
+<span class="t-fence">---</span>
+</code></pre><p>myOS Next counts those files as tasks too. The file is done when <code>status: done</code>. Checking it off writes <code>status: done</code> and a <code>completedDate</code>; unchecking writes <code>status: pending</code>. Its dates come from <code>due</code>, <code>scheduled</code>, and <code>start</code>. Only those frontmatter lines change.</p></div></div></div><div class="folio"><span class="num">011</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div></section><section class="page verso textpage " data-n="12"><div class="runhead"><span class="rh-no">03</span><span>Tasks</span><span class="rh-title">A Line Is a Task</span></div><div class="grid"><div class="margin-col"><blockquote class="pull"><p>A task written in the middle of a meeting note should stay in the meeting note.</p></blockquote></div><div class="frame"><div class="cols balanced"><h2>Why not one file per task</h2><p>It is a fair question, since some tools work that way and the app supports it. The answer is about where tasks come from. A developer’s tasks show up in the middle of other writing: a follow-up in meeting notes, a loose end in a design doc, a reminder in today’s log. Moving each one into its own file separates it from the reason it exists. It also fills the folder with small files that are awkward to read in any other editor.</p><p>A checkbox line keeps the task next to its context. It reads as a list in every Markdown viewer. It diffs as one line in Git. And because the syntax is shared with Obsidian Tasks, the same line works in both apps without translation.</p><p>The decision record behind the app puts the choice plainly: “tasks are checkbox lines anywhere (Obsidian Tasks compatible),” and “type: todo files still count as tasks.” One model for new work, and room for the files you already have.<span class="endmark"></span></p></div><aside class="ref"><p><strong>Task syntax</strong></p>
+<table class="tbl">
+<thead>
+<tr>
+<th>Write</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>[ ]</code> · <code>[x]</code> · <code>[-]</code></td>
+<td>Open · done · cancelled</td>
+</tr>
+<tr>
+<td><code>📅 2026-10-02</code> or <code>due:2026-10-02</code></td>
+<td>Due</td>
+</tr>
+<tr>
+<td><code>⏳ 2026-09-30</code></td>
+<td>Scheduled</td>
+</tr>
+<tr>
+<td><code>🛫 2026-09-28</code></td>
+<td>Start</td>
+</tr>
+<tr>
+<td><code>✅ 2026-09-29</code></td>
+<td>Done on (written when you check it off)</td>
+</tr>
+<tr>
+<td><code>🔁 every week on Tuesday</code></td>
+<td>Repeats; add <code>when done</code> to count from completion</td>
+</tr>
+<tr>
+<td><code>🔺 ⏫ 🔼 🔽 ⏬</code></td>
+<td>Priority, highest to lowest</td>
+</tr>
+<tr>
+<td><code>#auth</code>, <code>#work/api</code></td>
+<td>Tags; <code>#work</code> also finds <code>#work/api</code></td>
+</tr>
+</tbody></table>
+<p><strong>Row keys:</strong> <code>x</code> or Space check · <code>d</code> due · <code>s</code> scheduled · <code>t</code> tag · <code>j</code>/<code>k</code> move · Enter open at line · <kbd>⌘Enter</kbd> open to the side</p>
+</aside></div></div><div class="folio"><span class="num">012</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div></section><section class="page recto teaser" data-n="13"><p class="kicker-line"><span>Overleaf</span><span>04 · Views</span></p><blockquote class="tz-q"><p>The note holds the question, not a copy of the answer.</p></blockquote><p class="tz-next"><span class="tz-no">04</span>One Line of Query<span class="tz-arrow">→</span></p><div class="folio"><span class="num">013</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div></section><section class="page verso bleed-page nofolio " data-n="14"><div class="shot bleed" style="width:230mm;height:300mm;background:#E3E5F0"><img src="images/04-query-help-light--1088-0-1472-1920-1472.jpg" style="object-position:center" alt=""></div><p class="bleed-caption"><span class="lbl">04</span>The Tasks screen with the query bar’s help open. The whole language fits in one popover.</p></section><section class="page recto opener opener-spread after-bleed " data-n="15" id="a-04"><header class="flow-head">
+      <p class="op-kicker"><span class="op-no">04</span>Views</p>
+      <h1 class="op-title"><span class="md-mark">#</span>One Line of Query</h1>
+      <p class="op-dek">A view in myOS Next is a search written as a single line of text. The same line runs on the Tasks screen, in the sidebar, inside a note, and in the terminal.</p>
+      
+    </header><div class="grid"><div class="margin-col"><p class="byline">By the myOS Editors</p><blockquote class="pull"><p>Terms are combined with AND. There is no nesting, no parentheses, and no OR. The whole language fits in one table.</p></blockquote></div><div class="frame"><div class="cols"><p class="first">Many task apps give you a set of fixed lists: inbox, today, upcoming, someday. myOS Next gives you two screens, Today and Tasks, and a way to write any other list yourself. That way is a view: one line of text, such as</p><pre class="lang-text"><code>open due&lt;=today <span class="t-tag">#work</span> group:file
+</code></pre><p>Read it left to right. Open tasks, due today or earlier, tagged <code>#work</code>, grouped by the file they live in. Terms are combined with AND. A <code>-</code> in front of a filter negates it. There is no nesting, no parentheses, and no OR. The whole language fits in a table, and it is printed in the box at the end of this article.</p><h2>The terms</h2><p><strong>Status.</strong> <code>open</code> and <code>done</code> match open or done tasks. <code>overdue</code> matches open tasks with a due date before today.</p><p><strong>Dates.</strong> Any of the four task dates can be compared: <code>due</code>, <code>scheduled</code>, <code>start</code>, and <code>done</code>. The operators are <code>&lt;</code>, <code>&lt;=</code>, <code>=</code>, <code>&gt;=</code>, and <code>&gt;</code>. The right-hand side can be <code>today</code>, <code>tomorrow</code>, <code>yesterday</code>, an offset such as <code>today+7</code> or <code>today-7</code>, or a date like <code>2026-10-01</code>. <code>due=none</code> finds tasks with no due date.</p><p><strong>Tags.</strong> <code>#release</code> matches tasks or notes with that tag, and nested tags below it: <code>#work</code> also finds <code>#work/api</code>. <code>-#someday</code> leaves them out.</p><p><strong>Places.</strong> <code>path:notes/</code> matches files whose path starts with <code>notes/</code>. <code>file:api</code> matches files whose name contains <code>api</code>.</p><p><strong>Words.</strong> Anything else is text to look for. In a task view it matches the task’s text; in a notes view it matches a note’s title and body. A phrase in quotes is searched as a phrase.</p><p><strong>Options.</strong> <code>sort:due</code>, <code>sort:priority</code>, or <code>sort:file</code> order tasks (the default is <code>due</code>). Notes sort by <code>file</code>, <code>title</code>, or <code>modified</code>. <code>group:file</code>, <code>group:folder</code>, <code>group:tag</code>, and <code>group:date</code> split the results into sections. <code>limit:20</code> caps the count.</p><p>When a term cannot be used, it is left out and the view says why in one sentence, for example that a term “works in task views only,” or “needs a date such as today, tomorrow, or 2026-10-01.” The rest of the view still runs.</p><h2>Some real examples</h2><p>The week ahead, by day:</p><pre class="lang-text"><code>open due&lt;=today+7 group:date
+</code></pre><p>Grouping by date puts late tasks first under “Overdue,” then each date in order, with “Today” and “Tomorrow” named, and undated tasks last.</p><p>Everything in a project’s docs folder that has no date yet:</p><pre class="lang-text"><code>open path:docs/ due=none
+</code></pre><p>What got done last week, for a status update:</p><pre class="lang-text"><code>done done&gt;=today-7 sort:file
+</code></pre></div></div></div><div class="folio"><span class="num">015</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div></section><section class="page verso textpage " data-n="16"><div class="runhead"><span class="rh-no">04</span><span>Views</span><span class="rh-title">One Line of Query</span></div><div class="grid"><div class="margin-col"></div><div class="frame"><div class="cols"><p>High-priority work that is not blocked on someone else:</p><pre class="lang-text"><code>open sort:priority -#waiting limit:10
+</code></pre><p>Tasks that mention the parser, anywhere:</p><pre class="lang-text"><code>open parser
+</code></pre><p>A view lists tasks unless it asks for notes. In a note or at the terminal, <code>kind:notes</code> does that. The ten most recently changed meeting notes:</p><pre class="lang-text"><code>kind:notes <span class="t-tag">#meeting</span> sort:modified limit:10
+</code></pre><h2>The Tasks screen</h2><p>The Tasks screen is the plainest place to write a view. It starts with <code>open</code>, which lists every open task in the folder. Type in the query bar to narrow it. Each result is a task row you can check off, reschedule, tag, or open at its line. When a query is worth keeping, save it.</p><h2>Saved and pinned views</h2><p>Save as view asks for a name, such as “Release week,” and pins the view to the sidebar, below Today and Tasks. The view is stored in the app’s settings, not in your folder, so saving and removing views never changes a file. Remove, on the view’s own screen, shows a confirmation with Undo, which puts the view back in the same place.</p><h2>Views inside a note</h2><p>A view can also live in a note, as a fenced code block named <code>view</code>. The query can follow the block’s name, fill the lines inside, or both. It lists tasks unless the query includes <code>kind:notes</code>:</p><pre class="lang-markdown"><code><span class="t-fence">```view</span>
+open due&lt;=today+7 <span class="t-tag">#work</span>
+group:file
+<span class="t-fence">```</span>
+
+<span class="t-fence">```view kind:notes <span class="t-tag">#meeting</span> sort:modified limit:10</span>
+<span class="t-fence">```</span>
+</code></pre><p>In the app, the block shows live results that update as files change. The header shows the query in monospace and a count, and an Open as view button opens it as a full view. Checking a task inside the block writes to that task’s own file, not to the note the block sits in.</p><p>In any other editor, and in Obsidian, the block is a fenced code block with a line or two of text. Nothing breaks, and nothing is hidden. This is the difference between a view block and an embedded database: the note holds the question, not a copy of the answer.</p><p>A project page might hold a short paragraph of context, a list of links, and a <code>view</code> block with <code>open path:. group:file</code>. Inside a block, <code>path:.</code> means the note’s own folder, <code>path:./drafts/</code> and <code>path:../</code> are read from there, and <code>file:this</code> is the note itself, so the block keeps working when the folder is moved or renamed. As tasks are added in meeting notes and daily notes under that folder, the page shows them without anyone editing it.</p><h2>The same query in the terminal</h2><p>Because the query engine is shared code, the command line runs the same language:</p><pre class="lang-bash"><code><span class="t-prompt"></span><span class="t-cmd">myos-next</span> tasks "open <span class="t-tag">#release</span> due&lt;=today+7"
+</code></pre><p>It prints one task per line, with its dates and its <code>path:line</code>, grouped when the query asks for groups. The terminal article later in this issue has the details.</p><p>The decision record behind the app names this as a consequence of the folder-first approach: “a small query engine is shared by app, fenced blocks, and CLI.” One syntax to learn, in four places.<span class="endmark"></span></p></div></div></div><div class="folio"><span class="num">016</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div></section><section class="page recto textpage refpage " data-n="17"><div class="runhead"><span class="rh-no">04</span><span>Views</span><span class="rh-title">One Line of Query</span></div><div class="grid"><div class="margin-col"></div><div class="frame"><aside class="ref full" style="--ref-size: 12.500000000000009pt;"><p><strong>View syntax</strong></p>
+<table class="tbl">
+<thead>
+<tr>
+<th>Term</th>
+<th>Matches</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>open</code>, <code>done</code></td>
+<td>Open or done tasks</td>
+</tr>
+<tr>
+<td><code>overdue</code></td>
+<td>Open tasks due before today</td>
+</tr>
+<tr>
+<td><code>due&lt;=today</code>, <code>scheduled=tomorrow</code>, <code>start&gt;=today-7</code>, <code>done=yesterday</code></td>
+<td>Tasks by date; operators <code>&lt; &lt;= = &gt;= &gt;</code></td>
+</tr>
+<tr>
+<td><code>due=none</code></td>
+<td>Tasks with no due date</td>
+</tr>
+<tr>
+<td><code>#tag</code>, <code>-#tag</code></td>
+<td>With or without a tag (nested tags included)</td>
+</tr>
+<tr>
+<td><code>path:notes/</code></td>
+<td>Paths starting with <code>notes/</code></td>
+</tr>
+<tr>
+<td><code>file:api</code></td>
+<td>File names containing <code>api</code></td>
+</tr>
+<tr>
+<td><code>words</code>, <code>"a phrase"</code></td>
+<td>Task text, or a note’s title and text</td>
+</tr>
+<tr>
+<td><code>sort:due</code> · <code>sort:priority</code> · <code>sort:file</code></td>
+<td>Task order (default <code>due</code>)</td>
+</tr>
+<tr>
+<td><code>sort:file</code> · <code>sort:title</code> · <code>sort:modified</code></td>
+<td>Note order</td>
+</tr>
+<tr>
+<td><code>group:file</code> · <code>folder</code> · <code>tag</code> · <code>date</code></td>
+<td>Sections (<code>date</code> for tasks only)</td>
+</tr>
+<tr>
+<td><code>limit:20</code></td>
+<td>At most this many results</td>
+</tr>
+<tr>
+<td><code>path:.</code> · <code>file:this</code></td>
+<td>In a block: the note’s folder · the note</td>
+</tr>
+<tr>
+<td><code>kind:notes</code></td>
+<td>In a block or the terminal: list notes</td>
+</tr>
+</tbody></table>
+<p>Fence it: <code>```view</code>, with the query after the name or on the lines inside.</p>
+</aside></div></div><div class="folio"><span class="num">017</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div></section><section class="page verso opener opener-numeral " data-n="18" id="a-05"><div class="op-numeral">05</div><header class="flow-head">
+      <p class="op-kicker"><span class="op-no">05</span>The daily note</p>
+      <h1 class="op-title"><span class="md-mark">#</span>Where Things Land</h1>
+      <p class="op-dek">The daily note is the one fixed place in myOS Next: a file named for today, where every captured line goes unless you say otherwise.</p>
+      
+    </header><div class="grid"><div class="margin-col"><p class="byline">By the myOS Editors</p><blockquote class="pull"><p>A day on which you wrote nothing leaves no empty file behind.</p></blockquote></div><div class="frame"><div class="cols"><p>A folder of notes needs somewhere for loose things to go: a thought in a meeting, a reminder to call someone, a bug noticed while reading a log.</p><p>myOS Next answers with the daily note: a file named for the date, <code>daily/2026-09-25.md</code> by default. It is the default target for captures, and the top of the Today screen. It is an ordinary Markdown file. You can open it in any editor, grep it, commit it, or delete it.</p><h2>Made when it is needed</h2><p>Today’s note does not exist until something is written to it. Opening the app on a new morning creates nothing. The Today screen shows the note’s path in small monospace type above an empty editor with the placeholder “Write about today, or press / for blocks”. The file appears on disk with your first keystroke or your first capture, and not before.</p><p>In a folder you share with Git, a day on which you wrote nothing leaves no empty file to commit or clean up.</p><h2>Obsidian’s settings, respected</h2><p>Many people who keep a folder of Markdown already keep daily notes in Obsidian, with their own folder and file name format. myOS Next reads those settings. When the open folder has <code>.obsidian/daily-notes.json</code>, its <code>folder</code> and <code>format</code> are used, unless you change them in myOS Next’s Settings. Your changes are stored in the app’s own settings file; the Obsidian file is only read.</p><p>The name pattern uses the same tokens Obsidian uses: <code>YYYY</code>, <code>YY</code>, <code>MMMM</code>, <code>MMM</code>, <code>MM</code>, <code>M</code>, <code>DD</code>, <code>D</code>, <code>Do</code>, <code>dddd</code>, and <code>ddd</code>. Text in <code>[brackets]</code> is kept as written. Slashes make subfolders, so <code>YYYY/MM/YYYY-MM-DD</code> files each day under its year and month. A pattern like <code>YYYY-MM-DD [Log]</code> gives <code>2026-09-25 Log.md</code>.</p></div></div></div><div class="folio"><span class="num">018</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div></section><section class="page recto textpage " data-n="19"><div class="runhead"><span class="rh-no">05</span><span>The daily note</span><span class="rh-title">Where Things Land</span></div><div class="grid"><div class="margin-col"></div><div class="frame"><div class="cols"><h2>The Today screen</h2><p>Today puts the daily note on top, editable in place, with a button to open it in its own tab. Below it are the tasks for today, drawn from the whole folder: a “Late” section for open tasks whose due date has passed, and a “Today” section for tasks due today, scheduled for today or earlier, or starting today. The header gives the date and a short count, such as “3 for today · 1 late.” When nothing is due, it says so, “Nothing is due today”, and offers a button to capture a task.</p><p>Checking a task off here writes <code>[x]</code> and the ✅ date in the task’s own file, which may be a meeting note from last week. The daily note is where you write; the task list is where you see what is owed.</p><h2>Capture from the app</h2><p>Press <kbd>⌘N</kbd> anywhere in the app. A single field opens, with the example “Ship the parser fix tomorrow #release” as its placeholder. Below the field, the app shows where the line will go and, in monospace, the exact line it will write. Enter adds it and closes the field. <kbd>Shift-Enter</kbd> adds it and keeps the field open for the next one. A confirmation names the file, “Added to daily/2026-09-25.md,” with Undo.</p><p>The rules for turning text into a line are short. Plain text becomes a list item:</p><table class="tbl">
+<thead>
+<tr>
+<th>Typed</th>
+<th>Written</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>Read the RFC</code></td>
+<td><code>- Read the RFC</code></td>
+</tr>
+</tbody></table><p>Text that starts with <code>[ ]</code>, contains a date, a repeat, or a <code>!</code> becomes a task, in the Obsidian Tasks syntax described elsewhere in this issue. Dates can be words. Captured on Friday 25 September 2026:</p><table class="tbl">
+<thead>
+<tr>
+<th>Typed</th>
+<th>Written</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>Ship the parser fix tomorrow #release</code></td>
+<td><code>- [ ] Ship the parser fix #release 📅 2026-09-26</code></td>
+</tr>
+<tr>
+<td><code>Call Sam tomorrow !</code></td>
+<td><code>- [ ] Call Sam ⏫ 📅 2026-09-26</code></td>
+</tr>
+<tr>
+<td><code>Dentist on friday</code></td>
+<td><code>- [ ] Dentist 📅 2026-10-02</code></td>
+</tr>
+<tr>
+<td><code>Water the plants every tue</code></td>
+<td><code>- [ ] Water the plants 🔁 every week on Tuesday 📅 2026-09-29</code></td>
+</tr>
+<tr>
+<td><code>[ ] Reply to the review</code></td>
+<td><code>- [ ] Reply to the review</code></td>
+</tr>
+</tbody></table><p>A weekday means its next occurrence, never today, which is why Friday’s “on friday” lands a week out. Date words count only as whole words, so “today’s news” is not a date. Short forms such as “sun” and “sat” count only after a word like “on” or “by,” before a time, or at the end, so “sat with Joe” stays a sentence. The word that introduced a date is removed with it: “Dentist on friday” becomes “Dentist.”</p><h2>Capture somewhere else</h2><p>The daily note is the default, not a rule. In Settings, the capture target can be any <code>.md</code> file, such as <code>inbox.md</code> or <code>notes/log.md</code>. A capture heading can also be set, for example “Log.” Then each capture goes to the end of that heading’s section rather than the end of the file, and the heading is added if the file does not have it yet.</p><h2>Capture from the terminal</h2><p>The same capture runs from a shell, without opening a window:</p><pre class="lang-bash"><code><span class="t-prompt"></span><span class="t-cmd">myos-next</span> add "Ship the parser fix tomorrow <span class="t-tag">#release</span>"
+</code></pre><p>It prints <code>Added to daily/2026-09-25.md</code> and exits. With no text, it reads from standard input, so other tools can pipe into it. If the app is open, its file watcher picks up the new line and the Today screen updates.</p><p>On Linux, the desktop entry installed with the app includes a Capture action, which runs <code>myos-next --capture</code> and opens the capture field in myOS Next.<span class="endmark"></span></p></div></div></div><div class="folio"><span class="num">019</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div></section><section class="page verso textpage refpage " data-n="20"><div class="runhead"><span class="rh-no">05</span><span>The daily note</span><span class="rh-title">Where Things Land</span></div><div class="grid"><div class="margin-col"><blockquote class="pull"><p>One line, one file, one place to look.</p></blockquote></div><div class="frame"><aside class="ref full" style="--ref-size: 12.500000000000009pt;"><p><strong>Daily notes and capture</strong></p>
+<table class="tbl">
+<thead>
+<tr>
+<th>Setting</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Daily folder</td>
+<td><code>daily</code> (or Obsidian’s <code>folder</code>)</td>
+</tr>
+<tr>
+<td>Name pattern</td>
+<td><code>YYYY-MM-DD</code> (or Obsidian’s <code>format</code>)</td>
+</tr>
+<tr>
+<td>Capture target</td>
+<td>Today’s daily note, or any <code>.md</code> file</td>
+</tr>
+<tr>
+<td>Capture heading</td>
+<td>None; when set, captures go to that section</td>
+</tr>
+</tbody></table>
+<table class="tbl">
+<thead>
+<tr>
+<th>Type</th>
+<th>Becomes a task because of</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>[ ] …</code></td>
+<td>The checkbox</td>
+</tr>
+<tr>
+<td><code>tomorrow</code>, <code>fri</code>, <code>in 3 days</code>, <code>next week</code>, <code>📅 2026-10-01</code>, <code>due:2026-10-01</code></td>
+<td>A date</td>
+</tr>
+<tr>
+<td><code>every tue</code>, <code>every 2 weeks</code></td>
+<td>A repeat</td>
+</tr>
+<tr>
+<td><code>!</code></td>
+<td>High priority (⏫)</td>
+</tr>
+</tbody></table>
+<p><kbd>⌘N</kbd> in the app · <code>myos-next add "…"</code> in a terminal</p>
+</aside></div></div><div class="folio"><span class="num">020</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div></section><section class="page recto teaser" data-n="21"><p class="kicker-line"><span>Overleaf</span><span>06 · Safety</span></p><blockquote class="tz-q"><p>Edit one paragraph, and the diff shows one paragraph.</p></blockquote><p class="tz-next"><span class="tz-no">06</span>Your Files Stay Yours<span class="tz-arrow">→</span></p><div class="folio"><span class="num">021</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div></section><section class="page verso bleed-page nofolio dark" data-n="22"><div class="shot bleed" style="width:230mm;height:300mm;background:#0B0B0F"><img src="images/15-history-dark--544-0-2112-2000-1992.jpg" style="object-position:center" alt=""></div><p class="bleed-caption"><span class="lbl">06</span>History for one note: Git commits and local copies in one list, each with a diff from that version to now, and Restore this version.</p></section><section class="page recto opener opener-noir after-bleed " data-n="23" id="a-06"><header class="flow-head">
+      <p class="op-kicker"><span class="op-no">06</span>Safety</p>
+      <h1 class="op-title"><span class="md-mark">#</span>Your Files Stay Yours</h1>
+      <p class="op-dek">An editor that works on a folder other tools also touch has to be careful. Here is exactly how myOS Next saves, what it refuses to overwrite, and when it uses the network.</p>
+      
+    </header><div class="grid"><div class="margin-col"><p class="byline">By the myOS Editors</p><figure class="mfig"><div class="shot " style="width:44mm;height:59mm;background:#E3E5F0"><img src="images/14-changes-light--2559-80-641-860-381.jpg" style="object-position:center" alt=""></div><figcaption>The Changes panel: branch and upstream, Pull and Push, the changed files, a Summary, a Description, and the commit button.</figcaption></figure></div><div class="frame"><div class="cols"><p class="first">A folder of Markdown is shared ground. You edit it in myOS Next, in Vim, in Obsidian. A <code>git pull</code> rewrites half of it. A script appends to a log. Any editor that saves into that folder needs to know whether the file on disk is still the one it loaded. myOS Next is built around that question.</p><h2>Saves that check first</h2><p>Every note the app opens has a revision, taken from the file’s modification time and size. When you type, the app saves in the background against the revision it loaded. If the file on disk has a different revision, the save is refused. Nothing is written.</p><p>What happens next depends on whether you have unsaved edits. If you do not, the note reloads with the new text and the caret stays about where it was. If you do, a banner appears above the note: “This note changed on disk. Load the saved version, or keep your edits and save over it.” Two buttons follow, <strong>Load theirs</strong> and <strong>Keep mine</strong>. The app does not guess, merge, or pick the newer one. Nothing is overwritten until you choose.</p><p>The app recognizes its own saves by their revision, not by timing, so a save it just made does not trigger a false alarm. Task edits from lists carry the exact text of the line too, as the article on tasks describes, so a checkmark never lands on a line that has moved.</p><h2>Byte-exact edits, untouched blocks</h2><p>The rendered editor shows Markdown as formatted text: headings, lists, tables, code. Editors like this usually work by parsing the file into a tree and printing the tree back out as Markdown. That round trip is where formatting drifts. A table’s columns get realigned. <code>*</code> bullets become <code>-</code>. Blank lines change. A file you edited in one paragraph shows forty changed lines in <code>git diff</code>.</p><p>myOS Next keeps a map from each block in the editor to the exact source text it came from. When you save, blocks you did not touch are written back from that source, byte for byte. Only the block you edited is printed fresh. In Markdown source mode, the rule is simpler still: what you type is what is saved, and a file with Windows line endings keeps them.</p><p>The same care applies to frontmatter. Changing a property rewrites only that key’s lines. Key order, quoting, list style, and comments stay as they were. Frontmatter that is not valid YAML is left alone entirely; the text below it can still be edited.</p><p>Undo is exact as well. Undoing a file change, a task check, a capture, a move, or a delete puts back the bytes that were there.</p><h2>Local copies</h2><p class="split">Before a save, the app keeps a copy of the file as it was. These copies live in the app’s data folder, never in your folder, under a subfolder for each open folder so two folders never mix. At most one copy is kept per file </p></div></div></div><div class="folio"><span class="num">023</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div></section><section class="page verso textpage " data-n="24"><div class="runhead"><span class="rh-no">06</span><span>Safety</span><span class="rh-title">Your Files Stay Yours</span></div><div class="grid"><div class="margin-col"></div><div class="frame"><div class="cols"><p class="cont">every ten minutes during saves. Copies are also kept before a delete and before a restore. Each file keeps its last fifty, and none older than thirty days.</p><p>Copies follow a file when it is renamed or moved in the app. They are listed in the note’s History panel as “Local copy,” with the time, next to Git commits if the folder has any. Each entry shows what changed from that version to now, and <strong>Restore this version</strong> puts it back. Restoring is itself undoable, and the text it replaces becomes the newest local copy.</p><p>Deleting a folder takes a local copy of each note in it first, and moves the files to the system trash when there is one.</p><h2>Git, when the folder has it</h2><p>If the open folder is in a Git repository, the app uses the <code>git</code> binary you already have, run inside that folder.</p><p><strong>Changes.</strong> The file list marks changed files with a dot. The Changes panel lists them with their diffs, and has a Summary field and an optional Description. Press <kbd>⌘⇧Enter</kbd> to commit. Outside the panel, the same keys open it with the cursor in the Summary field. A commit can include all changes or only the files you select.</p><p><strong>History.</strong> Each note has a History panel: the commits that touched it, newest first, each with its subject, author, and diff. Renames are followed, so a note’s history continues back past its old name. Restoring a file from a commit writes that commit’s bytes into the file, and the replaced text is kept as a local copy.</p><p><strong>A folder inside a repository.</strong> Many developers keep notes in a repository’s <code>docs/</code> folder. When that subfolder is what you open, the Changes panel shows only files inside it, and committing all changes includes only changes inside it. The rest of the repository is left alone.</p><p><strong>No repository yet.</strong> Outside a repository, the Changes panel says “Not a Git repository” and offers <code>git init</code> in the open folder. It will not create a repository inside one that already exists.</p><p>Paths are passed to Git after <code>--</code> as literal pathspecs, so a file named <code>-rf.md</code> is only ever a file name. Commit hashes are validated before use. Git’s own error messages are shown as Git wrote them.</p><h2>Pull and Push, only on click</h2><p>The Changes panel shows the branch and its upstream, and two buttons: Pull and Push, each with a count when the branch is behind or ahead. Pull runs <code>git pull --rebase --autostash</code>. Push runs <code>git push</code>. Each runs only when you click it, and the result is shown in one line.</p><p>Git runs with prompts turned off. If a remote needs a password the app cannot supply, the command fails with Git’s message instead of waiting for input nobody can see.</p><h2>No network otherwise</h2><p>That is the whole list. myOS Next uses the network for Git pull and push, when you click them, and for nothing else. It has no account, no sync service, no telemetry, and no bundled AI or model provider. It reads and writes only the folder you open, plus its own settings and local copies in its data folder.</p><p>Sync, if you want it, is whatever you already use for files: Git, a synced drive, or nothing at all. The app does not need to know.<span class="endmark"></span></p></div></div></div><div class="folio"><span class="num">024</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div></section><section class="page recto textpage refpage " data-n="25"><div class="runhead"><span class="rh-no">06</span><span>Safety</span><span class="rh-title">Your Files Stay Yours</span></div><div class="grid"><div class="margin-col"></div><div class="frame"><aside class="ref full" style="--ref-size: 12.500000000000009pt;"><p><strong>What is kept, and where</strong></p>
+<table class="tbl">
+<thead>
+<tr>
+<th>Item</th>
+<th>Where</th>
+<th>Kept</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Your notes</td>
+<td>The folder you open</td>
+<td>As you wrote them</td>
+</tr>
+<tr>
+<td>Settings and saved views</td>
+<td><code>settings.json</code> in the app data folder</td>
+<td>Until changed</td>
+</tr>
+<tr>
+<td>Local copies</td>
+<td><code>history/</code> in the app data folder</td>
+<td>50 per file, 30 days, at most one per 10 minutes of saving</td>
+</tr>
+</tbody></table>
+<p>App data folder: <code>~/.config/myOS Next</code> (Linux), <code>~/Library/Application Support/myOS Next</code> (macOS).</p>
+<p><strong>Network:</strong> Pull and Push, on click. Nothing else.</p>
+</aside></div></div><div class="folio"><span class="num">025</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div></section><section class="page verso opener opener-keys " data-n="26" id="a-07"><div class="op-numeral op-keys">⌘</div><header class="flow-head">
+      <p class="op-kicker"><span class="op-no">07</span>Keyboard</p>
+      <h1 class="op-title"><span class="md-mark">#</span>Hands on the Keys</h1>
+      <p class="op-dek">A practical tour of myOS Next from the keyboard: opening files, running commands, switching to source with Vim keys, and working in tabs and splits.</p>
+      
+    </header><div class="grid"><div class="margin-col"><p class="byline">By the myOS Editors</p><blockquote class="pull"><p>If you forget a key, <kbd>⌘K</kbd> lists every command with its shortcut.</p></blockquote></div><div class="frame"><div class="cols"><p class="first">The product documentation asks for two things at once: that myOS Next “feel soft and unhurried to look at, and fast and precise to use from the keyboard.” This is a tour of the second half. Every key below was checked against the app’s source.</p><p>On Linux the app shows Ctrl where macOS shows <kbd>⌘.</kbd> This article uses <kbd>⌘.</kbd></p><h2><kbd>⌘P</kbd>: open a file</h2><p><kbd>⌘P</kbd> opens the file switcher. Type part of a path or a title; matching is fuzzy, and recent files come first. Enter opens the file. <kbd>⌘Enter</kbd> opens it to the side, in a split. In a large folder, it is usually quicker than the file list.</p><h2><kbd>⌘K</kbd>: do anything</h2><p><kbd>⌘K</kbd> opens the command bar, which lists every command with its shortcut, in groups: Recent, Go to, Note, Tasks, Git, and App. Typing also searches the text of your notes. If you forget a key, this is where to find it. Commands that have no key are here too; while a note is open, that includes “Show outline,” “Show backlinks,” and “Turn on Vim keys in source mode.” In the rendered editor with text selected, <kbd>⌘K</kbd> makes a link instead.</p><p>Press <code>?</code> when you are not typing to see a sheet of every shortcut.</p><h2><kbd>⌘E</kbd>: rendered or source</h2><p>Each tab shows a note one of two ways. Rendered shows headings, lists, tables, code, and diagrams as formatted text, with <code>/</code> for blocks and <code>[[</code> for links. Markdown source shows the file as it is, in monospace, with syntax highlighting. <kbd>⌘E</kbd> switches the current tab between them, and the new view starts on the line your caret was on.</p><p>Source mode is a full CodeMirror editor. <code>[[</code> suggests notes to link. Task checkboxes are clickable, and checking one writes the same one-line edit as anywhere else. <kbd>⌘F</kbd> finds in the note in both modes.</p><h2>Vim keys</h2><p class="split">Vim keys are off by default. Turn them on from <kbd>⌘K</kbd> (“Turn on Vim keys in source mode”) or in Settings. They apply in source mode only; the rendered view keeps ordinary editing. Vim’s bindings are loaded </p></div></div></div><div class="folio"><span class="num">026</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div></section><section class="page recto textpage " data-n="27"><div class="runhead"><span class="rh-no">07</span><span>Keyboard</span><span class="rh-title">Hands on the Keys</span></div><div class="grid"><div class="margin-col"><blockquote class="pull"><p><kbd>⌘.</kbd> hides everything but the text. Escape brings it back.</p></blockquote></div><div class="frame"><div class="cols"><p class="cont">ahead of the default keymap, so its keys win inside the editor.</p><p>The one exception is <kbd>⌘E</kbd> itself. The app catches it before either editor sees it, so the mode switch works from any Vim state.</p><h2><kbd>⌘\</kbd>: tabs and splits</h2><p>Notes open in tabs. A single click in the file list opens a note in a preview tab, which the next single click replaces. Double-clicking, or starting to type, keeps it. This keeps the tab bar from filling up as you browse.</p><p><kbd>⌘\</kbd> splits the window to the right, and pressing it again closes the split. Each side has its own tabs, and each can show a different screen: a note on the left and Today on the right, for example. <kbd>⌘1</kbd> through <kbd>⌘8</kbd> go to that tab in the focused side; <kbd>⌘9</kbd> goes to the last. <kbd>Ctrl-Tab</kbd> and <kbd>Ctrl-Shift-Tab</kbd> step through them. <kbd>⌘W</kbd> closes the tab.</p><p>Tabs, the split, and which folders are expanded are remembered for each folder you open.</p><h2><kbd>⌘B</kbd> and <kbd>⌘.</kbd>: making room</h2><p><kbd>⌘B</kbd> shows or hides the file column on the left. <kbd>⌥⌘B</kbd> shows or hides the panel on the right, with Outline, Backlinks, Properties, Changes, and History. With both hidden, you see the note and the tabs.</p><p>One detail: in the rendered editor, the editor gets the first say, and <kbd>⌘B</kbd> there makes the selected text bold. Press it with the focus outside the text, or use the command bar, to fold the files away.</p><p><kbd>⌘.</kbd> goes further. Focus mode hides everything but the text. Escape leaves it, and so does a small “Exit focus” button, the one piece of the interface focus mode keeps.</p><h2><kbd>⌘⇧Enter</kbd>: commit</h2><p>In a Git repository, <kbd>⌘⇧Enter</kbd> opens the Changes panel with the cursor in the Summary field. Type a message and press <kbd>⌘⇧Enter</kbd> again to commit. Two presses and a sentence, without touching the mouse.</p><h2><kbd>⌘N</kbd> and the rest</h2><p><kbd>⌘N</kbd> opens capture, which adds a line to today’s daily note. <kbd>⌥⌘N</kbd> starts a new note in the folder selected in the file list. <kbd>⌘,</kbd> opens Settings. Outside the text, <kbd>⌘Z</kbd> undoes the last file change, whether it was a checked task, a capture, a move, or a delete; inside the text, it undoes typing as usual.</p><p>In the file list, the arrow keys move and open or close folders, Enter opens the file, F2 renames, and Delete deletes, with a local copy kept first.</p><p>In any task list, a focused row takes <code>x</code> to check it off, <code>d</code> and <code>s</code> to set the due or scheduled date, <code>t</code> to add a tag, and <code>j</code> and <code>k</code> to move.<span class="endmark"></span></p></div></div></div><div class="folio"><span class="num">027</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div></section><section class="page verso textpage refpage " data-n="28"><div class="runhead"><span class="rh-no">07</span><span>Keyboard</span><span class="rh-title">Hands on the Keys</span></div><div class="grid"><div class="margin-col"></div><div class="frame"><aside class="ref full" style="--ref-size: 12.500000000000009pt;"><p><strong>Shortcuts</strong></p>
+<table class="tbl">
+<thead>
+<tr>
+<th>Keys</th>
+<th>Does</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><kbd>⌘P</kbd></td>
+<td>Open a file (<kbd>⌘Enter</kbd>: to the side)</td>
+</tr>
+<tr>
+<td><kbd>⌘K</kbd></td>
+<td>Commands</td>
+</tr>
+<tr>
+<td><kbd>⌘N</kbd></td>
+<td>Capture</td>
+</tr>
+<tr>
+<td><kbd>⌥⌘N</kbd></td>
+<td>New note in this folder</td>
+</tr>
+<tr>
+<td><kbd>⌘E</kbd></td>
+<td>Rendered or Markdown source</td>
+</tr>
+<tr>
+<td><kbd>⌘F</kbd></td>
+<td>Find in note</td>
+</tr>
+<tr>
+<td><kbd>⌘\</kbd></td>
+<td>Split to the right, or back</td>
+</tr>
+<tr>
+<td><kbd>⌘1</kbd>–<kbd>⌘9</kbd></td>
+<td>Go to tab (<kbd>⌘9</kbd> is the last)</td>
+</tr>
+<tr>
+<td><kbd>⌘W</kbd></td>
+<td>Close tab</td>
+</tr>
+<tr>
+<td><kbd>⌘B</kbd> · <kbd>⌥⌘B</kbd></td>
+<td>Show or hide the files · the panel</td>
+</tr>
+<tr>
+<td><kbd>⌘.</kbd> · Esc</td>
+<td>Focus mode · leave it</td>
+</tr>
+<tr>
+<td><kbd>⌘⇧Enter</kbd></td>
+<td>Open Changes, then commit</td>
+</tr>
+<tr>
+<td><kbd>⌘Z</kbd> · <kbd>⌘⇧Z</kbd></td>
+<td>Undo · redo a file change</td>
+</tr>
+<tr>
+<td><kbd>⌘,</kbd></td>
+<td>Settings</td>
+</tr>
+<tr>
+<td>?</td>
+<td>Every shortcut</td>
+</tr>
+<tr>
+<td>/ · [[</td>
+<td>Insert a block · link to a note</td>
+</tr>
+</tbody></table>
+</aside></div></div><div class="folio"><span class="num">028</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div></section><section class="page recto teaser" data-n="29"><p class="kicker-line"><span>Overleaf</span><span>08 · Design</span></p><blockquote class="tz-q"><p>Monospace marks what is literal: a path, a branch, a query. Everything else is set in Inter.</p></blockquote><p class="tz-next"><span class="tz-no">08</span>A Sheet on a Tinted Table<span class="tz-arrow">→</span></p><div class="folio"><span class="num">029</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div></section><section class="page verso bleed-page nofolio " data-n="30"><div class="shot bleed" style="width:230mm;height:300mm;background:#E3E5F0"><img src="images/17-focus-light--0-0-3200-2000-1992.jpg" style="object-position:center" alt=""></div><p class="bleed-caption"><span class="lbl">08</span>Focus mode, light theme: the sheet on its tinted canvas, and a small Exit focus button in the top corner.</p></section><section class="page recto opener opener-spread after-bleed " data-n="31" id="a-08"><header class="flow-head">
+      <p class="op-kicker"><span class="op-no">08</span>Design</p>
+      <h1 class="op-title"><span class="md-mark">#</span>A Sheet on a Tinted Table</h1>
+      <p class="op-dek">The design of myOS Next, garment by garment: one raised page, two thin columns that fold away, a monospace for facts, and a lot of room left empty.</p>
+      
+    </header><div class="grid"><div class="margin-col"><p class="byline">By the myOS Editors</p><blockquote class="pull"><p>The window is the table. The note is the sheet laid on it.</p></blockquote></div><div class="frame"><div class="cols"><p class="first">Fashion editors talk about restraint as a choice you can see: the dress with no print, the room with one chair. The design of myOS Next makes the same kind of choice, and it can be described in exact terms. There are few pieces. Each one has a job. Nothing is there for decoration.</p><h2>The sheet</h2><p>The window itself is the canvas. It is a soft neutral with a small amount of the accent color mixed in: five percent in the light theme, six in the dark. On it sits one raised page, the sheet, where the note is. In the light theme the sheet is a warm near-white, <code>#FFFEFC</code>, with a shadow so faint it is closer to an edge than a shadow. In the dark theme the sheet is a slightly lighter charcoal than the canvas, and the separation comes mostly from tone.</p><p>The sheet is centered and only as wide as the text column plus 56 pixels of margin on each side. The text column has three widths, set in Settings under Editor → Line width: Narrow, Normal, and Wide, at 36, 42, and 52 rem. The design documentation lists “Use depth instead of lines” as a principle: surfaces are told apart by tone and soft shadow, and a hairline is a last resort.</p><p>The plan for the app describes the intended feel in one line: “The note sits on a slightly raised sheet in the middle of a tinted canvas, with wide margins.” The effect is closer to paper on a desk than to a document in a program.</p><h2>The side columns</h2><p>On the left is the file list: Today, Tasks, pinned views, and then the folder’s real folders and files. On the right is the panel: Outline, Backlinks, Properties, Changes, and History. Both columns are the same color as the canvas, so they sit on the window without a dividing line. There is no frame around them, only text and small icons.</p><p>They are thin. The file list starts at 248 pixels. Its rows are 28 pixels tall, the one place denser than the 36-pixel rows used in lists elsewhere, so that a project’s <code>docs/</code> folder fits on screen. The right panel starts folded away. Both columns fold with a key, <kbd>⌘B</kbd> and <kbd>⌥⌘B</kbd>, and with both folded you see only the tabs and the text.</p><p>The active tab, the active place in the sidebar, and the open file are marked the same way: a small raised pill in the sheet’s color. The selected item looks like a piece of the page, which is what it is.</p></div></div></div><div class="folio"><span class="num">031</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div></section><section class="page verso textpage " data-n="32"><div class="runhead"><span class="rh-no">08</span><span>Design</span><span class="rh-title">A Sheet on a Tinted Table</span></div><div class="grid"><div class="margin-col"><figure class="mfig"><div class="shot " style="width:44mm;height:17mm;background:#E3E5F0"><img src="images/18-settings-appearance-light--1120-192-1440-556-381.jpg" style="object-position:center" alt=""></div><figcaption>Appearance: the theme, and one accent, from which every other shade is mixed.</figcaption></figure></div><div class="frame"><div class="cols"><h2>Mono for facts</h2><p>The app uses three typefaces, all bundled.</p><p><strong>Inter</strong> is the interface and the text, at a readable default of 14 pixels for the interface and 16 for the body of a note. Section labels are sentence case in a medium weight. The design rules say it plainly: “There are no uppercase monospace labels.”</p><p><strong>Geist Mono</strong> is used for facts: file paths, the status bar, source mode, code, keyboard hints, and file names while you type them. The path of today’s daily note sits above it in small monospace. The query in a view block is shown in monospace. The status bar reads like a line of <code>git status</code>: the branch, a dot and a count of changed files, arrows for ahead and behind.</p><p><strong>Literata</strong> is optional. When Settings → Editor → Reading font is set to Serif, the body of a note is set in it. The interface stays in Inter.</p><h2>Color, and one accent</h2><p>The palette is mostly warm neutrals. The design documentation describes them as “warm but clean, not cream paper.” There is one accent, chosen in Appearance; the default is Iris, <code>#5B5BD6</code>. Every other accent shade is mixed from that one value, so changing it changes everything together. The accent fill is the same in both themes, so white text on it always meets a 4.5:1 contrast ratio.</p><p>All text meets 4.5:1 contrast on every surface it can sit on, in both themes.</p><h2>Light and dark</h2><p>Both themes are first-class. Every color token has a light and a dark value, and the two are reviewed together. The dark theme is not an inversion: it relies more on surface tone than on shadow, and the sheet is set apart by being a step lighter than the canvas. Changes to the design are checked in both themes, at a narrow and a wide window.</p><h2>Motion and shape</h2><p>Motion is short. Hover and press take 120 milliseconds, popovers 200, dialogs 320. A slightly springy curve is kept for two moments only: checking a task and creating something. Nothing loops. When the system asks for reduced motion, movement is turned off and only fades remain.</p><p>Corners are measured, not decorative: 6 pixels for chips and checkboxes, 10 for controls and rows, 14 for cards, 20 for dialogs and the sheet. Spacing follows a 4-point grid. Icons are Lucide, with a 1.75 stroke, at 16 pixels in the interface.</p><h2>What restraint means here</h2><p>It would be easy to describe all this as minimal and leave it there. The more accurate word is edited. Each surface was asked what it is for. The sidebar is for finding files, so it shows files. The status bar is for state, so it shows state, in mono. The sheet is for the note, so it is the brightest thing in the window. Everything else is canvas.<span class="endmark"></span></p></div></div></div><div class="folio"><span class="num">032</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div></section><section class="page recto textpage refpage " data-n="33"><div class="runhead"><span class="rh-no">08</span><span>Design</span><span class="rh-title">A Sheet on a Tinted Table</span></div><div class="grid"><div class="margin-col"></div><div class="frame"><aside class="ref full" style="--ref-size: 12.500000000000009pt;"><p><strong>The wardrobe</strong></p>
+<table class="tbl">
+<thead>
+<tr>
+<th>Piece</th>
+<th>Specification</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Canvas</td>
+<td>Neutral with 5% (light) or 6% (dark) accent</td>
+</tr>
+<tr>
+<td>Sheet</td>
+<td><code>#FFFEFC</code> light; a step above the canvas in dark; <code>--shadow-sheet</code></td>
+</tr>
+<tr>
+<td>Text column</td>
+<td>36, 42, or 52 rem, plus 56 px margins</td>
+</tr>
+<tr>
+<td>Side columns</td>
+<td>Canvas color, no rule; files 248 px; 28 px rows</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>Inter (interface and text), Geist Mono (paths, status, source), Literata (optional serif)</td>
+</tr>
+<tr>
+<td>Accent</td>
+<td>Iris <code>#5B5BD6</code> by default; one value, all shades mixed from it</td>
+</tr>
+<tr>
+<td>Motion</td>
+<td>120 / 200 / 320 ms; spring only for checking a task or creating something</td>
+</tr>
+<tr>
+<td>Radius</td>
+<td>6 · 10 · 14 · 20 px</td>
+</tr>
+</tbody></table>
+</aside></div></div><div class="folio"><span class="num">033</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div></section><section class="page verso bleed-page nofolio dark" data-n="34"><div class="shot bleed" style="width:230mm;height:300mm;background:#14151C"><img src="images/20-terminal-dark--0-0-3200-2000-1992.jpg" style="object-position:center" alt=""></div><p class="bleed-caption"><span class="lbl">09</span>add, today, and tasks in a terminal, on the folder the app has open.</p></section><section class="page recto opener opener-terminal after-bleed dark mono-page" data-n="35" id="a-09"><header class="flow-head">
+      <p class="op-kicker"><span class="op-no">09</span>Terminal</p>
+      <h1 class="op-title"><span class="md-mark">#</span>From the Prompt</h1>
+      <p class="op-dek">The <code>myos-next</code> command reads and writes the same folder as the app, with no window. Here is what each subcommand does and what it prints.</p>
+      
+    </header><div class="grid"><div class="margin-col"><p class="byline">By the myOS Editors</p><blockquote class="pull"><p>The command and the app share one query engine and one capture parser. Nothing is translated between them.</p></blockquote></div><div class="frame"><div class="cols"><p class="first">Some people keep a terminal open all day and would rather not switch to another window to write down a task. For them, myOS Next installs a command, <code>myos-next</code>. On Linux, the local install links it into <code>~/.local/bin</code>.</p><p>The command works on the folder the app last opened. <code>add</code>, <code>today</code>, <code>tasks</code>, and <code>find</code> run without starting a window, whether or not the app is running. If it is running, its file watcher picks up whatever the command wrote. If no folder has been chosen yet, the command says so: “No folder is open yet. Open myOS Next once to choose one.”</p><h2>add</h2><pre class="lang-bash"><code><span class="t-prompt">$ </span><span class="t-cmd">myos-next</span> add "Bump the go.mod minimum to 1.22 tomorrow <span class="t-tag">#release</span>"
+Added to daily/2026-09-25.md
+</code></pre><p><code>add</code> appends one line to today’s daily note, or to the capture file and heading chosen in Settings. The rules are the same as in the app’s capture field. Plain text becomes a list item. Text that starts with <code>[ ]</code>, or has a date, a repeat, or <code>!</code>, becomes a task. The example above writes:</p><pre class="lang-markdown"><code>- <span class="t-box">[ ]</span> Bump the go.mod minimum to 1.22 <span class="t-tag">#release</span> 📅 2026-09-26
+</code></pre><p>With no text, <code>add</code> reads from standard input, so it can take the output of another command:</p><pre class="lang-bash"><code><span class="t-prompt">$ </span><span class="t-cmd">echo</span> "Rotate the staging keys fri" | myos-next add
+</code></pre><h2>today</h2><pre class="lang-bash"><code><span class="t-prompt">$ </span><span class="t-cmd">myos-next</span> today
+Daily note: daily/2026-09-25.md
+Late (3)
+  [ ] Answer the security review on redirects  (due 2026-09-23)  daily/2026-09-24.md:1
+  [ ] Add a test for an HTTP date in `Retry-After` <span class="t-tag">#bug</span>  (due 2026-09-24)  daily/2026-09-23.md:2
+  [ ] Idle connections leak on `Connection: close` <span class="t-tag">#bug</span>  (due 2026-09-24)  notes/Connection pooling.md:31
+Today (7)
+  [ ] Reply to Priya about the `WithBudget` name <span class="t-tag">#release</span>  (due 2026-09-25)  daily/2026-09-25.md:2
+  [ ] Freeze the public API for 0.9 <span class="t-tag">#release</span>  (due 2026-09-25)  notes/Release 0.9.md:14
+  [ ] Draft the release notes for 0.9 <span class="t-tag">#release</span> <span class="t-tag">#docs</span>  (scheduled 2026-09-25)  daily/2026-09-24.md:3
+  [ ] Look at the p99 numbers on the pool change  (scheduled 2026-09-25)  daily/2026-09-25.md:3
+  [ ] Re-run the pool benchmark on arm64 <span class="t-tag">#release</span>  (scheduled 2026-09-25)  notes/Connection pooling.md:32
+  [ ] RFC 9110 on `503` and `Retry-After` <span class="t-tag">#reading</span>  (scheduled 2026-09-25)  notes/Reading list.md:5
+  [ ] Triage new GitHub issues  (scheduled 2026-09-25)  notes/Triage.md:5
+</code></pre><p><code>today</code> prints the path of today’s daily note, with “(not written yet)” if the file does not exist, then two sections: late tasks, and tasks due, scheduled, or starting today. These are the same tasks the Today screen shows.</p><p>Each task line has the same shape everywhere in the command: the checkbox, the task’s text with its tags, its dates in parentheses, and <code>path:line</code>. The path is relative to the open folder, so from there <code>vim +14 "notes/Release 0.9.md"</code> goes straight to the line.</p></div></div></div><div class="folio"><span class="num">035</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div></section><section class="page verso textpage dark mono-page" data-n="36"><div class="runhead"><span class="rh-no">09</span><span>Terminal</span><span class="rh-title">From the Prompt</span></div><div class="grid"><div class="margin-col"></div><div class="frame"><div class="cols"><h2>tasks</h2><pre class="lang-bash"><code><span class="t-prompt">$ </span><span class="t-cmd">myos-next</span> tasks "open <span class="t-tag">#release</span> group:file"
+2026-09-24 (1)
+  [ ] Draft the release notes for 0.9 <span class="t-tag">#release</span> <span class="t-tag">#docs</span>  (scheduled 2026-09-25)  daily/2026-09-24.md:3
+2026-09-25 (2)
+  [ ] Reply to Priya about the `WithBudget` name <span class="t-tag">#release</span>  (due 2026-09-25)  daily/2026-09-25.md:2
+  [ ] Bump the go.mod minimum to 1.22 <span class="t-tag">#release</span>  (due 2026-09-26)  daily/2026-09-25.md:5
+Connection pooling (1)
+  [ ] Re-run the pool benchmark on arm64 <span class="t-tag">#release</span>  (scheduled 2026-09-25)  notes/Connection pooling.md:32
+Release 0.9 (6)
+  [ ] Freeze the public API for 0.9 <span class="t-tag">#release</span>  (due 2026-09-25)  notes/Release 0.9.md:14
+  [ ] Rename `WithRetryBudget` to `WithBudget` before the freeze <span class="t-tag">#release</span>  (due 2026-09-26)  notes/Release 0.9.md:15
+  [ ] Write the migration guide for `Client.Do` changes <span class="t-tag">#release</span> <span class="t-tag">#docs</span>  (due 2026-09-29)  notes/Release 0.9.md:16
+  [ ] Tag `v0.9.0-rc.1` <span class="t-tag">#release</span>  (due 2026-09-30, scheduled 2026-09-28)  notes/Release 0.9.md:17
+  [ ] Publish the release notes <span class="t-tag">#release</span> <span class="t-tag">#docs</span>  (due 2026-10-02)  notes/Release 0.9.md:18
+  [ ] Announce on the mailing list <span class="t-tag">#release</span>  (due 2026-10-03, starts 2026-10-02)  notes/Release 0.9.md:19
+</code></pre><p><code>tasks</code> takes a view, in the same one-line language as the app, the sidebar, and fenced blocks. Without a query, it lists open tasks. When the query groups, each group is printed as a heading with its count; when grouping by file, the heading is the note’s title (its frontmatter <code>title</code>, or else its file name), and groups follow the order of their paths. A term the view cannot use is reported on standard error, and the rest of the query still runs.</p><h2>find</h2><pre class="lang-bash"><code><span class="t-prompt">$ </span><span class="t-cmd">myos-next</span> find "rate limit"
+Rate limits	/home/maya/code/harbor/docs/rate-limits.md
+2026-09-23	/home/maya/code/harbor/daily/2026-09-23.md
+Reading list	/home/maya/code/harbor/notes/Reading list.md
+Retry budget	/home/maya/code/harbor/notes/Retry budget.md
+getting-started	/home/maya/code/harbor/docs/getting-started.md
+README	/home/maya/code/harbor/README.md
+</code></pre><p><code>find</code> lists notes whose title or text contains every word, most recently changed first. Each line is the title, a tab, and the full path, which makes it easy to pass to <code>cut</code>, <code>fzf</code>, or an editor.</p><h2>open</h2><pre class="lang-bash"><code><span class="t-prompt">$ </span><span class="t-cmd">myos-next</span> open notes/api.md
+</code></pre><p><code>open</code> shows a file in the app, starting it if needed. The path is read relative to the current directory first, so <code>open ./api.md</code> works from inside the folder, and otherwise as a path inside the open folder. <code>--capture</code> opens the capture field in the running window.</p><h2>Exit codes</h2><p><code>add</code> and <code>today</code> return 0 on success; <code>add</code> with nothing to add returns 1. <code>tasks</code> and <code>find</code> return 0 when something matched and 1 when nothing did, so they can be used in a shell <code>if</code>. Errors go to standard error.<span class="endmark"></span></p></div></div></div><div class="folio"><span class="num">036</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div></section><section class="page recto textpage refpage dark mono-page" data-n="37"><div class="runhead"><span class="rh-no">09</span><span>Terminal</span><span class="rh-title">From the Prompt</span></div><div class="grid"><div class="margin-col"></div><div class="frame"><aside class="ref full" style="--ref-size: 12.500000000000009pt;"><p><strong><code>myos-next</code> at a glance</strong></p>
+<table class="tbl">
+<thead>
+<tr>
+<th>Command</th>
+<th>Does</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>myos-next</code></td>
+<td>Open the app</td>
+</tr>
+<tr>
+<td><code>myos-next add &lt;text&gt;</code></td>
+<td>Add a line to today’s daily note (reads stdin without text)</td>
+</tr>
+<tr>
+<td><code>myos-next today</code></td>
+<td>Daily note path, late tasks, today’s tasks</td>
+</tr>
+<tr>
+<td><code>myos-next tasks [query]</code></td>
+<td>Tasks matching a view (default <code>open</code>)</td>
+</tr>
+<tr>
+<td><code>myos-next find &lt;words&gt;</code></td>
+<td>Notes containing every word: title, tab, path</td>
+</tr>
+<tr>
+<td><code>myos-next open &lt;path&gt;</code></td>
+<td>Show a file in the app</td>
+</tr>
+<tr>
+<td><code>myos-next --capture</code></td>
+<td>Open capture in the running app</td>
+</tr>
+<tr>
+<td><code>myos-next --install-desktop-entry</code></td>
+<td>Linux: launcher entry, <code>myos-next:</code> links, link in <code>~/.local/bin</code></td>
+</tr>
+</tbody></table>
+<p>Task line: <code>  [ ] text #tags  (due …, scheduled …)  path:line</code></p>
+</aside></div></div><div class="folio"><span class="num">037</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div></section><section class="page divider dark nofolio verso" data-n="38">
+    <div class="dv-num">18</div>
+    <p class="dv-cap">The Capabilities · Photographed in the light and dark themes</p>
+  </section><section class="page divider-r recto" id="caps" data-n="39">
+    <p class="kicker-line"><span>Section two</span><span>The Capabilities</span></p>
+    <h2 class="dv-title">Eighteen things<br><em>it does, exactly.</em></h2>
+    <p class="dv-dek">One page for each. What it is, what it writes to your files, and the key or command that does it. Every picture is the app, in its light or dark theme, on a folder of notes for a small Go library called harbor.</p>
+    <ol class="dv-list"><li><span>01</span>Folder</li><li><span>02</span>Notes &amp; links</li><li><span>03</span>Tasks as lines</li><li><span>04</span>Today</li><li><span>05</span>Tasks screen</li><li><span>06</span>Views</li><li><span>07</span>View blocks</li><li><span>08</span>Capture</li><li><span>09</span>Source &amp; Vim</li><li><span>10</span>Properties</li><li><span>11</span>Backlinks</li><li><span>12</span>Switcher &amp; command bar</li><li><span>13</span>Split &amp; tabs</li><li><span>14</span>Git changes</li><li><span>15</span>History</li><li><span>16</span>Conflicts &amp; safety</li><li><span>17</span>Focus</li><li><span>18</span>Terminal</li></ol>
+    <div class="folio "><span class="num">039</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div>
+  </section><section class="page cap cap-column verso" id="c-01" data-n="40">
+        <figure class="c-fig"><div class="shot " style="width:78mm;height:252mm;background:#E3E5F0"><img src="images/01-folder-light--0-0-832-2000-676.jpg" style="object-position:top" alt=""></div></figure>
+        <div class="c-text">
+  <header class="c-head">
+    <p class="c-kicker"><span class="c-kno">01</span><span>Folder</span></p>
+    <h2 class="c-title">The folder, as it is</h2>
+    <p class="c-dek">The sidebar shows the real folders and files on disk. Nothing is moved into a structure of the app’s own.</p>
+    <div class="c-numeral">01</div>
+  </header>
+  <div class="c-body fit"><p>Open any folder: a vault, a repository’s <code>docs/</code>, a directory of meeting notes. The file list shows its folders and <code>.md</code> files exactly as they are, empty folders included. Dot folders such as <code>.git</code> and <code>.obsidian</code> are left out, and so is <code>node_modules</code>.</p>
+<p>A single click opens a note in a preview tab, set in italics, which the next click replaces. Double-click the note, or start typing in it, and the tab stays. Drag a row onto a folder to move it. Each file’s menu can make a note or folder beside it, open it to the side, rename, delete, or copy its path.</p>
+<p>Changes made anywhere else, in a terminal, in another editor, or by <code>git pull</code>, show up in the list as the watcher sees them. In a Git repository, a small dot marks each changed file. Deleting keeps a local copy first and uses the system trash when there is one.</p>
+</div>
+  <footer class="c-foot">
+    <p class="c-how"><span class="lbl">How</span><span class="how-text">Click a file for a preview tab. ↑ ↓ move, → ← open and close folders, F2 renames, Delete deletes, <kbd>⌥⌘N</kbd> starts a new note.</span></p>
+    <p class="c-cap"><span class="lbl">Left</span>The file list for harbor, with the menu for one file: a new note or folder beside it, Open to the side, Rename, Delete, and Copy path.</p>
+  </footer></div><div class="folio "><span class="num">040</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div></section><section class="page cap cap-sheet recto" id="c-02" data-n="41">
+        <figure class="c-fig"><div class="shot " style="width:198mm;height:150mm;background:#E3E5F0"><img src="images/08-rendered-light--536-0-2640-2000-1715.jpg" style="object-position:center" alt=""></div></figure>
+        <div class="c-text">
+  <header class="c-head">
+    <p class="c-kicker"><span class="c-kno">02</span><span>Notes &amp; links</span></p>
+    <h2 class="c-title">Any file is a note</h2>
+    <p class="c-dek">A note is any Markdown file in the folder. A link is two square brackets.</p>
+    <div class="c-numeral">02</div>
+  </header>
+  <div class="c-body fit"><p>There is no note type and no required field. Any <code>.md</code> file in the folder is a note, and its title is its frontmatter <code>title</code> or, without one, its file name.</p>
+<p>Each tab shows a note rendered, with headings, lists, tables, code, and diagrams set as formatted text, or as Markdown source. Type <code>/</code> for a menu of blocks. Type <code>[[</code> and the app suggests notes to link; the last suggestion creates a new one.</p>
+<p>Links resolve by path, then file name, then title, ignoring case, so <code>[[Retry budget]]</code>, <code>[[retry budget]]</code>, and <code>[[notes/Retry budget]]</code> all reach the same file. Ordinary Markdown links to <code>.md</code> files work too, read from the linking note’s folder. Clicking a link to a note that does not exist creates it next to the note you are in, and opens it.</p>
+<p>When you edit one paragraph, only that paragraph is written again. Tables keep their spacing, lists keep their markers, and the rest of the file is saved byte for byte.</p>
+</div>
+  <footer class="c-foot">
+    <p class="c-how"><span class="lbl">How</span><span class="how-text">Type <code>[[</code> to link a note, <code>/</code> for a block. <kbd>⌘-click</kbd> opens a link to the side.</span></p>
+    <p class="c-cap"><span class="lbl">Above</span>A rendered note: a code block, a benchmark table, and three tasks, followed by two <code>[[links]]</code> at the foot of the note.</p>
+  </footer></div><div class="folio "><span class="num">041</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div></section><section class="page cap cap-sheet wide verso" id="c-03" data-n="42">
+        <figure class="c-fig"><div class="shot " style="width:198mm;height:124mm;background:#E3E5F0"><img src="images/09-properties-light--800-199-1504-942-1504.jpg" style="object-position:center" alt=""></div></figure>
+        <div class="c-text">
+  <header class="c-head">
+    <p class="c-kicker"><span class="c-kno">03</span><span>Tasks as lines</span></p>
+    <h2 class="c-title">A task is a line</h2>
+    <p class="c-dek">A checkbox line in any note is a task. Every change the app makes to it is an edit to that one line.</p>
+    <div class="c-numeral">03</div>
+  </header>
+  <div class="c-body fit"><p>Write <code>- [ ] Freeze the public API for 0.9 #release 📅 2026-09-25</code> anywhere: a project note, a meeting note, today’s daily note. It is a task. The dates use the Obsidian Tasks syntax: 📅 due, ⏳ scheduled, 🛫 start, ✅ done, and 🔁 for a repeat. A plain <code>due:2026-09-25</code> works as well.</p>
+<p>Checking a task off writes <code>[x]</code> and <code> ✅</code> with today’s date at the end of the line. Unchecking removes both. Checking a repeating task leaves the done line as a record and writes the next occurrence directly above it, with its dates moved forward. Setting a date changes the token that is already there, or adds one.</p>
+<p>Every edit carries the exact text of the line as the app last read it. If the file changed since, the edit is refused and nothing is written. Undo in the confirmation puts the file back exactly. Files with <code>type: todo</code> in their frontmatter count as tasks too.</p>
+</div>
+  <footer class="c-foot">
+    <p class="c-how"><span class="lbl">How</span><span class="how-text">Type <code>- [ ]</code> in any note. In a task list, a focused row takes <code>x</code> to check off, <code>d</code> for due, <code>s</code> for scheduled, <code>t</code> for a tag.</span></p>
+    <p class="c-cap"><span class="lbl">Above</span>The checklist in a release note: one task done with its ✅ date, the others with due and scheduled dates and a priority.</p>
+  </footer></div><div class="folio "><span class="num">042</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div></section><section class="page cap cap-duo recto" id="c-04" data-n="43">
+        <figure class="c-fig a"><div class="shot " style="width:96mm;height:100mm;background:#E3E5F0"><img src="images/02-today-light--1002-60-1709-1780-831.jpg" style="object-position:center" alt=""></div><figcaption>Light</figcaption></figure>
+        <figure class="c-fig b"><div class="shot " style="width:96mm;height:100mm;background:#16171E"><img src="images/02-today-dark--1002-60-1709-1780-831.jpg" style="object-position:center" alt=""></div><figcaption>Dark</figcaption></figure>
+        <div class="c-text">
+  <header class="c-head">
+    <p class="c-kicker"><span class="c-kno">04</span><span>Today</span></p>
+    <h2 class="c-title">One page for the day</h2>
+    <p class="c-dek">Today’s daily note on top. Below it, what is late and what is due, from the whole folder.</p>
+    <div class="c-numeral">04</div>
+  </header>
+  <div class="c-body fit"><p>Today opens with the date and a short count, such as “7 for today · 3 late”. The daily note sits beneath it, editable in place, with a button to open it in its own tab. The note does not exist on disk until you write in it.</p>
+<p>Below the note are two lists. <strong>Late</strong> holds open tasks whose due date has passed. <strong>Today</strong> holds tasks due today, scheduled for today or earlier, or starting today. A folded <strong>Done today</strong> list keeps what you have finished. Each row shows its dates as small chips and, in monospace, the file and line it lives on.</p>
+<p>Checking a task off here writes to that task’s own file, which may be a meeting note from last week. When nothing is due, the screen says so, “Nothing is due today”, and offers a button to capture a task.</p>
+</div>
+  <footer class="c-foot">
+    <p class="c-how"><span class="lbl">How</span><span class="how-text">Click Today at the top of the sidebar, or choose Go to → Today in the command bar (<kbd>⌘K</kbd>).</span></p>
+    <p class="c-cap"><span class="lbl">Above</span>Today on Friday 25 September, light above and dark below: the daily note, then Late and Today, each task with its file and line.</p>
+  </footer></div><div class="folio "><span class="num">043</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div></section><section class="page cap cap-bleed nofolio dark verso" id="c-05" data-n="44">
+        <div class="shot bleed" style="width:230mm;height:300mm;background:#16171E"><img src="images/03-tasks-dark--960-0-1664-2000-1664.jpg" style="object-position:center" alt=""></div>
+        <p class="bleed-tag">05 · Tasks screen</p>
+      </section><section class="page cap cap-facing recto" data-n="45">
+        <div class="c-text">
+  <header class="c-head">
+    <p class="c-kicker"><span class="c-kno">05</span><span>Tasks screen</span></p>
+    <h2 class="c-title">Every task, one query</h2>
+    <p class="c-dek">A list of every open task in the folder, narrowed by a line of text you type.</p>
+    <div class="c-numeral">05</div>
+  </header>
+  <div class="c-body fit"><p>The Tasks screen begins with the query <code>open</code>: every open task in every note. Type in the query bar to narrow it. <code>open path:notes/ group:file</code> shows the tasks in <code>notes/</code>, grouped under each note’s title. The buttons below the bar group by file, folder, tag, or date and sort by due date, priority, or file, and they write the same terms into the query.</p>
+<p>Each result is a task row. Check it off, set its due or scheduled date from its menu, add a tag, or open the note at that line. The keys follow the list: <code>j</code> and <code>k</code> move, <code>x</code> checks, Enter opens the note with the line lit up for a moment, and <kbd>⌘Enter</kbd> opens it to the side.</p>
+<p>When a query is worth keeping, <strong>Save as view</strong> asks for a name and pins it to the sidebar. It is stored in the app’s settings, so no file in your folder changes.</p>
+</div>
+  <footer class="c-foot">
+    <p class="c-how"><span class="lbl">How</span><span class="how-text">Click Tasks in the sidebar. Type a query; Save as view pins it.</span></p>
+    <p class="c-cap"><span class="lbl">Opposite</span>The Tasks screen in the dark theme, grouped by file with <code>open path:notes/ group:file</code>, each task with its dates and line number.</p>
+  </footer></div><div class="folio "><span class="num">045</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div></section><section class="page cap cap-sheet verso" id="c-06" data-n="46">
+        <figure class="c-fig"><div class="shot " style="width:198mm;height:88mm;background:#E3E5F0"><img src="images/18-settings-appearance-light--1120-770-1440-640-1440.jpg" style="object-position:center" alt=""></div></figure>
+        <div class="c-text">
+  <header class="c-head">
+    <p class="c-kicker"><span class="c-kno">06</span><span>Views</span></p>
+    <h2 class="c-title">A search, written down</h2>
+    <p class="c-dek">A view is one line of query text. It runs on the Tasks screen, in the sidebar, inside a note, and at the terminal.</p>
+    <div class="c-numeral">06</div>
+  </header>
+  <div class="c-body fit"><p>The language is small enough to print on one popover. <code>open</code> and <code>done</code> pick a status; <code>overdue</code> finds what is late. Dates compare with <code>&lt;</code>, <code>&lt;=</code>, <code>=</code>, <code>&gt;=</code>, and <code>&gt;</code> against <code>today</code>, <code>tomorrow</code>, <code>yesterday</code>, an offset such as <code>today+7</code>, or a date. <code>#tag</code> and <code>-#tag</code> include or leave out a tag, nested tags included. <code>path:docs/</code> and <code>file:api</code> pick places. Other words search the text.</p>
+<p>Terms combine with AND. There are no parentheses and no OR. <code>sort:</code>, <code>group:</code>, and <code>limit:</code> shape the result.</p>
+<p>A saved view has a name and sits in the sidebar, below Today and Tasks. Its screen has a button to copy it as a block for a note, and Remove, which offers Undo. When a term cannot be used, the view keeps running and says in one sentence what it left out, and why.</p>
+</div>
+  <footer class="c-foot">
+    <p class="c-how"><span class="lbl">How</span><span class="how-text">Write a query on the Tasks screen and choose Save as view. Settings → Views edits, reorders, and removes them.</span></p>
+    <p class="c-cap"><span class="lbl">Above</span>Saved views in Settings. Each is a name, one line of query, and whether it lists tasks or notes, in the order the sidebar shows them.</p>
+  </footer></div><div class="folio "><span class="num">046</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div></section><section class="page cap cap-noir dark recto" id="c-07" data-n="47">
+        <figure class="c-fig"><div class="shot " style="width:198mm;height:142mm;background:#16171E"><img src="images/05-view-block-dark--725-80-2231-1600-1715.jpg" style="object-position:center" alt=""></div></figure>
+        <div class="c-text">
+  <header class="c-head">
+    <p class="c-kicker"><span class="c-kno">07</span><span>View blocks</span></p>
+    <h2 class="c-title">The note holds the question</h2>
+    <p class="c-dek">A fenced <code>view</code> block in any note shows live results, and stays plain text on disk.</p>
+    <div class="c-numeral">07</div>
+  </header>
+  <div class="c-body fit"><p>Put a query inside a code fence named <code>view</code>, on the first line or on the lines inside. The block lists tasks, or notes when the query includes <code>kind:notes</code>:</p>
+<pre class="lang-markdown"><code><span class="t-fence">```view</span>
+open <span class="t-tag">#release</span> sort:due
+<span class="t-fence">```</span>
+</code></pre>
+<p>In myOS Next the block becomes a small live list. Its header shows the query in monospace and a count, and <strong>Open as view</strong> opens it on its own screen. Checking a task in the block writes to that task’s own file, not to the note the block sits in. Results update as files change.</p>
+<p>Inside a block, <code>path:.</code> means the note’s own folder and <code>file:this</code> means the note itself, so a project page keeps working after its folder is renamed.</p>
+<p>In any other editor the block is three lines of text in a code fence. Nothing is hidden, and no results are copied into the file.</p>
+</div>
+  <footer class="c-foot">
+    <p class="c-how"><span class="lbl">How</span><span class="how-text">Type a fence named <code>view</code> with a query, or use Copy as a block for a note on a saved view.</span></p>
+    <p class="c-cap"><span class="lbl">Above</span>A release note in the dark theme with two blocks, the open <code>#release</code> tasks and, below, the docs changed most recently.</p>
+  </footer></div><div class="folio "><span class="num">047</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div></section><section class="page cap cap-bleed nofolio dark verso" id="c-08" data-n="48">
+        <div class="shot bleed" style="width:230mm;height:300mm;background:#0B0B0F"><img src="images/06-capture-dark--800-0-1600-2000-1600.jpg" style="object-position:center" alt=""></div>
+        <p class="bleed-tag">08 · Capture</p>
+      </section><section class="page cap cap-facing recto" data-n="49">
+        <div class="c-text">
+  <header class="c-head">
+    <p class="c-kicker"><span class="c-kno">08</span><span>Capture</span></p>
+    <h2 class="c-title">One line, from anywhere</h2>
+    <p class="c-dek"><kbd>⌘N</kbd> opens a single field. Enter writes one line to today’s daily note.</p>
+    <div class="c-numeral">08</div>
+  </header>
+  <div class="c-body fit"><p>Capture is for the thing you will forget in a minute. Press <kbd>⌘N</kbd> from anywhere in the app and type. Under the field, the app shows the file the line will go to and, in monospace, the exact line it will write, before anything is written.</p>
+<p>Plain text becomes a list item. Text that starts with <code>[ ]</code>, or has a date, a repeat, or <code>!</code>, becomes a task. Dates can be words: “tomorrow”, “fri”, “in 3 days”, “next week”. The word that introduced a date is removed with it, so “Dentist on friday” becomes <code>- [ ] Dentist 📅 2026-10-02</code>.</p>
+<p>Enter adds the line and closes the field. <kbd>Shift-Enter</kbd> adds it and keeps the field open for the next. A confirmation names the file, with Undo.</p>
+<p>In Settings, captures can go to any <code>.md</code> file instead of the daily note, and under a heading such as “Log”, which is added when the file does not have it.</p>
+</div>
+  <footer class="c-foot">
+    <p class="c-how"><span class="lbl">How</span><span class="how-text"><kbd>⌘N</kbd> in the app, or <code>myos-next add "…"</code> in a terminal.</span></p>
+    <p class="c-cap"><span class="lbl">Opposite</span>The capture field over a release note, with the target, <code>daily/2026-09-25.md</code>, and the line it will write: a task with its tag, a high priority, and a date.</p>
+  </footer></div><div class="folio "><span class="num">049</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div></section><section class="page cap cap-bleed nofolio dark verso" id="c-09" data-n="50">
+        <div class="shot bleed" style="width:230mm;height:300mm;background:#16171E"><img src="images/07-source-vim-dark--960-0-1696-2000-1696.jpg" style="object-position:center" alt=""></div>
+        <p class="bleed-tag">09 · Source &amp; Vim</p>
+      </section><section class="page cap cap-facing recto" data-n="51">
+        <div class="c-text">
+  <header class="c-head">
+    <p class="c-kicker"><span class="c-kno">09</span><span>Source &amp; Vim</span></p>
+    <h2 class="c-title">The file, as it is typed</h2>
+    <p class="c-dek">Any tab can show the Markdown source in monospace, with Vim keys if you want them.</p>
+    <div class="c-numeral">09</div>
+  </header>
+  <div class="c-body fit"><p><kbd>⌘E</kbd> switches the current tab between the rendered note and its Markdown source, and the new view opens on the line your caret was on. Source mode is a CodeMirror editor in Geist Mono with syntax highlighting. What you type is what is saved, and a file with Windows line endings keeps them.</p>
+<p>Source mode keeps the conveniences that matter. <code>[[</code> suggests notes to link. Task checkboxes can be clicked, and checking one writes the same one-line edit as anywhere else. <kbd>⌘F</kbd> finds in the note.</p>
+<p>Vim keys are off by default. Turn them on in Settings, under Editor, or from the command bar with “Turn on Vim keys in source mode”. They apply in source mode only; the rendered view keeps ordinary editing. Inside the editor, Vim’s keys come first. <kbd>⌘E</kbd> is caught before either editor sees it, so the mode switch works from any Vim state.</p>
+</div>
+  <footer class="c-foot">
+    <p class="c-how"><span class="lbl">How</span><span class="how-text"><kbd>⌘E</kbd> toggles source. For Vim, <kbd>⌘K</kbd> → “Turn on Vim keys in source mode”.</span></p>
+    <p class="c-cap"><span class="lbl">Opposite</span>A reading list in source mode, dark theme, with three task lines selected in Vim’s visual mode and <code>:'&lt;,'&gt;sort</code> typed at the bottom.</p>
+  </footer></div><div class="folio "><span class="num">051</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div></section><section class="page cap cap-panel verso" id="c-10" data-n="52">
+        <figure class="c-fig"><div class="shot " style="width:96mm;height:99mm;background:#E3E5F0"><img src="images/09-properties-light--2323-0-877-904-831.jpg" style="object-position:center" alt=""></div></figure>
+        <div class="c-text">
+  <header class="c-head">
+    <p class="c-kicker"><span class="c-kno">10</span><span>Properties</span></p>
+    <h2 class="c-title">Frontmatter, key by key</h2>
+    <p class="c-dek">When a note has YAML frontmatter, every key is an editable property. Only the key you change is rewritten.</p>
+    <div class="c-numeral">10</div>
+  </header>
+  <div class="c-body fit"><p>Frontmatter is optional. When a note has it, the Properties panel on the right lists every key: text, dates, lists, whatever was there. Edit a value in place, or choose <strong>Add property</strong> for a new name and value. With no frontmatter at all, the panel offers to start a block.</p>
+<p>The rewrite is narrow. Changing one property touches only that key’s lines. Key order, quoting, list style, and comments stay as they were. A list written one item per line is changed item by item; a list written <code>[a, b]</code> stays on one line. Dates are written unquoted. Removing the last property removes the block.</p>
+<p>For larger changes, <strong>Edit as YAML</strong> shows the block as text, and still rewrites only the properties you change. Frontmatter that is not valid YAML is left alone; the note below it can still be edited.</p>
+</div>
+  <footer class="c-foot">
+    <p class="c-how"><span class="lbl">How</span><span class="how-text">Open the right panel with <kbd>⌥⌘B</kbd>, or choose “Edit properties” in the command bar.</span></p>
+    <p class="c-cap"><span class="lbl">Left</span>The Properties panel for a release note, with a status, an owner, a target date, and two tags.</p>
+  </footer></div><div class="folio "><span class="num">052</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div></section><section class="page cap cap-column recto" id="c-11" data-n="53">
+        <figure class="c-fig"><div class="shot " style="width:78mm;height:252mm;background:#E3E5F0"><img src="images/10-backlinks-light--2528-0-672-2000-672.jpg" style="object-position:top" alt=""></div></figure>
+        <div class="c-text">
+  <header class="c-head">
+    <p class="c-kicker"><span class="c-kno">11</span><span>Backlinks</span></p>
+    <h2 class="c-title">Who mentions this note</h2>
+    <p class="c-dek">The panel lists the notes that link here, and the ones that name it without a link.</p>
+    <div class="c-numeral">11</div>
+  </header>
+  <div class="c-body fit"><p>Backlinks sit in the right panel, in two parts. <strong>Linked from</strong> lists every note with a link to this one, by <code>[[wikilink]]</code> or ordinary Markdown link, with the line that holds it. Click an entry to go there.</p>
+<p><strong>Unlinked mentions</strong> lists notes that use this note’s title in plain text, with no link. Each one has a <strong>Link</strong> button, which turns that mention into a <code>[[link]]</code>. The change is one edit to one line in the other file, and it can be undone like any other.</p>
+<p>The panel reads the whole folder, so it finds links in daily notes, meeting notes, and old files you have not opened in months. Nothing is stored in the folder to make this work: backlinks are worked out from the text of the notes themselves.</p>
+</div>
+  <footer class="c-foot">
+    <p class="c-how"><span class="lbl">How</span><span class="how-text"><kbd>⌥⌘B</kbd> shows the right panel. Or choose “Show backlinks” in the command bar.</span></p>
+    <p class="c-cap"><span class="lbl">Left</span>Backlinks for Retry budget, in the light theme. Six notes link to it; four more mention it, each with a Link button.</p>
+  </footer></div><div class="folio "><span class="num">053</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div></section><section class="page cap cap-duo dark verso" id="c-12" data-n="54">
+        <figure class="c-fig a"><div class="shot " style="width:96mm;height:68mm;background:#0B0B0F"><img src="images/11-switcher-dark--912-3-1376-975-831.jpg" style="object-position:center" alt=""></div><figcaption><kbd>⌘P</kbd> · Open a file</figcaption></figure>
+        <figure class="c-fig b"><div class="shot " style="width:96mm;height:68mm;background:#0B0B0F"><img src="images/12-command-bar-dark--908-170-1384-980-831.jpg" style="object-position:center" alt=""></div><figcaption><kbd>⌘K</kbd> · Commands</figcaption></figure>
+        <div class="c-text">
+  <header class="c-head">
+    <p class="c-kicker"><span class="c-kno">12</span><span>Switcher &amp; command bar</span></p>
+    <h2 class="c-title">Two boxes for everything</h2>
+    <p class="c-dek"><kbd>⌘P</kbd> opens a file. <kbd>⌘K</kbd> runs a command. Both take a few letters and Enter.</p>
+    <div class="c-numeral">12</div>
+  </header>
+  <div class="c-body fit"><p>The file switcher, <kbd>⌘P</kbd>, searches paths and titles with fuzzy matching, recent files first. Enter opens the file; <kbd>⌘Enter</kbd> opens it in a split to the side. When no file matches the path you typed, the last row offers to create it.</p>
+<p>The command bar, <kbd>⌘K</kbd>, lists every command in the app, grouped into Recent, Go to, Note, Tasks, Git, and App, each with its key where it has one. This is where to look when you forget a shortcut. It also searches the text of your notes, so it doubles as a quick find across the folder.</p>
+<p>Neither box is a mode. Escape closes them, and nothing has changed. Press <code>?</code> anywhere outside the text to see a sheet of every key.</p>
+</div>
+  <footer class="c-foot">
+    <p class="c-how"><span class="lbl">How</span><span class="how-text"><kbd>⌘P</kbd> to open a file. <kbd>⌘K</kbd> for commands. <code>?</code> for every shortcut.</span></p>
+    <p class="c-cap"><span class="lbl">Above</span>In the dark theme: the switcher filtered by “ret”, and the command bar filtered by “show”, grouped under Note, Tasks, and Git.</p>
+  </footer></div><div class="folio "><span class="num">054</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div></section><section class="page cap cap-sheet wide recto" id="c-13" data-n="55">
+        <figure class="c-fig"><div class="shot " style="width:198mm;height:124mm;background:#E3E5F0"><img src="images/13-split-light--0-0-3200-2000-1715.jpg" style="object-position:center" alt=""></div></figure>
+        <div class="c-text">
+  <header class="c-head">
+    <p class="c-kicker"><span class="c-kno">13</span><span>Split &amp; tabs</span></p>
+    <h2 class="c-title">Two notes, side by side</h2>
+    <p class="c-dek">Notes open in tabs. One key splits the window, and each side keeps its own.</p>
+    <div class="c-numeral">13</div>
+  </header>
+  <div class="c-body fit"><p>Every note, screen, and view opens in a tab. A single click in the file list opens a preview tab that the next click replaces, so browsing does not fill the tab bar. Double-click, or start typing, and the tab stays.</p>
+<p><kbd>⌘\</kbd> splits the window to the right, and pressing it again goes back to one. Each side has its own tabs and can show any screen: a note on the left and Today on the right, or two notes you are comparing. Drag the line between them to share the width.</p>
+<p><kbd>⌘1</kbd> to <kbd>⌘8</kbd> go to a tab in the side you are working in, and <kbd>⌘9</kbd> goes to the last. <kbd>Ctrl-Tab</kbd> and <kbd>Ctrl-Shift-Tab</kbd> step through them. <kbd>⌘W</kbd> closes a tab. Tabs, the split, and which folders are open in the file list are remembered for each folder, so they come back the next time you open it.</p>
+</div>
+  <footer class="c-foot">
+    <p class="c-how"><span class="lbl">How</span><span class="how-text"><kbd>⌘\</kbd> to split or unsplit. <kbd>⌘Enter</kbd> opens a file or task to the side.</span></p>
+    <p class="c-cap"><span class="lbl">Above</span>Two notes side by side, Rate limits and Retry budget, each on its own sheet with its own tab.</p>
+  </footer></div><div class="folio "><span class="num">055</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div></section><section class="page cap cap-noir dark verso" id="c-14" data-n="56">
+        <figure class="c-fig"><div class="shot " style="width:198mm;height:142mm;background:#0B0B0F"><img src="images/14-changes-diff-dark--512-220-2175-1560-1715.jpg" style="object-position:center" alt=""></div></figure>
+        <div class="c-text">
+  <header class="c-head">
+    <p class="c-kicker"><span class="c-kno">14</span><span>Git changes</span></p>
+    <h2 class="c-title">Commit from the panel</h2>
+    <p class="c-dek">In a Git repository, the app shows what changed and commits it with a message. Pull and Push run only when you click.</p>
+    <div class="c-numeral">14</div>
+  </header>
+  <div class="c-body fit"><p>If the open folder is in a Git repository, the app uses the <code>git</code> you already have. Changed files carry a dot in the file list. The Changes panel lists them with checkboxes, above a <strong>Summary</strong> field and an optional <strong>Description</strong>. Click a file to see its diff against the last commit.</p>
+<p><kbd>⌘⇧Enter</kbd> opens the panel with the cursor in Summary; type a sentence and press it again to commit the selected files. When the open folder is a subfolder of a repository, such as a project’s <code>docs/</code>, the panel lists only files inside it and leaves the rest alone.</p>
+<p>The panel shows the branch and its upstream, with <strong>Pull</strong> and <strong>Push</strong> and a count when you are behind or ahead. Pull runs <code>git pull --rebase --autostash</code>; Push runs <code>git push</code>. Git runs without prompts, and its errors are shown as Git wrote them. Outside a repository, the panel offers to initialize one.</p>
+</div>
+  <footer class="c-foot">
+    <p class="c-how"><span class="lbl">How</span><span class="how-text"><kbd>⌘⇧Enter</kbd> opens Changes; <kbd>⌘⇧Enter</kbd> again commits.</span></p>
+    <p class="c-cap"><span class="lbl">Above</span>The diff for one changed file, dark theme: one line replaced, two added. The Changes panel waits behind it.</p>
+  </footer></div><div class="folio "><span class="num">056</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div></section><section class="page cap cap-sheet wide recto" id="c-15" data-n="57">
+        <figure class="c-fig"><div class="shot " style="width:198mm;height:124mm;background:#ACADB4"><img src="images/15-history-light--355-220-2491-1560-1715.jpg" style="object-position:center" alt=""></div></figure>
+        <div class="c-text">
+  <header class="c-head">
+    <p class="c-kicker"><span class="c-kno">15</span><span>History</span></p>
+    <h2 class="c-title">Every version of a note</h2>
+    <p class="c-dek">One list per note: the Git commits that touched it and the local copies the app kept, each with a diff and a restore.</p>
+    <div class="c-numeral">15</div>
+  </header>
+  <div class="c-body fit"><p>The History panel lists a note’s past, newest first. <strong>Commit</strong> rows give the subject, author, and short hash; renames are followed, so the list continues past a note’s old name. <strong>Local copy</strong> rows are the copies the app keeps in its own data folder before saves, at most one every ten minutes, the last fifty for thirty days. A folder without Git still has local copies.</p>
+<p>Click any entry for the History window. It shows what changed from that version to now, and <strong>Restore this version</strong> writes it back. The text it replaces becomes the newest local copy, and the confirmation offers Undo.</p>
+<p>Local copies are kept outside your folder, under a separate subfolder for each folder you open. They never appear in <code>git status</code> and never travel with a sync service.</p>
+</div>
+  <footer class="c-foot">
+    <p class="c-how"><span class="lbl">How</span><span class="how-text">Choose “Show history” in the command bar, or open the right panel with <kbd>⌥⌘B</kbd>.</span></p>
+    <p class="c-cap"><span class="lbl">Above</span>History for Rate limits. Commits on the left; on the right, one commit’s diff and Restore this version.</p>
+  </footer></div><div class="folio "><span class="num">057</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div></section><section class="page cap cap-sheet wide verso" id="c-16" data-n="58">
+        <figure class="c-fig"><div class="shot " style="width:198mm;height:124mm;background:#E3E5F0"><img src="images/16-conflict-light--1024-29-1664-1042-1664.jpg" style="object-position:center" alt=""></div></figure>
+        <div class="c-text">
+  <header class="c-head">
+    <p class="c-kicker"><span class="c-kno">16</span><span>Conflicts &amp; safety</span></p>
+    <h2 class="c-title">Nothing overwritten by surprise</h2>
+    <p class="c-dek">Every save checks that the file on disk is still the one the app loaded. When it is not, you choose.</p>
+    <div class="c-numeral">16</div>
+  </header>
+  <div class="c-body fit"><p>Each open note has a revision, taken from the file’s size and modification time. The app saves against that revision. If the file changed on disk in the meantime, through another editor, a script, or a <code>git pull</code>, the save is refused and nothing is written.</p>
+<p>With no unsaved edits, the note simply reloads. With unsaved edits, a banner appears above the note: “This note changed on disk. Load the saved version, or keep your edits and save over it.” <strong>Load theirs</strong> takes the file on disk. <strong>Keep mine</strong> saves your text over it. The app does not merge and does not guess.</p>
+<p>The same care runs through everything else. Task edits check the exact text of their line. Undo puts back the exact bytes. Unchanged blocks are saved as they were typed. The network is used only when you click Pull or Push.</p>
+</div>
+  <footer class="c-foot">
+    <p class="c-how"><span class="lbl">How</span><span class="how-text">Nothing to press until it matters. Then choose Load theirs or Keep mine.</span></p>
+    <p class="c-cap"><span class="lbl">Above</span>The banner on a note named Timeouts, after the file changed on disk while it had unsaved edits.</p>
+  </footer></div><div class="folio "><span class="num">058</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div></section><section class="page cap cap-noir dark recto" id="c-17" data-n="59">
+        <figure class="c-fig"><div class="shot " style="width:198mm;height:142mm;background:#16171E"><img src="images/17-focus-dark--411-0-2789-2000-1715.jpg" style="object-position:center" alt=""></div></figure>
+        <div class="c-text">
+  <header class="c-head">
+    <p class="c-kicker"><span class="c-kno">17</span><span>Focus</span></p>
+    <h2 class="c-title">Only the text</h2>
+    <p class="c-dek">Focus mode hides everything but the note, on its sheet, on the canvas.</p>
+    <div class="c-numeral">17</div>
+  </header>
+  <div class="c-body fit"><p><kbd>⌘.</kbd> hides the file list, the tabs, the right panel, and the status bar. What is left is the note on its raised sheet, in the middle of the tinted canvas, and one small <strong>Exit focus</strong> button in the corner. Move the pointer to the top of the window and the tab bar comes back while you need it.</p>
+<p>Writing works as it does anywhere else: rendered or source, links, blocks, tasks, and saves that check first. Commands that need a panel, such as committing with <kbd>⌘⇧Enter</kbd>, leave focus mode on their own.</p>
+<p>For a lighter version, fold only the sides. <kbd>⌘B</kbd> hides the file list and <kbd>⌥⌘B</kbd> hides the right panel. With both folded you have the tabs and the text. The widths of the text column, Narrow, Normal, and Wide, are in Settings under Editor.</p>
+</div>
+  <footer class="c-foot">
+    <p class="c-how"><span class="lbl">How</span><span class="how-text"><kbd>⌘.</kbd> for focus mode. Escape leaves it.</span></p>
+    <p class="c-cap"><span class="lbl">Above</span>Rate limits in focus mode, dark theme. The sheet, its text, and a small Exit focus button.</p>
+  </footer></div><div class="folio "><span class="num">059</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div></section><section class="page cap cap-bleed nofolio dark verso" id="c-18" data-n="60">
+        <div class="shot bleed" style="width:230mm;height:300mm;background:#14151C"><img src="images/20-terminal-dark--0-0-3200-2000-1992.jpg" style="object-position:center" alt=""></div>
+        <p class="bleed-tag">18 · Terminal</p>
+      </section><section class="page cap cap-facing recto" data-n="61">
+        <div class="c-text">
+  <header class="c-head">
+    <p class="c-kicker"><span class="c-kno">18</span><span>Terminal</span></p>
+    <h2 class="c-title">The same folder, from a prompt</h2>
+    <p class="c-dek">The <code>myos-next</code> command captures, lists, and finds in the folder the app has open, without opening a window.</p>
+    <div class="c-numeral">18</div>
+  </header>
+  <div class="c-body fit"><p><code>myos-next add</code> appends one line to today’s daily note with the same rules as the capture field, and prints where it went. With no text, it reads standard input, so other tools can pipe into it.</p>
+<p><code>myos-next today</code> prints the daily note’s path, then the late tasks and today’s tasks. <code>myos-next tasks</code> takes a view in the same one-line language as the app, including <code>group:</code> and <code>kind:notes</code>. Each task prints as its checkbox, text, dates, and <code>path:line</code>, so an editor can jump straight to it. <code>myos-next find</code> lists matching notes as title, a tab, and the full path, ready for <code>cut</code> or <code>fzf</code>. <code>myos-next open</code> shows a file in the app.</p>
+<p><code>tasks</code> and <code>find</code> return 1 when nothing matched, for use in a shell <code>if</code>. If the app is running, its watcher picks up whatever the command wrote.</p>
+</div>
+  <footer class="c-foot">
+    <p class="c-how"><span class="lbl">How</span><span class="how-text"><code>myos-next add "…"</code> · <code>today</code> · <code>tasks "query"</code> · <code>find words</code> · <code>open path</code></span></p>
+    <p class="c-cap"><span class="lbl">Opposite</span>add, today, and tasks in a terminal on harbor, each task ending in the file and line where it lives.</p>
+  </footer></div><div class="folio "><span class="num">061</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div></section><section class="page quickref qr-l verso" id="ref" data-n="62">
+    <p class="kicker-line"><span>Quick reference</span><span>⌘ is Ctrl on Linux</span></p>
+    <h2 class="qr-title"><span class="md-mark">##</span> Keep this page open</h2>
+    <div class="qr-grid">
+      <div class="qr-card span"><h3>Keys</h3><table><tbody><tr><td><kbd>⌘P</kbd></td><td>Open a file · <kbd>⌘Enter</kbd> opens it to the side</td></tr><tr><td><kbd>⌘K</kbd></td><td>Commands</td></tr><tr><td><kbd>⌘N</kbd></td><td>Capture a line</td></tr><tr><td><kbd>⌥⌘N</kbd></td><td>New note in this folder</td></tr><tr><td><kbd>⌘E</kbd></td><td>Rendered or Markdown source</td></tr><tr><td><kbd>⌘F</kbd></td><td>Find in note</td></tr><tr><td><kbd>⌘\</kbd></td><td>Split to the right, or back to one</td></tr><tr><td><kbd>⌘1</kbd> – <kbd>⌘8</kbd> · <kbd>⌘9</kbd></td><td>Go to tab · the last tab</td></tr><tr><td><kbd>⌘W</kbd></td><td>Close tab</td></tr><tr><td><kbd>⌘B</kbd> · <kbd>⌥⌘B</kbd></td><td>Files · right panel</td></tr><tr><td><kbd>⌘.</kbd></td><td>Focus mode · Esc leaves it</td></tr><tr><td><kbd>⌘⇧Enter</kbd></td><td>Open Changes, then commit</td></tr><tr><td><kbd>⌘Z</kbd> · <kbd>⌘⇧Z</kbd></td><td>Undo · redo a file change</td></tr><tr><td><kbd>⌘,</kbd></td><td>Settings</td></tr><tr><td><code>?</code></td><td>Every shortcut</td></tr></tbody></table></div>
+      <div class="qr-card "><h3>In a task list</h3><table><tbody><tr><td><code>x</code> or Space</td><td>Check off</td></tr><tr><td><code>d</code> · <code>s</code></td><td>Due · scheduled date</td></tr><tr><td><code>t</code></td><td>Add a tag</td></tr><tr><td><code>j</code> · <code>k</code></td><td>Next · previous row</td></tr><tr><td>Enter · <kbd>⌘Enter</kbd></td><td>Open at the line · to the side</td></tr></tbody></table></div>
+      <div class="qr-card "><h3>Terminal</h3><table><tbody><tr><td><code>myos-next add "…"</code></td><td>Add a line to today’s note</td></tr><tr><td><code>myos-next today</code></td><td>Late and today’s tasks</td></tr><tr><td><code>myos-next tasks "open #x"</code></td><td>Tasks for a view</td></tr><tr><td><code>myos-next find words</code></td><td>Notes: title, tab, path</td></tr><tr><td><code>myos-next open path</code></td><td>Show a file in the app</td></tr></tbody></table></div>
+    </div>
+    <div class="folio "><span class="num">062</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div>
+  </section><section class="page quickref qr-r recto" data-n="63">
+    <div class="qr-grid">
+      <div class="qr-card "><h3>A task line</h3><table><tbody><tr><td><code>- [ ]</code> · <code>[x]</code> · <code>[-]</code></td><td>Open · done · cancelled</td></tr><tr><td><code>📅 2026-10-02</code></td><td>Due, or <code>due:2026-10-02</code></td></tr><tr><td><code>⏳ 2026-09-30</code></td><td>Scheduled</td></tr><tr><td><code>🛫 2026-09-28</code></td><td>Start</td></tr><tr><td><code>✅ 2026-09-29</code></td><td>Done on; written when checked</td></tr><tr><td><code>🔁 every week</code></td><td>Repeats; <code>when done</code> counts from completion</td></tr><tr><td><code>🔺 ⏫ 🔼 🔽 ⏬</code></td><td>Priority, highest to lowest</td></tr><tr><td><code>#work/api</code></td><td>Tag; <code>#work</code> finds it too</td></tr></tbody></table></div>
+      <div class="qr-card "><h3>A view block</h3><table><tbody><tr><td><code>```view</code></td><td>Query on the first line, or on the lines inside</td></tr><tr><td><code>```view kind:notes</code></td><td>Lists notes instead of tasks</td></tr></tbody></table></div>
+      <div class="qr-card span"><h3>A view, one line</h3><table><tbody><tr><td><code>open</code> · <code>done</code> · <code>overdue</code></td><td>Status</td></tr><tr><td><code>due&lt;=today</code></td><td>Also <code>scheduled</code>, <code>start</code>, <code>done</code>; <code>&lt; &lt;= = &gt;= &gt;</code></td></tr><tr><td><code>today+7</code> · <code>2026-10-01</code></td><td>Dates: <code>today</code>, <code>tomorrow</code>, <code>yesterday</code>, offsets</td></tr><tr><td><code>due=none</code></td><td>No due date</td></tr><tr><td><code>#tag</code> · <code>-#tag</code></td><td>With or without a tag</td></tr><tr><td><code>path:docs/</code> · <code>file:api</code></td><td>Folder prefix · name contains</td></tr><tr><td><code>path:.</code> · <code>file:this</code></td><td>In a block: this note’s folder · this note</td></tr><tr><td><code>parser</code> · <code>"rate limit"</code></td><td>Words or a phrase</td></tr><tr><td><code>sort:due</code> · <code>priority</code> · <code>file</code></td><td>Task order; notes: <code>file</code>, <code>title</code>, <code>modified</code></td></tr><tr><td><code>group:file</code> · <code>folder</code> · <code>tag</code> · <code>date</code></td><td>Sections</td></tr><tr><td><code>limit:20</code></td><td>At most this many</td></tr><tr><td><code>kind:notes</code></td><td>In a <code>view</code> block: list notes</td></tr></tbody></table></div>
+    </div>
+    <pre class="qr-sample"><code><span class="t-fence">```view</span>
+open due&lt;=today+7 <span class="t-tag">#release</span> group:date
+<span class="t-fence">```</span></code></pre>
+    <div class="folio "><span class="num">063</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div>
+  </section><section class="page interlude nofolio verso" data-n="64"><p class="il"><span class="md-mark">&gt;</span> Empty states say what to do next <em>in one sentence.</em></p><p class="il-cite">From the product model, on writing</p></section><section class="page colophon recto" id="colophon" data-n="65">
+    <p class="kicker-line"><span>Colophon</span><span>Issue 04 · Winter 2026</span></p>
+    <h2 class="colo-title">Set in <em>three</em> faces,<br>written in one format.</h2>
+    <div class="colo-grid">
+      <div>
+        <p class="lbl">Typefaces</p>
+        <p><span class="f-inst">Instrument Serif</span> for headlines, by Rodrigo Fuenzalida and Jordan Egstad.</p>
+        <p><span class="f-src">Source Serif 4</span> for text, by Frank Grießhammer for Adobe.</p>
+        <p><span class="f-mono">Geist Mono</span> and <span class="f-sans">Geist</span> for numerals, labels, and anything literal, by Vercel. Geist Mono is also the monospace of myOS Next.</p>
+      </div>
+      <div>
+        <p class="lbl">Method</p>
+        <p>Every article and capability page is a Markdown file. A Node script renders them with <code>marked</code>, pours the text into pages in headless Chromium, and prints the PDF. The pictures are cropped with ImageMagick around a rectangle that must stay whole, so no dialog, popover, or button is cut.</p>
+        <p class="lbl">Photography</p>
+        <p>Screenshots of myOS Next at 3200 × 2000, in the light and dark themes, on a folder of notes for an example library, harbor.</p>
+      </div>
+      <div>
+        <p class="lbl">Sources</p>
+        <p>The product model, the file format, the build plan, the architecture overview, and the app’s source. Shortcuts and interface wording were checked against the code.</p>
+        <p class="lbl">Rebuild</p>
+        <p><code>node docs/magazine/build.mjs</code></p>
+        <p class="lbl">Made by</p>
+        <p>The myOS Editors. No account, no telemetry, no bundled AI.</p>
+      </div>
+    </div>
+    <div class="specimen">
+      <div><p class="sp-a f-inst">Aa</p><p class="sp-l">Instrument Serif · headlines</p></div>
+      <div><p class="sp-a f-src">Aa</p><p class="sp-l">Source Serif 4 · text</p></div>
+      <div><p class="sp-a f-sans">Aa</p><p class="sp-l">Geist · labels</p></div>
+      <div><p class="sp-a f-mono">{ }</p><p class="sp-l">Geist Mono · anything literal</p></div>
+    </div>
+    <pre class="colo-ls"><code><span class="t-prompt">$</span> ls docs/magazine
+articles/  capabilities/  issue/  build.mjs  README.md</code></pre>
+    <div class="folio "><span class="num">065</span><span class="pub">myOS Next · Issue 04 · The Plain Text Issue</span></div>
+  </section><section class="page back dark nofolio verso" data-n="66">
+    <pre class="bk-term"><code><span class="t-prompt">~/Notes $</span> ls
+daily/  docs/  notes/  README.md
+<span class="t-prompt">~/Notes $</span> myos-next add "Read it again in ten years"
+Added to daily/2026-12-01.md
+<span class="t-prompt">~/Notes $</span> <span class="caret"></span></code></pre>
+    <p class="bk-line">The app is a way<br>of looking at the folder.<br><em>The folder is still the thing.</em></p>
+    <div class="bk-foot">
+      <p class="bk-mast">myOS <span>Next</span></p>
+      <p>A quiet editor for any folder of Markdown files. macOS and Linux.<br>No account. No sync service. No telemetry. No bundled AI.</p>
+      <p class="bk-issue">Issue 04 · Winter 2026 · The Plain Text Issue</p>
+    </div>
+  </section></main>
+
+
+
+</body></html>
