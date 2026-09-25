@@ -12,16 +12,16 @@ if (process.platform !== 'linux') {
 const dashboardRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const source = join(dashboardRoot, 'release', 'linux-unpacked');
 const applications = join(homedir(), 'Applications');
-const destination = join(applications, 'myOS');
-const stage = join(applications, `.myOS-stage-${randomUUID()}`);
-const backup = join(applications, `.myOS-backup-${randomUUID()}`);
+const destination = join(applications, 'myOS Next');
+const stage = join(applications, `.myOS-Next-stage-${randomUUID()}`);
+const backup = join(applications, `.myOS-Next-backup-${randomUUID()}`);
 
 function sha256(file) {
   return createHash('sha256').update(readFileSync(file)).digest('hex');
 }
 
-if (!existsSync(join(source, 'myos')) || !existsSync(join(source, 'resources', 'app.asar'))) {
-  throw new Error('No packaged Linux build found. Run npm run build:linux first.');
+if (!existsSync(join(source, 'myos-next')) || !existsSync(join(source, 'resources', 'app.asar'))) {
+  throw new Error('No packaged Linux build found. Run npm run build:local first.');
 }
 if (existsSync(destination) && !lstatSync(destination).isDirectory()) {
   throw new Error(`${destination} exists and is not a directory; refusing to replace it.`);
@@ -42,14 +42,14 @@ try {
   }
   renameSync(stage, destination);
   installedNew = true;
-  execFileSync(join(destination, 'myos'), ['--install-desktop-entry'], {
+  execFileSync(join(destination, 'myos-next'), ['--install-desktop-entry'], {
     stdio: 'inherit',
     timeout: 15_000,
   });
   if (sha256(join(source, 'resources', 'app.asar')) !== sha256(join(destination, 'resources', 'app.asar'))) {
     throw new Error('Installed app.asar does not match the packaged build.');
   }
-  console.log(`Installed myOS locally at ${destination}`);
+  console.log(`Installed myOS Next at ${destination}`);
 } catch (error) {
   if (installedNew) rmSync(destination, { recursive: true, force: true });
   if (movedOld) renameSync(backup, destination);

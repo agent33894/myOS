@@ -1,11 +1,13 @@
 {
-  "appId": "com.myos.markdown",
-  "productName": "myOS",
-  "artifactName": "myOS-${version}-${arch}.${ext}",
+  "appId": "com.myos.next",
+  "productName": "myOS Next",
+  "artifactName": "myOS-Next-${version}-${arch}.${ext}",
   "icon": "build/icon.png",
   "protocols": {
-    "name": "myOS link",
-    "schemes": ["myos"]
+    "name": "myOS Next link",
+    "schemes": [
+      "myos-next"
+    ]
   },
   "directories": {
     "output": "release",
@@ -18,36 +20,55 @@
     "!**/node_modules/**",
     "!**/*.map"
   ],
-  "electronLanguages": ["en"],
+  "electronLanguages": [
+    "en"
+  ],
   "mac": {
     "category": "public.app-category.productivity",
     "hardenedRuntime": true,
     "gatekeeperAssess": false,
-    "target": ["dmg", "zip"],
+    "target": [
+      "dmg",
+      "zip"
+    ],
     "extendInfo": {
-      "CFBundleLocalizations": ["en"]
+      "CFBundleLocalizations": [
+        "en"
+      ]
     }
   },
   "linux": {
-    "target": ["AppImage", "tar.gz"],
+    "target": [
+      "AppImage",
+      "tar.gz"
+    ],
     "category": "Office",
     "icon": "build/icon.png",
-    "executableName": "myos",
+    "executableName": "myos-next",
     "syncDesktopName": true,
     "extraResources": [
-      { "from": "build/icon.png", "to": "icon.png" },
-      { "from": "../LICENSE", "to": "LICENSE" }
+      {
+        "from": "build/icon.png",
+        "to": "icon.png"
+      },
+      {
+        "from": "../LICENSE",
+        "to": "LICENSE"
+      }
     ],
     "desktop": {
       "entry": {
-        "Name": "myOS",
-        "Comment": "Local Markdown workspace",
-        "Categories": "Office;Productivity;",
-        "MimeType": "x-scheme-handler/myos;",
-        "StartupWMClass": "myos"
+        "Name": "myOS Next",
+        "Comment": "A quiet editor for a folder of Markdown files",
+        "Categories": "Office;TextEditor;",
+        "MimeType": "x-scheme-handler/myos-next;",
+        "StartupWMClass": "myos-next"
       },
       "desktopActions": {
-        "capture": { "Name": "Quick Capture", "Exec": "myos --capture" }
+        "capture": {
+          "Name": "Capture",
+          "Exec": "myos-next --capture"
+        }
       }
     }
   }

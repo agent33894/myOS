@@ -38,7 +38,7 @@ jobs:
       - if: runner.os == 'Linux'
         uses: actions/upload-artifact@v4
         with:
-          name: myOS-linux-x64-${{ github.sha }}
+          name: myOS-Next-linux-x64-${{ github.sha }}
           path: |
             dashboard/release/*.AppImage
             dashboard/release/*.tar.gz

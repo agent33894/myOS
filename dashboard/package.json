@@ -1,9 +1,9 @@
 {
-  "name": "myos-markdown",
-  "version": "3.0.0",
-  "description": "A local-first Markdown editor and productivity system for macOS and Linux",
+  "name": "myos-next",
+  "version": "4.0.0",
+  "description": "A quiet editor for a folder of Markdown files, for macOS and Linux",
   "main": "dist-electron/main.js",
-  "desktopName": "myos.desktop",
+  "desktopName": "myos-next.desktop",
   "homepage": "https://github.com/agent33894/myOS",
   "scripts": {
     "dev": "vite",
@@ -17,7 +17,6 @@
     "build:installer": "npm run clean && vite build && node scripts/package-macos.mjs --arch=arm64 --installer",
     "build:linux": "npm run clean && vite build && node scripts/package-linux.mjs --arch=x64",
     "build:local": "npm run clean && vite build && node scripts/package-linux.mjs --arch=x64 --dir",
-    "build:arch": "npm run build:linux && node scripts/package-arch.mjs",
     "install:local": "npm run build:local && node scripts/install-local.mjs",
     "install:local:built": "node scripts/install-local.mjs",
     "smoke:linux": "node scripts/smoke-linux.mjs",
@@ -28,10 +27,10 @@
     "audit:docs": "node scripts/audit-doc-links.mjs"
   },
   "keywords": [
-    "knowledge-management",
-    "electron",
-    "react",
-    "typescript"
+    "markdown",
+    "notes",
+    "tasks",
+    "electron"
   ],
   "author": "myOS contributors",
   "license": "MIT",

@@ -20,7 +20,7 @@ const buildEnvironment = { ...process.env, CSC_IDENTITY_AUTO_DISCOVERY: 'false' 
 run(builder, ['--mac', `--${requestedArch}`, '--dir'], buildEnvironment);
 
 const appDirectory = requestedArch === 'arm64' ? 'mac-arm64' : 'mac';
-const appPath = join(dashboardRoot, 'release', appDirectory, 'myOS.app');
+const appPath = join(dashboardRoot, 'release', appDirectory, 'myOS Next.app');
 const entitlementsPath = join(
   dashboardRoot,
   'node_modules',
@@ -30,10 +30,10 @@ const entitlementsPath = join(
 );
 
 const helperNames = [
-  'myOS Helper.app',
-  'myOS Helper (GPU).app',
-  'myOS Helper (Plugin).app',
-  'myOS Helper (Renderer).app',
+  'myOS Next Helper.app',
+  'myOS Next Helper (GPU).app',
+  'myOS Next Helper (Plugin).app',
+  'myOS Next Helper (Renderer).app',
 ];
 
 // Seal Electron's nested frameworks first. Helper applications are then

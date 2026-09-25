@@ -48,7 +48,7 @@ jobs:
         run: xvfb-run -a node scripts/smoke-linux.mjs
       - uses: actions/upload-artifact@v4
         with:
-          name: myOS-${{ matrix.platform }}-${{ matrix.arch }}
+          name: myOS-Next-${{ matrix.platform }}-${{ matrix.arch }}
           path: |
             dashboard/release/*.dmg
             dashboard/release/*.zip
