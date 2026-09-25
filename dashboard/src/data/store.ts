@@ -15,10 +15,12 @@ interface DataState {
   bodies: Record<string, Body>;
   status: 'idle' | 'loading' | 'ready' | 'error';
   error: string | null;
+  /** Where files moved this session (old path → new path), so a page showing an old path can follow. */
+  moves: Record<string, string>;
 }
 
 /** Changes only through `load`, gateway results (`applyArtifact`, `dropArtifact`), and watcher events. */
-export const useDataStore = create<DataState>(() => ({ byPath: {}, bodies: {}, status: 'idle', error: null }));
+export const useDataStore = create<DataState>(() => ({ byPath: {}, bodies: {}, status: 'idle', error: null, moves: {} }));
 
 export async function load(): Promise<void> {
   useDataStore.setState({ status: 'loading', error: null });
@@ -55,6 +57,22 @@ export function dropArtifact(path: string): void {
     const { [path]: _body, ...bodies } = state.bodies;
     return { byPath, bodies };
   });
+}
+
+/** Note that the file at `from` now lives at `to` (a rename, an area move, or undoing one). */
+export function recordMove(from: string, to: string): void {
+  if (from === to) return;
+  useDataStore.setState((state) => {
+    const { [to]: _arrived, ...moves } = state.moves;
+    return { moves: { ...moves, [from]: to } };
+  });
+}
+
+/** Where a file that was at `path` lives now, following renames and moves; undefined if it never moved. */
+export function movedTo(state: Pick<DataState, 'byPath' | 'moves'>, path: string): string | undefined {
+  let current = path;
+  for (let hops = 0; hops < 20 && state.moves[current] && !state.byPath[current]; hops += 1) current = state.moves[current];
+  return current !== path && state.byPath[current] ? current : undefined;
 }
 
 const READ_CONCURRENCY = 6;

@@ -1,4 +1,4 @@
-import { ArtifactType, type ArtifactSummary } from '@shared/types';
+import { ArtifactType, type ArtifactDraft, type ArtifactSummary } from '@shared/types';
 
 /** Pages a `[[link]]` can point at: notes, tasks, and projects (not Inbox captures, journal days, or templates). */
 const LINKABLE = (item: ArtifactSummary) =>
@@ -53,4 +53,19 @@ export function rankLinkTargets(
     )
     .slice(0, limit)
     .map(({ item }) => item);
+}
+
+/**
+ * A note made from a link (`[[Missing page]]` or Create “…”) lives near the
+ * page that links to it: the same area, and the same project when that page
+ * is in one (or is the project itself). Otherwise it takes the default area.
+ */
+export function linkedNoteDraft(title: string, from: ArtifactSummary | undefined): ArtifactDraft {
+  const project = from?.type === ArtifactType.PROJECT ? from.id : from?.project;
+  return {
+    type: ArtifactType.MEMO,
+    title,
+    ...(from?.domain && from.type !== ArtifactType.JOURNAL ? { domain: from.domain } : {}),
+    ...(project ? { project } : {}),
+  };
 }

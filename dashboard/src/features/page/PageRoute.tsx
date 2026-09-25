@@ -1,7 +1,7 @@
 import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { ArtifactType } from '@shared/types';
-import { paths, toPageUrl, toProjectUrl } from '../../app/navigation';
+import { paths, toPageUrl, toProjectUrl, toSettingsUrl } from '../../app/navigation';
 import { useArtifact } from '../../data/selectors';
 import { Button, IconButton } from '../../ui';
 import { ProjectDot } from '../tasks/ProjectDot';
@@ -14,6 +14,9 @@ function useBreadcrumb(path: string) {
   const project = useProjectRefs().find(item?.project);
   if (project) return { label: project.title, href: toProjectUrl(project.id), color: project.color };
   if (item?.type === ArtifactType.INBOX) return { label: 'Inbox', href: paths.inbox };
+  if (item?.type === ArtifactType.JOURNAL) return { label: 'Journal', href: paths.journal };
+  // Templates are managed in Settings; they never appear in Notes.
+  if (item?.type === ArtifactType.TEMPLATE) return { label: 'Templates', href: toSettingsUrl() };
   if (item && item.type !== ArtifactType.TODO) return { label: 'Notes', href: paths.notes };
   return null;
 }

@@ -70,7 +70,7 @@ export default function TodayPage() {
           ) : (
             <>
               <CloseDayButton />
-              <Button leadingIcon={Sunrise} onClick={() => openFlow('plan')}>
+              <Button variant="primary" leadingIcon={Sunrise} onClick={() => openFlow('plan')}>
                 Plan my day
               </Button>
             </>

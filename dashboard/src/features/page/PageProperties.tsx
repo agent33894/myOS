@@ -111,6 +111,18 @@ export function PageProperties({ item, flush, onMoved }: MoveProps & { item: Art
         <TaskProperties task={item} />
       ) : item.type === ArtifactType.INBOX ? (
         <CaptureActions item={item} flush={flush} onMoved={onMoved} />
+      ) : item.type === ArtifactType.TEMPLATE ? (
+        <>
+          <Pill className="mr-1">Template</Pill>
+          <span className="px-1 text-sm text-text-tertiary">
+            {'Used by New from template. {{date}}, {{time}}, and {{title}} fill in when you use it.'}
+          </span>
+        </>
+      ) : item.type === ArtifactType.JOURNAL ? (
+        <>
+          <Pill className="mr-1">Journal</Pill>
+          <TagEditor item={item} />
+        </>
       ) : (
         <>
           {kind ? <Pill className="mr-1">{kind}</Pill> : null}
@@ -119,7 +131,7 @@ export function PageProperties({ item, flush, onMoved }: MoveProps & { item: Art
           <KnowledgeProperties item={item} />
         </>
       )}
-      {item.type === ArtifactType.INBOX ? null : <AreaProperty item={item} flush={flush} onMoved={onMoved} />}
+      <AreaProperty item={item} flush={flush} onMoved={onMoved} />
     </PropertyRow>
   );
 }

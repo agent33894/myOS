@@ -40,6 +40,7 @@ import { ProjectDot } from '../tasks/ProjectDot';
 import { projectColor } from '../tasks/projectRefs';
 import { EntryList } from '../tasks/EntryList';
 import { TaskRow } from '../tasks/TaskRow';
+import { AreaProperty } from '../files/slots';
 import { useRenameWithTitle } from '../files/useRenameWithTitle';
 import { NextStepProperty } from './NextStepProperty';
 import { PROJECT_STATUSES, statusLabel } from './projectStatus';
@@ -82,7 +83,7 @@ function ProjectTitle({ project, autoFocus }: { project: ProjectWithStats; autoF
   );
 }
 
-function ProjectProperties({ project }: { project: ProjectWithStats }) {
+function ProjectProperties({ project, flush }: { project: ProjectWithStats; flush: () => Promise<void> }) {
   const { setProjectStatus } = useProjectStatus();
   const color = projectColor(project);
   const swatch = projectSwatches.find((option) => option.hex === color);
@@ -131,6 +132,8 @@ function ProjectProperties({ project }: { project: ProjectWithStats }) {
         </MenuContent>
       </Menu>
       <TagEditor item={project} />
+      {/* Projects open by id, so the page stays put when the file moves to another area. */}
+      <AreaProperty item={project} flush={flush} onMoved={() => undefined} />
       {project.todoProgress ? (
         <span className="px-2 text-sm text-text-tertiary">
           {project.todoProgress.done} of {project.todoProgress.total} done
@@ -180,7 +183,7 @@ export function ProjectHome({ project }: { project: ProjectWithStats }) {
         <ProjectTitle project={project} autoFocus={isNew} />
       </div>
       <div className="mt-3">
-        <ProjectProperties project={project} />
+        <ProjectProperties project={project} flush={doc.saveNow} />
       </div>
 
       <div className="mt-6">

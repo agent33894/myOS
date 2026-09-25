@@ -5,11 +5,12 @@ import { toast } from 'sonner';
 import { ArtifactType, type ArtifactSummary } from '@shared/types';
 import { create } from '../../data/gateway';
 import { useArtifacts } from '../../data/selectors';
+import { useDataStore } from '../../data/store';
 import { useUIStore } from '../../store/ui';
 import { cn, Icon, Popover, PopoverAnchor, PopoverContent } from '../../ui';
 import { itemIcon, kindLabel } from '../../lib/itemKinds';
 import { findWikiLinkedArtifact } from '../../lib/artifactLinks';
-import { rankLinkTargets } from './linkTargets';
+import { linkedNoteDraft, rankLinkTargets } from './linkTargets';
 import { closeLinkSuggest, linkSuggestKey, type LinkSuggestState } from './wikiSuggest';
 
 type Option = { kind: 'page'; item: ArtifactSummary } | { kind: 'create'; title: string };
@@ -79,7 +80,7 @@ export function LinkSuggestMenu({ editor, filePath, keyHandler }: LinkSuggestMen
       return;
     }
     insert(option.title);
-    create({ type: ArtifactType.MEMO, title: option.title }, `Create “${option.title}”`).catch((error: unknown) =>
+    create(linkedNoteDraft(option.title, useDataStore.getState().byPath[filePath]), `Create “${option.title}”`).catch((error: unknown) =>
       toast.error(error instanceof Error ? error.message : 'Could not create the note'),
     );
   };

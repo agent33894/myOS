@@ -5,7 +5,7 @@ import { PROJECT_CLOSED_STATUSES } from '@shared/spec';
 import { ArtifactType, type Artifact, type ArtifactDraft, type ArtifactPatch, type ArtifactSummary, type Domain } from '@shared/types';
 import { useSettingsStore } from '../store/settings';
 import { invoke } from './ipc';
-import { applyArtifact, dropArtifact, useDataStore } from './store';
+import { applyArtifact, dropArtifact, recordMove, useDataStore } from './store';
 import { record } from './undo';
 
 /**
@@ -24,7 +24,10 @@ async function applied(write: Promise<Artifact>): Promise<Artifact> {
 /** Apply a write that may have moved the file, dropping the old path from the store. */
 async function moved(from: string, write: Promise<Artifact>): Promise<Artifact> {
   const artifact = await applied(write);
-  if (artifact.filePath !== from) dropArtifact(from);
+  if (artifact.filePath !== from) {
+    dropArtifact(from);
+    recordMove(from, artifact.filePath);
+  }
   return artifact;
 }
 

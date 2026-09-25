@@ -50,10 +50,12 @@ export const toSettingsUrl = (tab: SettingsTab = 'general') =>
 /** Today with a flow open: Plan my day (`?plan=1`) or Re-plan carried over (`?replan=1`). */
 export const toTodayUrl = (flow?: 'plan' | 'replan') => (flow ? `${paths.today}?${flow}=1` : paths.today);
 
+const FULL_PAGE = new Set<string>([ArtifactType.TODO, ArtifactType.INBOX, ArtifactType.JOURNAL, ArtifactType.TEMPLATE]);
+
 /** Where an item opens: projects get their home, notes open beside the Notes list, everything else full-page. */
 export function toItemUrl(item: { type: string; id: string; filePath: string }): string {
   if (item.type === ArtifactType.PROJECT) return toProjectUrl(item.id);
-  if (item.type === ArtifactType.TODO || item.type === ArtifactType.INBOX) return toPageUrl(item.filePath);
+  if (FULL_PAGE.has(item.type)) return toPageUrl(item.filePath);
   return toNoteUrl(item.filePath);
 }
 

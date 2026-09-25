@@ -7,12 +7,14 @@ import { toItemUrl, toNoteUrl } from '../../app/navigation';
 import { create } from '../../data/gateway';
 import { invoke } from '../../data/ipc';
 import { useArtifacts } from '../../data/selectors';
+import { useDataStore } from '../../data/store';
 import { useWorkspacePath } from '../../data/workspace';
 import { Popover, PopoverAnchor, PopoverContent } from '../../ui';
 import { findLinkedArtifact, findWikiLinkedArtifact } from '../../lib/artifactLinks';
 import { commitHashOf } from '../diff/commitLinks';
 import { CommitDiffModal } from '../diff/CommitDiffModal';
 import { CommitSummaryCard, useCommitSummary } from '../diff/commitSummary';
+import { linkedNoteDraft } from './linkTargets';
 import { refreshWikiLinks } from './wikiLinks';
 
 interface LinkContext {
@@ -79,7 +81,7 @@ export function useLinks(editor: Editor | null, context: LinkContext) {
       if (linked) navigate(toItemUrl(linked));
       else if (name) {
         // A missing link is an invitation: clicking it makes the note and opens it.
-        create({ type: ArtifactType.MEMO, title: name }, `Create “${name}”`)
+        create(linkedNoteDraft(name, useDataStore.getState().byPath[filePath]), `Create “${name}”`)
           .then((note) => navigate(toNoteUrl(note.filePath)))
           .catch(() => toast.error(`Couldn’t create “${name}”`));
       }

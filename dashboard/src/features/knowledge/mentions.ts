@@ -25,7 +25,8 @@ const PROTECTED = /`+[^`]*`+|!?\[\[[^\]]*\]\]|!?\[[^\]]*\]\([^)]*\)|\[[^\]]*\]\[
 /** A title that can be linked as `[[title]]` and is long enough not to match everywhere. */
 export const isLinkableTitle = (title: string) => {
   const trimmed = title.trim();
-  return trimmed.length >= 3 && !/[[\]|\n]/.test(trimmed) && trimmed.toLowerCase() !== 'untitled';
+  // A bare date is a journal day's title, and dates in text are usually due dates (`due 2026-09-30`), so never offer to link them.
+  return trimmed.length >= 3 && !/[[\]|\n]/.test(trimmed) && trimmed.toLowerCase() !== 'untitled' && !/^\d{4}-\d{2}-\d{2}$/.test(trimmed);
 };
 
 function mask(line: string): string {
