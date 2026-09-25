@@ -1,7 +1,8 @@
-import { app, BrowserWindow, dialog, type SaveDialogOptions } from 'electron';
+import { app, BrowserWindow, dialog, shell, type SaveDialogOptions } from 'electron';
 import { mkdtemp, rm, writeFile } from 'fs/promises';
 import { tmpdir } from 'os';
 import { basename, join } from 'path';
+import { DomainError } from '../errors';
 import { resolveInWorkspace } from '../workspace/paths';
 
 // Countries that print on US Letter; everyone else gets A4.
@@ -41,5 +42,15 @@ export async function exportDocument(format: 'pdf' | 'html', path: string, html:
   const result = window ? await dialog.showSaveDialog(window, options) : await dialog.showSaveDialog(options);
   if (result.canceled || !result.filePath) return null;
   await writeFile(result.filePath, format === 'pdf' ? await renderPdf(html) : html);
+  exported.add(result.filePath);
   return result.filePath;
+}
+
+// Exports usually land outside the workspace, so "Show in folder" is limited to files this session wrote.
+const exported = new Set<string>();
+
+/** Show an exported file in the system file manager. */
+export function revealExport(savedPath: string): void {
+  if (!exported.has(savedPath)) throw new DomainError('NOT_FOUND', 'That export is no longer available.');
+  shell.showItemInFolder(savedPath);
 }
