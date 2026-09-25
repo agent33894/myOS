@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import type { Editor } from '@tiptap/core';
 import type { Node as PMNode } from '@tiptap/pm/model';
 import { TextSelection } from '@tiptap/pm/state';
-import { registerEditor, reportCaret } from './bridge';
+import { flashElement, registerEditor, reportCaret } from './bridge';
 import { blockMatch, lineOfText, textAtLine } from './lines';
 
 const REPORT_DELAY_MS = 120;
@@ -33,18 +33,21 @@ function caretLine(editor: Editor, markdown: string): number | null {
 }
 
 /** Put the caret on the rendered block that shows body line `line`, and scroll it to the middle. */
-function revealLine(editor: Editor, markdown: string, line: number): void {
+function revealLine(editor: Editor, markdown: string, line: number, flash = false): boolean {
   const wanted = textAtLine(markdown, line);
-  if (!wanted || editor.isDestroyed) return;
+  if (!wanted || editor.isDestroyed) return false;
   const blocks = textblocks(editor.state.doc);
   const exact = blocks.filter((block) => blockMatch(block.node.textContent, wanted.key) === 2);
   const target = exact[wanted.occurrence] ?? exact[0] ?? blocks.find((block) => blockMatch(block.node.textContent, wanted.key) === 1);
-  if (!target) return;
+  if (!target) return false;
   const { view } = editor;
   view.dispatch(view.state.tr.setSelection(TextSelection.create(view.state.doc, target.pos + 1)));
   view.focus();
   const dom = view.nodeDOM(target.pos);
-  (dom instanceof Element ? dom : dom?.parentElement)?.scrollIntoView({ block: 'center' });
+  const element = dom instanceof Element ? dom : dom?.parentElement;
+  element?.scrollIntoView({ block: 'center' });
+  if (flash) flashElement(element?.closest('li') ?? element);
+  return true;
 }
 
 /**
@@ -57,7 +60,7 @@ export function useEditorBridge(editor: Editor, path: string, markdown: string, 
   const latest = useRef(markdown);
   latest.current = markdown;
 
-  useEffect(() => registerEditor(path, { revealLine: (line) => revealLine(editor, latest.current, line) }), [editor, path]);
+  useEffect(() => registerEditor(path, { revealLine: (line, options) => revealLine(editor, latest.current, line, options?.flash) }), [editor, path]);
 
   useEffect(() => {
     let timer = 0;

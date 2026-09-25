@@ -61,3 +61,19 @@
 .tiptap .view-fence {
   white-space: normal;
 }
+
+/* A line opened from a task list lights up for a moment. */
+.line-flash {
+  border-radius: var(--radius-sm);
+  animation: line-flash 1.6s var(--ease-out);
+}
+
+@keyframes line-flash {
+  0%,
+  35% {
+    background-color: var(--accent-soft);
+  }
+  100% {
+    background-color: transparent;
+  }
+}

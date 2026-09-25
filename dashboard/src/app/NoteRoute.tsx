@@ -12,6 +12,7 @@ export function NoteRoute() {
   const [params] = useSearchParams();
   const path = params.get('path');
   const create = params.get('create') === '1';
+  const line = Number(params.get('line')) || undefined;
   const tab = useShownTab();
   // The file moved (renamed here, a folder moved, or undone): the tab follows it.
   const followTo = useDataStore((state) => (path && !state.notes[path] ? movedTo(state, path) : undefined));
@@ -25,5 +26,5 @@ export function NoteRoute() {
   }, [path]);
 
   if (!path) return <Navigate to={paths.today} replace />;
-  return <NoteTab key={path} path={path} mode={tab?.mode ?? 'rendered'} createOnWrite={create} />;
+  return <NoteTab key={path} path={path} mode={tab?.mode ?? 'rendered'} createOnWrite={create} line={line} />;
 }

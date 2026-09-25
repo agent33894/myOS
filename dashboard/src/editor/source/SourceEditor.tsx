@@ -15,7 +15,7 @@ import { openFromLink } from '../../features/note/openToSide';
 import { findLinkedNote, findWikiLinkedNote, matchWikiLinks } from '../../lib/links';
 import { hasPrimaryModifier } from '../../lib/platform';
 import { useSettings } from '../../store/settings';
-import { registerEditor, reportCaret } from '../bridge';
+import { flashElement, registerEditor, reportCaret } from '../bridge';
 import { linkedNotePath } from '../links/linkTargets';
 import { linkCompletion } from './linkCompletion';
 import { taskBoxes } from './taskBoxes';
@@ -145,10 +145,17 @@ export default function SourceEditor({ value, onChange, path, vimKeys, initialLi
     const view = new EditorView({ state, parent: host.current! });
     viewRef.current = view;
 
-    const reveal = (line: number) => {
+    const reveal = (line: number, options?: { flash?: boolean }) => {
       const target = view.state.doc.line(Math.min(Math.max(line + 1, 1), view.state.doc.lines));
       view.dispatch({ selection: { anchor: target.from }, effects: EditorView.scrollIntoView(target.from, { y: 'center' }) });
       view.focus();
+      if (options?.flash) {
+        requestAnimationFrame(() => {
+          const { node } = view.domAtPos(target.from);
+          flashElement((node instanceof Element ? node : node.parentElement)?.closest('.cm-line'));
+        });
+      }
+      return true;
     };
     const unregister = registerEditor(path, { revealLine: reveal });
     // Switched here from rendered: keep writing on the same line.

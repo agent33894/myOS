@@ -6,8 +6,11 @@ import { create } from 'zustand';
  * any frontmatter), the same numbering in both modes.
  */
 export interface EditorHandle {
-  /** Put the caret at the start of a body line and bring it into view. */
-  revealLine(line: number): void;
+  /**
+   * Put the caret at the start of a body line and bring it into view; with
+   * `flash`, the line lights up briefly. False when the line can't be shown yet.
+   */
+  revealLine(line: number, options?: { flash?: boolean }): boolean | void;
 }
 
 const handles = new Map<string, EditorHandle>();
@@ -28,4 +31,15 @@ export const useCaretLines = create<Record<string, number>>(() => ({}));
 
 export function reportCaret(path: string, line: number): void {
   if (useCaretLines.getState()[path] !== line) useCaretLines.setState({ [path]: line });
+}
+
+const FLASH_MS = 1600;
+
+/** Light up an element for a moment (a line opened from a task list). */
+export function flashElement(element: Element | null | undefined): void {
+  if (!element) return;
+  element.classList.remove('line-flash');
+  void (element as HTMLElement).offsetWidth;
+  element.classList.add('line-flash');
+  window.setTimeout(() => element.classList.remove('line-flash'), FLASH_MS);
 }
