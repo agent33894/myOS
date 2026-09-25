@@ -10,16 +10,18 @@ interface PageLayoutProps {
 }
 
 /**
- * The scrolling canvas and centered column every page shares, so titles and
- * rows line up as you move between Today, Tasks, a note, and Settings.
+ * The scrolling canvas and the sheet every page sits on: a softly raised,
+ * centered page as wide as the text column (Appearance → Line width) plus
+ * its margins. Titles and rows line up as you move between Today, Tasks, a
+ * note, and Settings. Inside the sheet `bg-canvas` is the sheet's own color.
  * List pages run 8px wider on each side: their headers and rows carry `px-2`,
  * so row highlights bleed into the margin while text lines up with a document's.
  */
 export function PageLayout({ children, document = false, className }: PageLayoutProps) {
   return (
-    <div className="scrollbar-stable h-full overflow-y-auto bg-canvas">
-      <div className={cn('mx-auto flex max-w-3xl flex-col pb-24', document ? 'px-6' : 'px-4 pt-12', className)}>
-        {children}
+    <div className="scrollbar-stable flex h-full flex-col overflow-y-auto bg-canvas px-3 pb-3">
+      <div className="sheet mx-auto flex w-full max-w-sheet shrink-0 grow flex-col rounded-xl bg-sheet shadow-sheet">
+        <div className={cn('flex flex-col pb-24', document ? 'px-8 pt-1 md:px-14' : 'px-6 pt-12 md:px-12', className)}>{children}</div>
       </div>
     </div>
   );

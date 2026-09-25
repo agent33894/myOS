@@ -6,7 +6,7 @@
  */
 
 const LEGACY_UTILITY_PATTERN =
-  /(?:\b(?:dark:[^\s"'`<>}]+|(?:bg|text|border|ring|outline|divide|fill|stroke|from|via|to)-(?:slate|gray|zinc|neutral|stone)-\d{2,3}(?:\/\d+)?)\b|(?<![-\w])shadow-(?!(?:raised|overlay|dialog|none|chronicle-lifted|chronicle-overlay)\b)[^\s"'`<>}]+)/g;
+  /(?:\b(?:dark:[^\s"'`<>}]+|(?:bg|text|border|ring|outline|divide|fill|stroke|from|via|to)-(?:slate|gray|zinc|neutral|stone)-\d{2,3}(?:\/\d+)?)\b|(?<![-\w])shadow-(?!(?:raised|overlay|dialog|sheet|none|chronicle-lifted|chronicle-overlay)\b)[^\s"'`<>}]+)/g;
 
 const SUGGESTION = 'Use semantic token utilities, and shadow-raised, shadow-overlay, or shadow-dialog for elevation.';
 

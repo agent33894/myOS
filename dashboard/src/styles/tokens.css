@@ -12,12 +12,14 @@
 [data-theme='light'] {
   color-scheme: light;
 
-  /* Surfaces */
-  --canvas: #fcfbf9;
-  --sidebar: #f4f2ef;
+  /* Surfaces. The window is a soft canvas tinted by the accent; the side
+     columns sit on it without a line; each note sits on a raised sheet. */
+  --canvas: color-mix(in oklch, var(--accent) 5%, #eeece8);
+  --sidebar: var(--canvas);
+  --sheet: #fffefc;
   --raised: #ffffff;
   --overlay: #ffffff;
-  --sunken: #f1efeb;
+  --sunken: color-mix(in oklch, var(--accent) 3%, #f3f1ed);
 
   /* Text: every step clears 4.5:1 on every surface, including hover tints */
   --text: #1d1c1a;
@@ -40,6 +42,8 @@
   /* Elevation: soft, layered, warm-neutral */
   --shadow-raised: 0 0 0 1px rgb(29 28 26 / 0.04), 0 1px 2px rgb(29 28 26 / 0.05),
     0 2px 6px rgb(29 28 26 / 0.04);
+  --shadow-sheet: 0 0 0 1px rgb(29 28 26 / 0.035), 0 1px 2px rgb(29 28 26 / 0.04),
+    0 16px 40px -20px rgb(29 28 26 / 0.14);
   --shadow-overlay: 0 0 0 1px rgb(29 28 26 / 0.06), 0 4px 12px -2px rgb(29 28 26 / 0.1),
     0 12px 32px -4px rgb(29 28 26 / 0.12);
   --shadow-dialog: 0 0 0 1px rgb(29 28 26 / 0.06), 0 12px 32px -8px rgb(29 28 26 / 0.16),
@@ -50,11 +54,12 @@
 [data-theme='dark'] {
   color-scheme: dark;
 
-  --canvas: #171716;
-  --sidebar: #1e1d1c;
-  --raised: #252423;
-  --overlay: #2b2a28;
-  --sunken: #121211;
+  --canvas: color-mix(in oklch, var(--accent) 6%, #131314);
+  --sidebar: var(--canvas);
+  --sheet: color-mix(in oklch, var(--accent) 3%, #1c1c1d);
+  --raised: #262527;
+  --overlay: #2c2b2d;
+  --sunken: color-mix(in oklch, var(--accent) 3%, #161617);
 
   --text: #edece9;
   --text-secondary: #aba7a0;
@@ -73,6 +78,7 @@
 
   /* Dark relies on surface tone; shadows add a faint rim and depth only */
   --shadow-raised: 0 0 0 1px rgb(255 255 255 / 0.05), 0 1px 2px rgb(0 0 0 / 0.3);
+  --shadow-sheet: 0 0 0 1px rgb(255 255 255 / 0.045), 0 20px 48px -20px rgb(0 0 0 / 0.7);
   --shadow-overlay: 0 0 0 1px rgb(255 255 255 / 0.07), 0 8px 24px -4px rgb(0 0 0 / 0.5);
   --shadow-dialog: 0 0 0 1px rgb(255 255 255 / 0.08), 0 24px 64px -12px rgb(0 0 0 / 0.6);
   --scrim: rgb(0 0 0 / 0.5);
@@ -137,4 +143,22 @@
 
 [data-reading-font='serif'] {
   --font-reading: var(--font-serif);
+}
+
+/* The text column on a sheet: Appearance → Line width. The sheet adds its margins (tailwind `max-w-sheet`). */
+:root {
+  --line-width: 42rem;
+}
+
+[data-line-width='narrow'] {
+  --line-width: 36rem;
+}
+
+[data-line-width='wide'] {
+  --line-width: 52rem;
+}
+
+/* On a sheet, the page's own background is the sheet: sticky bars and ring offsets blend into it. */
+.sheet {
+  --canvas: var(--sheet);
 }
