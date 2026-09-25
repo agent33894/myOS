@@ -6,7 +6,6 @@
     "public/theme-init.js",
     "scripts/*.{js,mjs,ts}",
     "src/ui/index.ts",
-    "src/data/exporter.ts",
     "src/data/pages.ts"
   ],
   "project": [
@@ -16,10 +15,7 @@
     "scripts/**/*.{ts,js,mjs}"
   ],
   "ignoreDependencies": [
-    "@fontsource-variable/inter",
-    "@fontsource/literata",
-    "electron-builder",
-    "non.geist"
+    "electron-builder"
   ],
   "ignoreExportsUsedInFile": true
 }
