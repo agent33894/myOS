@@ -1,30 +1,75 @@
+import { useMemo } from 'react';
 import { ListTree } from 'lucide-react';
 import type { PanelProps } from '../../app/panels';
 import { useDataStore } from '../../data/store';
-import { EmptyState } from '../../ui';
+import { editorFor, useCaretLines } from '../../editor/bridge';
+import { Button, EmptyState, cn } from '../../ui';
+import { useNoteStatus } from './noteStatus';
 
-/** Headings in the note, outside code blocks. */
-function headings(markdown: string): Array<{ level: number; text: string }> {
-  let fenced = false;
-  return markdown.split('\n').flatMap((line) => {
-    if (/^\s*(```|~~~)/.test(line)) fenced = !fenced;
-    const match = fenced ? null : /^(#{1,6})\s+(.+?)\s*#*$/.exec(line);
-    return match ? [{ level: match[1].length, text: match[2] }] : [];
+interface Heading {
+  level: number;
+  text: string;
+  /** 0-based line in the body. */
+  line: number;
+}
+
+const FENCE = /^\s*(`{3,}|~{3,})/;
+
+/** `**API** and [[Auth|login]]` → `API and login`: heading text as it reads. */
+const plain = (text: string) =>
+  text
+    .replace(/\[\[([^\]|]+)\|([^\]]+)\]\]/g, '$2')
+    .replace(/\[\[([^\]]+)\]\]/g, '$1')
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/(\*\*|__|\*|_|~~|`)(.+?)\1/g, '$2')
+    .trim();
+
+/** ATX headings in the body, outside code fences. */
+function headings(markdown: string): Heading[] {
+  let fence: string | null = null;
+  return markdown.split('\n').flatMap((line, index) => {
+    const marker = FENCE.exec(line)?.[1];
+    if (marker && (fence === null || (marker[0] === fence[0] && marker.length >= fence.length))) {
+      fence = fence === null ? marker : null;
+      return [];
+    }
+    const match = fence ? null : /^(#{1,6})\s+(.+?)(?:\s+#+)?\s*$/.exec(line);
+    return match ? [{ level: match[1].length, text: plain(match[2]), line: index }] : [];
   });
 }
 
-/** The note's headings. (Wave B: jump to a heading on click.) */
+/** The note's headings. Click one to go there; the heading you are in is marked. */
 export function OutlinePanel({ path }: PanelProps) {
-  const text = useDataStore((state) => (path ? (state.bodies[path]?.content ?? state.notes[path]?.searchText ?? '') : ''));
-  const items = headings(text);
-  if (!path || items.length === 0) return <EmptyState icon={ListTree} title="No headings" description="Headings in the open note show up here." />;
+  const live = useNoteStatus((state) => (state.path === path ? state.content : null));
+  const saved = useDataStore((state) => (path ? (state.bodies[path]?.content ?? state.notes[path]?.searchText ?? '') : ''));
+  const caret = useCaretLines((state) => (path ? state[path] : undefined));
+  const items = useMemo(() => headings(live ?? saved), [live, saved]);
+
+  if (!path) return <EmptyState icon={ListTree} title="No note open" description="Open a note to see its headings." />;
+  if (items.length === 0) return <EmptyState icon={ListTree} title="No headings" description="Start a line with # to add a heading." />;
+
+  const minLevel = Math.min(...items.map((item) => item.level));
+  const current = caret === undefined ? -1 : items.reduce((found, item, index) => (item.line <= caret ? index : found), -1);
+
   return (
-    <ul className="flex flex-col gap-1 py-2 text-sm text-text-secondary">
+    <nav aria-label="Outline" className="flex flex-col py-2">
       {items.map((item, index) => (
-        <li key={index} className="truncate" style={{ paddingLeft: `${(item.level - 1) * 12}px` }}>
-          {item.text}
-        </li>
+        <Button
+          key={`${item.line}:${item.text}`}
+          variant="ghost"
+          size="sm"
+          aria-current={index === current ? 'location' : undefined}
+          className={cn(
+            'w-full justify-start truncate font-normal',
+            index === current ? 'bg-text/5 text-text' : 'text-text-secondary',
+            item.level === minLevel && 'font-medium',
+          )}
+          style={{ paddingLeft: `${8 + (item.level - minLevel) * 12}px` }}
+          onClick={() => editorFor(path)?.revealLine(item.line)}
+        >
+          <span className="truncate">{item.text}</span>
+        </Button>
       ))}
-    </ul>
+    </nav>
   );
 }
