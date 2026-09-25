@@ -6,6 +6,7 @@ import { useSettingsStore } from '../../store/settings';
 import { Button, Icon, Spinner } from '../../ui';
 import myosIcon from '../../assets/myos-icon.png';
 import { WindowStrip } from '../shell/WindowStrip';
+import { weekStartOf } from '../rituals/weekly';
 import { AreasStep } from './AreasStep';
 
 type Choice = 'fresh' | 'open';
@@ -49,6 +50,8 @@ export function Welcome() {
 
   const finish = () => {
     window.location.hash = '#/';
+    // A brand-new space has nothing to review yet: the weekly review waits for next week.
+    useSettingsStore.getState().setSetting('weeklyNudgeDismissed', weekStartOf());
     finishOnboarding(true);
   };
 
