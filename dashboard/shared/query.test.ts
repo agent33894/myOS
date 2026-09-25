@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { resolveFromNote, runView, viewFromFence, type ViewNote } from './query';
+import { fenceFor, resolveFromNote, runView, viewFromFence, type ViewNote } from './query';
 import { extractTasks } from './tasks';
 
 const TODAY = '2026-09-25';
@@ -90,9 +90,13 @@ describe('note views', () => {
 
 describe('fenced views', () => {
   it('reads the query from the info string and the body', () => {
-    expect(viewFromFence('tasks open #work', '')).toEqual({ kind: 'tasks', query: 'open #work' });
-    expect(viewFromFence('notes', 'path:notes/\nsort:modified\n')).toEqual({ kind: 'notes', query: 'path:notes/ sort:modified' });
+    expect(viewFromFence('view open #work', '')).toEqual({ kind: 'tasks', query: 'open #work' });
+    expect(viewFromFence('view', 'kind:notes path:notes/\nsort:modified\n')).toEqual({ kind: 'notes', query: 'path:notes/ sort:modified' });
+    // Obsidian's Tasks plugin owns ```tasks; it is left as a code block.
+    expect(viewFromFence('tasks', 'not done')).toBeNull();
     expect(viewFromFence('ts', 'x')).toBeNull();
+    expect(fenceFor('notes', '#meeting')).toBe('```view\nkind:notes #meeting\n```');
+    expect(runView('notes', 'kind:notes #meeting', [], TODAY).errors).toEqual([]);
   });
 
   it('reads place terms relative to the note the block sits in', () => {

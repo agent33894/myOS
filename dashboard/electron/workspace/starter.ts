@@ -36,7 +36,7 @@ function firstSteps(today: string, mod: string): string {
     '',
     'A view is a search written as one line. This one lists every open task in the folder:',
     '',
-    '```tasks',
+    '```view',
     'open sort:due',
     '```',
     '',

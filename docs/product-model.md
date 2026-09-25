@@ -12,7 +12,7 @@ It should feel soft and unhurried to look at, and fast and precise to use from t
 | **Note** | Any `.md` file. Frontmatter is optional and shown as editable properties when present. |
 | **Task** | A checkbox line in any note: `- [ ] Fix the login redirect 📅 2026-10-02 #auth`. Obsidian Tasks dates are understood (📅 due, ⏳ scheduled, 🛫 start, ✅ done, 🔁 repeat), and so is a plain `due:2026-10-02`. Files with frontmatter `type: todo` also count as tasks, so older folders keep working. |
 | **Daily note** | `daily/2026-09-25.md`. The folder and file name pattern can be changed. It is the default place where captures land. |
-| **View** | A saved search written as one line of text, such as `open due<=today #work`. A view can be pinned to the sidebar, or placed inside any note as a fenced block so the results update live. |
+| **View** | A saved search written as one line of text, such as `open due<=today #work`. A view can be pinned to the sidebar, or placed inside any note as a ```` ```view ```` block so the results update live. |
 
 Nothing else is stored. Settings live in the app's settings file and never in your folder.
 

@@ -6,7 +6,7 @@ import { PRIORITY_RANK, type Task } from './tasks';
  * Views: one line of text such as `open due<=today #work sort:due`, run over
  * the notes and task lines in the folder. Terms are ANDed; `-` in front of a
  * filter negates it. The same syntax powers the Tasks screen, pinned views,
- * fenced ```tasks / ```notes blocks, and `myos-next tasks`.
+ * fenced ```view blocks, and `myos-next tasks`.
  */
 
 export type ViewKind = 'tasks' | 'notes';
@@ -72,6 +72,8 @@ export function parseQuery(text: string, kind: ViewKind, today: string): Query {
     const negate = token.length > 1 && token.startsWith('-');
     const body = negate ? token.slice(1) : token;
     const lower = body.toLowerCase();
+    // `kind:` picks tasks or notes in a ```view block; the caller has read it already.
+    if (/^kind:(tasks|notes)$/.test(lower)) continue;
     const option = /^(sort|group|limit):(.*)$/.exec(lower);
     if (option) {
       const [, key, value] = option;
@@ -256,13 +258,29 @@ export function resolveFromNote(text: string, sourcePath: string): string {
   });
 }
 
+/** The `kind:tasks` / `kind:notes` term of a view written in a note (tasks when it has none), and the rest of the text. */
+export function splitKind(text: string): { kind: ViewKind; query: string } {
+  let kind: ViewKind = 'tasks';
+  const query = (text.match(TOKEN) ?? [])
+    .filter((token) => {
+      const match = /^kind:(tasks|notes)$/i.exec(token);
+      if (match) kind = match[1].toLowerCase() as ViewKind;
+      return !match;
+    })
+    .join(' ');
+  return { kind, query };
+}
+
 /**
- * A fenced view block: ```tasks or ```notes, with the query after the
- * language name and/or on the lines inside. Null for any other fence.
+ * A fenced view block: ```view, with the query after the name and/or on the
+ * lines inside. `kind:notes` makes it a list of notes; tasks otherwise.
+ * Null for any other fence (```tasks belongs to the Obsidian Tasks plugin).
  */
 export function viewFromFence(info: string, body: string): { kind: ViewKind; query: string } | null {
-  const match = /^(tasks|notes)\b\s*(.*)$/i.exec(info.trim());
+  const match = /^view\b\s*(.*)$/i.exec(info.trim());
   if (!match) return null;
-  const query = [match[2], ...body.split('\n')].map((line) => line.trim()).filter(Boolean).join(' ');
-  return { kind: match[1].toLowerCase() as ViewKind, query };
+  return splitKind([match[1], ...body.split('\n')].map((line) => line.trim()).filter(Boolean).join(' '));
 }
+
+/** The fenced block that shows a view inside a note. */
+export const fenceFor = (kind: ViewKind, query: string) => ['```view', [kind === 'notes' ? 'kind:notes' : '', query].filter(Boolean).join(' '), '```'].join('\n');

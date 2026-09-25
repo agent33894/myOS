@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { Copy, SearchX, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { PinnedView } from '@shared/settings';
+import { fenceFor } from '@shared/query';
 import { go, paths } from '../../app/navigation';
 import { useView } from '../../data/selectors';
 import { useSettings } from '../../store/settings';
@@ -14,8 +15,6 @@ import { ViewResults } from './ViewResults';
 
 const SAVE_DELAY_MS = 600;
 
-/** The fenced block that shows this view inside a note. */
-const fenceOf = (view: Pick<PinnedView, 'kind' | 'query'>) => `\`\`\`${view.kind}\n${view.query}\n\`\`\``;
 
 function SavedView({ view }: { view: PinnedView }) {
   const [name, setName] = useState(view.name);
@@ -67,7 +66,7 @@ function SavedView({ view }: { view: PinnedView }) {
               icon={Copy}
               label="Copy as a block for a note"
               onClick={() =>
-                void navigator.clipboard.writeText(fenceOf({ kind: view.kind, query })).then(() => toast.success('Copied. Paste it into any note.'))
+                void navigator.clipboard.writeText(fenceFor(view.kind, query)).then(() => toast.success('Copied. Paste it into any note.'))
               }
             />
             <Button variant="ghost" leadingIcon={Trash2} onClick={() => void removeView(view.id)}>

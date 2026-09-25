@@ -48,7 +48,7 @@ export function ViewsSettings() {
       title="Views"
       description={
         <>
-          Saved searches pinned to the sidebar, such as <span className="font-mono">open due&lt;=today #work</span>. The same line works in a note inside a <span className="font-mono">```tasks</span> block.
+          Saved searches pinned to the sidebar, such as <span className="font-mono">open due&lt;=today #work</span>. The same line works in a note inside a <span className="font-mono">```view</span> block.
         </>
       }
     >

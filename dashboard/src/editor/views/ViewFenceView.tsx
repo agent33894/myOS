@@ -30,9 +30,10 @@ export function ViewFenceView({ node, editor, getPos, selected, updateAttributes
     setEditing(false);
     const query = draft.replace(/\s+/g, ' ').trim();
     if (query === view.query) return;
-    const name = /^\s*(\S+)/.exec(info)?.[1] ?? view.kind;
+    const name = /^\s*(\S+)/.exec(info)?.[1] ?? 'view';
+    const text = [view.kind === 'notes' ? 'kind:notes' : '', query].filter(Boolean).join(' ');
     // The query stays where it was written: after the name, or inside the fence.
-    updateAttributes(source.trim() ? { info: name, source: query } : { info: query ? `${name} ${query}` : name, source: '' });
+    updateAttributes(source.trim() ? { info: name, source: text } : { info: text ? `${name} ${text}` : name, source: '' });
   };
 
   const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {

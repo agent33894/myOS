@@ -16,7 +16,7 @@ export interface ViewBlockProps {
 }
 
 /**
- * A live view inside a note: the editor renders ```tasks and ```notes fences
+ * A live view inside a note: the editor renders ```view fences
  * with this component. Results update as files change; checking a task
  * writes to that task's own file. Place terms are read from the note's own
  * folder (see `resolveFromNote`).

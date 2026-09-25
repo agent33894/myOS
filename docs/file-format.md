@@ -95,18 +95,21 @@ A view is one line of text. Terms are combined with AND; a `-` in front of a fil
 | `sort:due`, `sort:priority`, `sort:file` | Task order (default `due`). Notes sort by `file`, `title`, or `modified`. |
 | `group:file`, `group:folder`, `group:tag`, `group:date` | Groups (`date` is for tasks). |
 | `limit:20` | At most this many results. |
+| `kind:notes`, `kind:tasks` | In a ```` ```view ```` block: list notes or tasks (default tasks). |
 
-A note shows a live view with a fenced block. The query can follow the block's name or fill its lines:
+A note shows a live view with a ```` ```view ```` block. The query can follow the block's name or fill its lines. It lists tasks unless it has `kind:notes`:
 
 ````markdown
-```tasks
+```view
 open due<=today+7 #work
 group:file
 ```
 
-```notes #meeting sort:modified limit:10
+```view kind:notes #meeting sort:modified limit:10
 ```
 ````
+
+The block is named `view` so it doesn't collide with the Obsidian Tasks plugin, which owns ```` ```tasks ```` blocks and their own query language. myOS Next leaves those as code.
 
 In a note, `path:.` is that note's folder, `path:./x` and `path:../x` are read from it, and `file:this` is the note itself, so a block keeps working when its folder is moved or renamed. Opening the block as a view writes these out as full paths.
 

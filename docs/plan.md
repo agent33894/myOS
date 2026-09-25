@@ -14,8 +14,8 @@ Frontmatter stays readable and editable as properties. Files with `type: todo` s
 
 ### Wave A: foundation
 - **Folder model.** IPC to list the tree (folders and `.md` files, skipping dot folders and `node_modules`), create file or folder, rename, move, and delete (with a history copy first). The watcher reports folder changes too.
-- **Task lines.** Parse checkbox lines with Obsidian Tasks emoji dates and plain `due:`, tags, and `🔁` repeat. Operations: toggle (adds or removes `✅ date`; on a repeating task, appends the next occurrence as a new line under it, like Obsidian Tasks), edit line, and add line to a file. Frontmatter `type: todo` files are tasks too.
-- **Views.** A small query language in `shared/query.ts`, used by the app, by fenced ```` ```tasks ```` / ```` ```notes ```` blocks, and by the CLI:
+- **Task lines.** Parse checkbox lines with Obsidian Tasks emoji dates and plain `due:`, tags, and `🔁` repeat. Operations: toggle (adds or removes `✅ date`; on a repeating task, adds the next occurrence as a new line directly above it, like Obsidian Tasks), edit line, and add line to a file. Frontmatter `type: todo` files are tasks too.
+- **Views.** A small query language in `shared/query.ts`, used by the app, by fenced ```` ```view ```` blocks (`kind:notes` for notes; tasks otherwise), and by the CLI:
   - `open`, `done`
   - `due<=today`, `due<2026-10-01`, `scheduled=today`
   - `#tag`, `path:notes/`, `file:api`
@@ -90,7 +90,7 @@ Events: `files:changed { path, entry: 'file' | 'folder', kind, rev? }`, `app:cap
 
 - `spec/`: `Note`, `NoteSummary` (`path`, `rev`, `title`, `properties`, `propertiesError?`, `tags`, `tasks`, `modified`, `searchText`), `noteTitle`, `noteTags`, `isTodoFile`.
 - `tasks/`: `Task` (`path`, `line`, `raw`, `text`, `status`, `due`, `scheduled`, `start`, `done`, `recurrence`, `priority`, `tags`), `parseTaskLine`, `extractTasks`, `toggleTaskLine`, `setTaskDate`, `setTaskText`, `appendLine`, `todayBucket`.
-- `query.ts`: `runView(kind, text, notes, today) → ViewResult`, `parseQuery`, `viewFromFence(info, body)`. Syntax in [`file-format.md`](file-format.md#views).
+- `query.ts`: `runView(kind, text, notes, today) → ViewResult`, `parseQuery`, `viewFromFence(info, body)`, `splitKind`, `fenceFor(kind, query)`, `resolveFromNote(query, sourcePath)`. Syntax in [`file-format.md`](file-format.md#views).
 - `daily.ts`, `capture.ts`, `recurrence.ts`, `settings.ts` (`Settings`, `DEFAULT_SETTINGS`, `validSettings`).
 
 ### Renderer data (`dashboard/src/data`, `dashboard/src/store`)
@@ -116,7 +116,7 @@ Events: `files:changed { path, entry: 'file' | 'folder', kind, rev? }`, `app:cap
 | Owner | Folders | Exposes |
 | --- | --- | --- |
 | B1 Shell | `src/app/**`, `src/features/{shell,palette,switcher,onboarding,settings}/**` | `Shell`, `Sidebar`, `FileTree`, `RightPanel`, `StatusBar`, `CommandPalette`, `FileSwitcher`, `Welcome`, `SettingsScreen`, `shellCommands` |
-| B2 Editor | `src/editor/**`, `src/features/note/**` | `NoteTab`, `noteCommands`, `OutlinePanel`, `BacklinksPanel`, `PropertiesPanel`, `NoteStatusItem`; renders ```` ```tasks ```` / ```` ```notes ```` fences with `ViewBlock` |
+| B2 Editor | `src/editor/**`, `src/features/note/**` | `NoteTab`, `noteCommands`, `OutlinePanel`, `BacklinksPanel`, `PropertiesPanel`, `NoteStatusItem`; renders ```` ```view ```` fences with `ViewBlock` |
 | B3 Tasks | `src/features/{today,tasks,views,capture}/**` | `TodayScreen`, `TasksScreen`, `ViewScreen`, `QuickCapture`, `taskCommands`, `ViewBlock({ kind, query, sourcePath })`, `TaskRow`, `ViewResults` |
 | B4 Git and safety | `src/features/{git,history,export}/**` | `ChangesPanel`, `HistoryPanel`, `GitStatusBarItem` (also binds ⌘⇧Enter), `useFileGitStatus(path)`, `GitDot({ path })`, `gitCommands`, `exportCommands`, `ExportMenuItems({ path, flush? })` |
 

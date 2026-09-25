@@ -29,11 +29,12 @@ describe('markdown round trip', () => {
     }
   });
 
-  it('keeps task and note view fences byte for byte, as live views', () => {
-    for (const block of ['```tasks\nopen due<=today+7 #work\ngroup:file\n```', '```notes #meeting sort:modified limit:10\n```', '~~~tasks open\n~~~']) {
+  it('keeps view fences byte for byte, as live views, and leaves ```tasks to Obsidian', () => {
+    for (const block of ['```view\nopen due<=today+7 #work\ngroup:file\n```', '```view kind:notes #meeting sort:modified limit:10\n```', '~~~view open\n~~~']) {
       expect(markdown.parse(block).content?.[0]?.type).toBe('viewFence');
       if (block.startsWith('```')) expect(roundTrip(block)).toBe(block);
     }
+    expect(markdown.parse('```tasks\nnot done\n```').content?.[0]?.type).toBe('codeBlock');
   });
 
   it('keeps Obsidian Tasks lines as written', () => {

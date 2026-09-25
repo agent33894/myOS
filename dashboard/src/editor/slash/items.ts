@@ -69,7 +69,7 @@ const viewItem = (kind: 'tasks' | 'notes', label: string, description: string, i
     editor
       .chain()
       .focus()
-      .insertContent([{ type: 'viewFence', attrs: { info: `${kind} ${query}`, source: '', fresh: true } }, { type: 'paragraph' }])
+      .insertContent([{ type: 'viewFence', attrs: { info: 'view', source: kind === 'notes' ? `kind:notes ${query}` : query, fresh: true } }, { type: 'paragraph' }])
       .run(),
   );
 

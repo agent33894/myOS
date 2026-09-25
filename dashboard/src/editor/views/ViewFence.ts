@@ -7,7 +7,7 @@ import { ViewFenceView } from './ViewFenceView';
 export const viewFence = (info: string, source: string) => (source ? `\`\`\`${info}\n${source}\n\`\`\`` : `\`\`\`${info}\n\`\`\``);
 
 /**
- * ```` ```tasks ```` and ```` ```notes ```` fences (see docs/file-format.md#views)
+ * ```` ```view ```` fences (see docs/file-format.md#views)
  * become one atom node holding the fence as written, rendered as a live view.
  * The Markdown stays as it is until the query itself is edited.
  */
@@ -35,8 +35,8 @@ export const ViewFence = Node.create<object, ViewFenceStorage>({
 
   addAttributes() {
     return {
-      /** The info string after the backticks: `tasks`, or `notes #meeting sort:modified`. */
-      info: { default: 'tasks' },
+      /** The info string after the backticks: `view`, or `view kind:notes #meeting`. */
+      info: { default: 'view' },
       /** The lines inside the fence. */
       source: { default: '' },
       /** Just inserted from the `/` menu: open with the query field focused. Never written to disk. */
@@ -49,7 +49,7 @@ export const ViewFence = Node.create<object, ViewFenceStorage>({
       {
         tag: 'pre[data-view-fence]',
         priority: 70,
-        getAttrs: (element) => ({ info: element.getAttribute('data-view-fence') ?? 'tasks', source: element.textContent ?? '' }),
+        getAttrs: (element) => ({ info: element.getAttribute('data-view-fence') ?? 'view', source: element.textContent ?? '' }),
       },
     ];
   },
@@ -71,7 +71,7 @@ export const ViewFence = Node.create<object, ViewFenceStorage>({
   },
 
   renderMarkdown(node) {
-    return viewFence(node.attrs?.info ?? 'tasks', node.attrs?.source ?? '');
+    return viewFence(node.attrs?.info ?? 'view', node.attrs?.source ?? '');
   },
 
   addNodeView() {

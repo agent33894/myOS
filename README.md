@@ -7,7 +7,7 @@ myOS Next is a quiet editor for a folder of Markdown files, for macOS and Linux.
 - **Files as they are.** The sidebar shows the folder's real folders and files. Create, rename, move, and delete them in the app or anywhere else; changes on disk show up right away.
 - **Tasks in any note.** `- [ ] Fix the login redirect 📅 2026-10-02 #auth` is a task. Obsidian Tasks dates and repeats work, and so does a plain `due:2026-10-02`.
 - **Today and Tasks.** Today shows today's daily note and the tasks that are due, scheduled, or late. Tasks lists every open task, narrowed with a one-line view such as `open due<=today #work group:file`.
-- **Views.** Save a view to the sidebar, or put one in a note as a fenced ```` ```tasks ```` block that updates live.
+- **Views.** Save a view to the sidebar, or put one in a note as a ```` ```view ```` block that updates live.
 - **Capture.** ⌘N (or `myos-next add "…"`) adds a line to today's daily note. A date, a repeat, `!`, or `[ ]` makes it a task.
 - **Git.** If the folder is a Git repository, see changed files, commit, read a file's history, and pull or push when you choose.
 - **Safe edits.** Saves check that the file hasn't changed on disk, undo is exact, a local copy is kept before each save, and editing one block never rewrites the rest of the file.
