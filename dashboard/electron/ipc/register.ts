@@ -17,7 +17,7 @@ import {
   saveArtifact,
   toggleCheck,
 } from '../documents/artifacts';
-import { exportDocument } from '../export/export';
+import { exportDocument, revealExport } from '../export/export';
 import { attachAsset } from '../documents/assets';
 import { commitDiff, commitSummary } from '../git/commits';
 import { getArtifactGitRules, setArtifactGitRules } from '../git/rules';
@@ -52,6 +52,7 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
 
   handle('export:pdf', ['path', 'string'], (path, html) => exportDocument('pdf', path, html, getWindow()));
   handle('export:html', ['path', 'string'], (path, html) => exportDocument('html', path, html, getWindow()));
+  handle('export:reveal', ['string'], (savedPath) => revealExport(savedPath));
 
   handle('workspace:current', [], currentWorkspace);
   handle('workspace:choose', [], async () => {

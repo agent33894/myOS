@@ -39,6 +39,7 @@ import { relativeTime } from '../tasks/dates';
 import { ProjectDot } from '../tasks/ProjectDot';
 import { projectColor } from '../tasks/projectRefs';
 import { TaskRow } from '../tasks/TaskRow';
+import { useRenameWithTitle } from '../files/useRenameWithTitle';
 import { PROJECT_STATUSES, statusLabel } from './projectStatus';
 import { useProjectRename } from './projectRename';
 import { useProjectStatus } from './projectMutations';
@@ -144,6 +145,8 @@ export function ProjectHome({ project }: { project: ProjectWithStats }) {
   const [showDone, setShowDone] = useState(false);
   const [findSlot, setFindSlot] = useState<HTMLDivElement | null>(null);
   const body = documentBody(doc);
+  // File names follow titles (features/files); projects open by id, so the URL stays put.
+  useRenameWithTitle(project, project.title, () => undefined, doc.saveNow);
   const notes = project.materials.filter((item) => item.type !== ArtifactType.INBOX);
   const tasks = showDone ? [...project.openTodos, ...project.doneTodos] : project.openTodos;
   const newNote = () => void createNote({ project: project.id }).then((url) => url && navigate(url));

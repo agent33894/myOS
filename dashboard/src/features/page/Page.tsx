@@ -3,6 +3,7 @@ import { FileQuestion } from 'lucide-react';
 import { ArtifactType } from '@shared/types';
 import { useDocument } from '../../data/useDocument';
 import { Editor } from '../../editor';
+import { useRenameWithTitle } from '../files/useRenameWithTitle';
 import { EmptyState, LoadingState, PageLayout, Textarea } from '../../ui';
 import { ConflictBanner } from './ConflictBanner';
 import { documentBody } from './documentBody';
@@ -38,6 +39,8 @@ export function Page({ path, leading, onDeleted, onMoved, missingAction }: PageP
   const item = doc.artifact;
   const loaded = doc.content !== null;
   const body = documentBody(doc);
+  // File names follow titles (features/files): renames after the title is edited, and the URL follows.
+  useRenameWithTitle(item, doc.title, onMoved, doc.saveNow);
 
   useEffect(() => {
     if (!isNew || !loaded) return;

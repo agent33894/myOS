@@ -16,6 +16,8 @@ export interface StoredSettings {
   hasCompletedOnboarding: boolean;
   /** The area new items take when their project has none. */
   defaultArea: Domain;
+  /** The areas this space is for (chosen in onboarding and Settings); the Area menu lists these first. */
+  usedAreas: Domain[];
   /** Hours available for planned work, for Today's capacity line. */
   availableHours: number;
   showCapacity: boolean;
@@ -38,6 +40,7 @@ const DEFAULT_SETTINGS: StoredSettings = {
   remindDueToday: false,
   hasCompletedOnboarding: false,
   defaultArea: Domain.PERSONAL,
+  usedAreas: [Domain.WORK, Domain.PERSONAL, Domain.RESEARCH, Domain.CREATIVE],
   availableHours: 6,
   showCapacity: true,
   weeklyReviewDay: 5,
@@ -57,7 +60,7 @@ function isOneOf<T extends string>(value: unknown, options: readonly T[]): value
 }
 
 export function getDefaultSettings(): StoredSettings {
-  return { ...DEFAULT_SETTINGS };
+  return { ...DEFAULT_SETTINGS, usedAreas: [...DEFAULT_SETTINGS.usedAreas] };
 }
 
 export function normalizeStoredSettings(value: unknown): StoredSettings {
@@ -78,6 +81,7 @@ export function normalizeStoredSettings(value: unknown): StoredSettings {
       ? parsed.hasCompletedOnboarding
       : defaults.hasCompletedOnboarding,
     defaultArea: isDomain(parsed.defaultArea) ? parsed.defaultArea : defaults.defaultArea,
+    usedAreas: isAreaList(parsed.usedAreas) ? parsed.usedAreas : defaults.usedAreas,
     availableHours: isNumberIn(parsed.availableHours, 0, 24) ? parsed.availableHours : defaults.availableHours,
     showCapacity: isBoolean(parsed.showCapacity) ? parsed.showCapacity : defaults.showCapacity,
     weeklyReviewDay:
@@ -91,6 +95,9 @@ export function normalizeStoredSettings(value: unknown): StoredSettings {
     includeJournalInSearch: isBoolean(parsed.includeJournalInSearch) ? parsed.includeJournalInSearch : defaults.includeJournalInSearch,
   };
 }
+
+const isAreaList = (value: unknown): value is Domain[] =>
+  Array.isArray(value) && value.length > 0 && value.every(isDomain) && new Set(value).size === value.length;
 
 const isBoolean = (value: unknown): value is boolean => typeof value === 'boolean';
 

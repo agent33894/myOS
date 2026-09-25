@@ -95,6 +95,8 @@ export interface IpcInvokeMap {
   /** Ask where to save, then write the file; null when the user cancels. */
   'export:pdf': { args: [path: string, html: string]; value: string | null };
   'export:html': { args: [path: string, html: string]; value: string | null };
+  /** Show a file this session exported (only those) in the system file manager. */
+  'export:reveal': { args: [savedPath: string]; value: void };
   'workspace:current': { args: []; value: string | null };
   'workspace:choose': { args: []; value: string | null };
   'workspace:create-starter': { args: []; value: string };
@@ -134,6 +136,7 @@ export const IPC_INVOKE_CHANNELS = Object.keys({
   'history:restore': 1,
   'export:pdf': 1,
   'export:html': 1,
+  'export:reveal': 1,
   'workspace:current': 1,
   'workspace:choose': 1,
   'workspace:create-starter': 1,
