@@ -22,6 +22,8 @@ import { resolveAssetUrl } from './links/assets';
 import { WikiLinks } from './links/wikiLinks';
 import { LinkSuggest } from './links/wikiSuggest';
 import { SlashCommand } from './slash/plugin';
+import { TaskTokens } from './tasks/taskTokens';
+import { ViewFence } from './views/ViewFence';
 
 // Workspace assets (`assets/…`) render through the app's myos:// protocol; the
 // Markdown keeps the relative path.
@@ -74,10 +76,14 @@ export const markdownParser = new Marked({
   },
 });
 
-/** Every extension the editor uses, configured once. Order matters for Markdown: rich blocks claim their fences before code blocks do. */
+/**
+ * Every extension the editor uses, configured once. Order matters for
+ * Markdown: view fences, then rich blocks, claim their fences before code blocks do.
+ */
 export function createExtensions({ placeholder, slashKeys = { current: null }, linkKeys = { current: null } }: ExtensionOptions): AnyExtension[] {
   return [
     StarterKit.configure({ codeBlock: false, link: false }),
+    ViewFence,
     RichBlock,
     HighlightedCodeBlock,
     CodeHighlight,
@@ -100,6 +106,7 @@ export function createExtensions({ placeholder, slashKeys = { current: null }, l
     }),
     Typography,
     WikiLinks,
+    TaskTokens,
     LinkSuggest.configure({ onKeyDown: (event) => linkKeys.current?.(event) ?? false }),
     FindInPage,
     FocusMode,

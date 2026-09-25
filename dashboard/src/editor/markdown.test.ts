@@ -29,6 +29,22 @@ describe('markdown round trip', () => {
     }
   });
 
+  it('keeps task and note view fences byte for byte, as live views', () => {
+    for (const block of ['```tasks\nopen due<=today+7 #work\ngroup:file\n```', '```notes #meeting sort:modified limit:10\n```', '~~~tasks open\n~~~']) {
+      expect(markdown.parse(block).content?.[0]?.type).toBe('viewFence');
+      if (block.startsWith('```')) expect(roundTrip(block)).toBe(block);
+    }
+  });
+
+  it('keeps Obsidian Tasks lines as written', () => {
+    const tasks = [
+      '- [ ] Fix the login redirect ⏫ 🔁 every week 🛫 2026-09-28 ⏳ 2026-09-30 📅 2026-10-02 #auth',
+      '  - [x] Write the test ✅ 2026-09-25',
+      '- [ ] Call Sam due:2026-10-02 #work/api',
+    ].join('\n');
+    expect(roundTrip(tasks)).toBe(tasks);
+  });
+
   it('leaves ordinary code fences as code blocks', () => {
     const code = fence('ts', 'const x = 1;');
     expect(markdown.parse(code).content?.[0]?.type).toBe('codeBlock');

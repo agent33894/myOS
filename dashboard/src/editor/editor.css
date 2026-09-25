@@ -27,3 +27,37 @@
 .editor-focus-dim .tiptap:not(.ProseMirror-focused) > * {
   opacity: 1;
 }
+
+/* Task dates, repeats, and tags: soft chips over the text as written. */
+.prose .md-chip {
+  border-radius: var(--radius-sm);
+  padding: 0.0625em 0.3em;
+  font-size: 0.875em;
+  white-space: nowrap;
+  box-decoration-break: clone;
+}
+
+.prose .md-chip-date,
+.prose .md-chip-repeat {
+  background: color-mix(in oklch, var(--text) 6%, transparent);
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.prose .md-chip-date.is-late {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.prose .md-chip-tag {
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+
+.prose ul[data-type='taskList'] li[data-checked='true'] .md-chip {
+  opacity: 0.7;
+}
+
+.tiptap .view-fence {
+  white-space: normal;
+}
