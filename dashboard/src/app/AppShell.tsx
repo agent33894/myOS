@@ -16,6 +16,7 @@ import { useUIStore } from '../store/ui';
 import { ErrorBoundary } from './ErrorBoundary';
 import { LoadingState } from '../ui';
 import { useDueReminder } from './useDueReminder';
+import { useMailOpen } from '../features/mail/slots';
 
 // Tiled windows (Omarchy halves, thirds, quarters) get the icon rail without
 // touching the saved preference for wide windows.
@@ -41,6 +42,7 @@ export default function AppShell() {
   useGlobalShortcuts();
   useNavigationMemory();
   useDueReminder();
+  useMailOpen();
 
   return (
     <div className="flex h-full w-full bg-canvas text-text">

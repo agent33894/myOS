@@ -15,6 +15,7 @@ import { AddTask } from '../tasks/AddTask';
 import { dayLabel, dayOf } from '../tasks/dates';
 import { EntryList, type Entry } from '../tasks/EntryList';
 import { NextSteps } from './NextSteps';
+import { MailOnToday } from '../mail/slots';
 import { ReplanDialog } from './ReplanDialog';
 
 function groupByDay(entries: Entry[]) {
@@ -83,6 +84,7 @@ export default function TodayPage() {
         <LoadingState rows={5} />
       ) : (
         <>
+          <MailOnToday />
           {carriedOver.length > 0 ? (
             <section aria-label="Carried over">
               <SectionHeader

@@ -34,6 +34,9 @@ export default defineConfig(({ mode }) => {
             options.startup();
           },
           vite: {
+            resolve: {
+              alias: { pino: path.resolve(__dirname, 'electron/mail/pino-stub.ts') },
+            },
             build: {
               outDir: 'dist-electron',
               rollupOptions: {

@@ -10,6 +10,9 @@ import { selectToday } from '../shared/today';
 import { ArtifactType, type ArtifactSummary } from '../shared/types';
 import { createArtifact, listArtifacts } from './documents/artifacts';
 import { currentWorkspace, loadWorkspace } from './workspace/root';
+import { readMailFile } from './mail/store';
+import { laneItems } from '../shared/mail/select';
+import { displayName } from '../shared/mail/classify';
 
 /**
  * Terminal entry points. They run against the configured workspace without
@@ -24,12 +27,13 @@ const USAGE = `Usage: myos [command]
                                 (reads stdin when no text is given)
   myos today                    List carried-over, today, upcoming, and done-today tasks
   myos search <query>           Find notes by title, tag or text
+  myos mail                     What in your mail needs you, from myOS's last check
   myos --capture                Open Quick Capture in the running app
   myos --install-desktop-entry  Add myOS to the app launcher, register myos: links
                                 and link the \`myos\` command into ~/.local/bin
 `;
 
-const COMMANDS = ['capture', 'today', 'search', 'help', '--help', '--install-desktop-entry'] as const;
+const COMMANDS = ['capture', 'today', 'search', 'mail', 'help', '--help', '--install-desktop-entry'] as const;
 type CliCommandName = (typeof COMMANDS)[number];
 
 interface CliCommand {
@@ -127,6 +131,33 @@ async function search(args: string[]): Promise<number> {
   return matches.length > 0 ? 0 : 1;
 }
 
+/** Read-only: the mail cache as the app last left it. Checking and acting happen in the app. */
+function mailBrief(): number {
+  const file = readMailFile();
+  if (file.accounts.length === 0) {
+    console.log('No mail accounts yet. Connect one in myOS → Mail.');
+    return 1;
+  }
+  const sections: Array<[string, ReturnType<typeof laneItems>]> = [
+    ['Needs action', laneItems(file.items, ['action'])],
+    ['Needs a reply', laneItems(file.items, ['reply'])],
+    ['For your eyes', laneItems(file.items, ['fyi'])],
+    ['Waiting on others', laneItems(file.items, ['waiting'])],
+  ];
+  for (const [heading, items] of sections) {
+    console.log(`${heading} (${items.length})`);
+    for (const item of items.slice(0, 15)) {
+      const who = displayName(item.verdict.lane === 'waiting' ? (item.to[0] ?? item.from) : item.from);
+      const due = item.verdict.due ? `  (due ${item.verdict.due})` : '';
+      console.log(`  ${who}: ${item.subject}${due}`);
+      if (item.verdict.summary) console.log(`    ${item.verdict.summary}`);
+    }
+  }
+  const last = file.accounts.map((account) => account.lastSync).filter(Boolean).sort().at(-1);
+  if (last) console.log(`\nLast checked ${new Date(last).toLocaleString()}`);
+  return 0;
+}
+
 function installDesktopEntry(): number {
   if (process.platform !== 'linux') {
     console.error('--install-desktop-entry is only needed on Linux.');
@@ -211,6 +242,7 @@ export async function runCliCommand(command: CliCommand): Promise<number> {
       return 0;
     }
     if (command.name === '--install-desktop-entry') return installDesktopEntry();
+    if (command.name === 'mail') return mailBrief();
 
     loadWorkspace();
     if (!currentWorkspace()) {

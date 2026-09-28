@@ -15,6 +15,7 @@ import { SidebarLink } from './SidebarLink';
 import { RitualSidebarItem } from '../../rituals/slots';
 import { SidebarProjects } from './SidebarProjects';
 import { SidebarResizer } from './SidebarResizer';
+import { useMailCount } from '../../mail/slots';
 
 interface SidebarProps {
   /** Icon rail: collapsed by the user, or forced by a narrow window. */
@@ -27,6 +28,7 @@ export function Sidebar({ rail, narrow }: SidebarProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const counts = useCounts();
+  const mailCount = useMailCount();
   const width = useUIStore((state) => state.sidebarWidth);
   const toggleSidebar = useUIStore((state) => state.toggleSidebar);
   const current = sectionOf(location.pathname);
@@ -52,7 +54,8 @@ export function Sidebar({ rail, narrow }: SidebarProps) {
         <SidebarActions rail={rail} />
         <nav aria-label="Sections" className="flex flex-col gap-0.5">
           {sections.map((section) => {
-            const count = section.id === 'inbox' ? counts.inbox : section.id === 'today' ? counts.today : undefined;
+            const count =
+              section.id === 'inbox' ? counts.inbox : section.id === 'today' ? counts.today : section.id === 'mail' ? mailCount : undefined;
             return (
               <SidebarLink
                 key={section.id}

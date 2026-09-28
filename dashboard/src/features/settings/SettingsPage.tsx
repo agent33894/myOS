@@ -4,16 +4,19 @@ import { PageHeader, PageLayout, SegmentedControl } from '../../ui';
 import { AdvancedSettings } from './AdvancedSettings';
 import { AppearanceSettings } from './AppearanceSettings';
 import { GeneralSettings } from './GeneralSettings';
+import { MailSettings } from '../mail/MailSettings';
 
 const TABS = [
   { value: 'general', label: 'General' },
   { value: 'appearance', label: 'Appearance' },
+  { value: 'mail', label: 'Mail' },
   { value: 'advanced', label: 'Advanced' },
 ] as const satisfies ReadonlyArray<{ value: SettingsTab; label: string }>;
 
 const PANELS: Record<SettingsTab, () => JSX.Element> = {
   general: GeneralSettings,
   appearance: AppearanceSettings,
+  mail: MailSettings,
   advanced: AdvancedSettings,
 };
 

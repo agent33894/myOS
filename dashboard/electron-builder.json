@@ -24,6 +24,7 @@
     "hardenedRuntime": true,
     "gatekeeperAssess": false,
     "target": ["dmg", "zip"],
+    "extraResources": [{ "from": "build/icon.png", "to": "icon.png" }],
     "extendInfo": {
       "CFBundleLocalizations": ["en"]
     }

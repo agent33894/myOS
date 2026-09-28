@@ -61,6 +61,18 @@ export const SHORTCUT_GROUPS: ShortcutGroup[] = [
     ],
   },
   {
+    title: 'Mail',
+    items: [
+      { keys: 'e', label: 'Done (archives it)' },
+      { keys: 't', label: 'Make task' },
+      { keys: 'r', label: 'Reply or follow up' },
+      { keys: 'f', label: 'Just FYI (going through)' },
+      { keys: 's', label: 'Snooze until tomorrow (going through)' },
+      { keys: 'm', label: 'Mute the sender (going through)' },
+      { keys: 'escape', label: 'Back to Mail' },
+    ],
+  },
+  {
     title: 'Task rows',
     items: [
       { keys: 'x', label: 'Complete (or Space)' },

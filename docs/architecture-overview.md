@@ -33,6 +33,7 @@ An **artifact** is one Markdown file: YAML frontmatter plus a body. This is the 
 | `watch/` | Debounced change events, `{ path, kind, rev }` |
 | `git/` | Commit summary and diff, only for the workspace or a project's registered `localPath` |
 | `shell/` | Reveal, open externally, notifications |
+| `mail/` | Mail triage: `store` (the cache and app passwords sealed with `safeStorage`, under `<userData>/mail/`), `imap` (pooled imapflow connections, folder discovery, parsing), `engine` (checks on a timer and on resume, triage, filing with an activity log and undo by Message-ID, Waiting from the Sent folder, drafts), `assistant` (runs the user's command with a prompt on stdin), `send` (SMTP; the only sender, reached only from `mail:draft:send`), `background` (tray and login item) |
 | `ipc/` | `handle(channel, impl)` is type-checked against `IpcInvokeMap` and wraps every result as `Result<T>` |
 
 ## IPC
@@ -42,7 +43,7 @@ An **artifact** is one Markdown file: YAML frontmatter plus a body. This is the 
 ## Renderer (`dashboard/src/`)
 
 - `data/`: the artifacts store (`byPath`, bodies keyed by path, and this session's file moves so an open page follows a rename or area move, and its undo), updated only from gateway results and watcher events; memoized selectors (Inbox, Today, Tasks, Projects, Notes, templates, journal, review queue, week, counts); the gateway, which is the single write path and records undo, with `planning.ts` (complete, plan, re-plan, recall) and `pages.ts` (templates, journal) built on it; `exporter.ts` (PDF, HTML, clipboard); and undo/redo.
-- `features/`: one folder per surface (shell, inbox, today, tasks, notes, journal, projects, page, capture, palette, planning, rituals, knowledge, files, settings, onboarding). Each owns its components and hooks; the app shell mounts the overlays that must work everywhere (palette, Quick Capture, rituals, templates, focus mode).
+- `features/`: one folder per surface (shell, inbox, today, tasks, notes, journal, projects, page, capture, palette, planning, rituals, knowledge, files, settings, onboarding, mail). Each owns its components and hooks; the app shell mounts the overlays that must work everywhere (palette, Quick Capture, rituals, templates, focus mode).
 - `editor/`: TipTap composition (`index.tsx`, the `Editor` contract), `extensions.ts`, `useMarkdownSync.ts` (value in, edits out, never an echo), the `/` insert menu, the selection toolbar, find in page, link routing, commit diffs, and rich blocks: fenced `chart`, `callout`, `kpi`, `roadmap`, and `mermaid` code rendered as React node views through a shared `BlockFrame` and `useBlockDraft`. Shiki grammars, recharts, and mermaid load on first use.
 - `ui/`: the design system (see [`design/design-system.md`](design/design-system.md)).
 
@@ -58,3 +59,5 @@ A write that is rejected with `CONFLICT` shows the same banner. The app recogniz
 ## Network boundary
 
 Core operation does not require network access. There is no hosted sync, authentication, telemetry, or model-provider integration.
+
+Mail is the one feature that talks to the network, and only to the servers of accounts the user connects (IMAP to read and file, SMTP to send a confirmed draft). The optional assistant is a command the user configures; myOS starts it with the prompt on stdin in a temporary directory and never ships, selects, or authenticates a model provider. Rule-based triage works without it.

@@ -13,6 +13,7 @@ export const paths = {
   tags: '/tags',
   review: '/review',
   week: '/review/week',
+  mail: '/mail',
 } as const;
 
 export const toTagUrl = (tag: string) => `${paths.tags}/${encodeURIComponent(tag)}`;
@@ -43,7 +44,20 @@ export const toPageUrl = (filePath: string, options?: OpenOptions) => withPath(p
 /** The Inbox with its one-at-a-time sorting flow open (`?sort=1`). */
 export const toInboxSortUrl = () => `${paths.inbox}?sort=1`;
 
-export type SettingsTab = 'general' | 'appearance' | 'advanced';
+export type MailView = 'needs' | 'fyi' | 'waiting' | 'handled' | 'outbox';
+
+/** Mail: a view (`?view=`), a message (`?id=`, with its reply open: `&reply=1`), or the one-at-a-time flow (`?go=1`). */
+export function toMailUrl(options: { view?: MailView; id?: string; reply?: boolean; go?: boolean } = {}): string {
+  const params = new URLSearchParams();
+  if (options.view && options.view !== 'needs') params.set('view', options.view);
+  if (options.id) params.set('id', options.id);
+  if (options.reply) params.set('reply', '1');
+  if (options.go) params.set('go', '1');
+  const search = params.toString();
+  return search ? `${paths.mail}?${search}` : paths.mail;
+}
+
+export type SettingsTab = 'general' | 'appearance' | 'mail' | 'advanced';
 export const toSettingsUrl = (tab: SettingsTab = 'general') =>
   tab === 'general' ? paths.settings : `${paths.settings}?tab=${tab}`;
 

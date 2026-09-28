@@ -15,6 +15,7 @@ No account is required. myOS has no hosted sync service, telemetry, advertising,
 - **Tasks** lists everything without a date, later tasks, and Someday, by project or area. Tasks can repeat, carry an estimate and a "when" cue, and `- [ ]` lines in any note count as tasks too.
 - **Notes** is a search-first home for everything you write, with a calm editor, `/` blocks, `[[links]]` with backlinks and unlinked mentions, tag pages, templates, spaced review, and a focus mode.
 - **Journal** keeps one page per day.
+- **Mail** watches your iCloud and Gmail inboxes and shows only what needs an action, a reply, or a glance. It files the rest (only once you let it), turns email into tasks with their deadlines and projects, notices questions you sent that nobody answered, and drafts replies for your review. Nothing is sent until you confirm it, nothing is deleted, and every move can be undone.
 - **Projects** gather a short description, a next step, tasks, checklist items from their notes, and notes in one place.
 - Every page edits its properties inline and autosaves. Areas (Work, Personal, Learning, Creative) keep files in tidy folders, and file names follow titles.
 - Your files stay yours: saves change only what you changed, **Version history** keeps earlier copies outside your folder, and pages export as PDF or HTML. Edits made in another editor or by Git are picked up live, and myOS asks instead of overwriting.
@@ -95,7 +96,7 @@ myOS/
 
 ## Privacy and integrations
 
-myOS reads and writes only the workspace folder you select, plus small local preferences in the operating system's application data directory. Network access is not required for core operation. Cloud synchronization and AI/model integrations are deliberately outside this repository; add your own local or organizational integration in a private fork if needed.
+myOS reads and writes only the workspace folder you select, plus small local preferences in the operating system's application data directory. Network access is not required for core operation. Mail connects only to the mail servers of accounts you add, with app-specific passwords kept encrypted by your system keychain. Cloud synchronization and bundled AI/model integrations are deliberately outside this repository; Mail's optional assistant is a command you choose (for example Claude Code or a local Ollama model), and Mail works without one.
 
 ## License
 

@@ -1,10 +1,10 @@
 import { lazy, type ComponentType } from 'react';
 import type { LucideIcon } from 'lucide-react';
-import { BookOpen, Brain, CalendarRange, FileText, FolderKanban, Hash, Inbox, ListTodo, Settings, SunMedium } from 'lucide-react';
+import { BookOpen, Brain, CalendarRange, FileText, FolderKanban, Hash, Inbox, ListTodo, Mail, Settings, SunMedium } from 'lucide-react';
 import TodayPage from '../features/today/TodayPage';
 import { paths } from './navigation';
 
-export type SectionId = 'inbox' | 'today' | 'tasks' | 'notes' | 'journal' | 'projects';
+export type SectionId = 'inbox' | 'today' | 'tasks' | 'notes' | 'journal' | 'projects' | 'mail';
 
 export interface AppRoute {
   id: SectionId | 'page' | 'settings' | 'tag' | 'review' | 'week';
@@ -34,10 +34,11 @@ const Journal = lazyRoute(() => import('../features/journal/JournalPage'));
 const Tag = lazyRoute(() => import('../features/tags/TagPage'));
 const Review = lazyRoute(() => import('../features/recall/ReviewPage'));
 const Week = lazyRoute(() => import('../features/week/WeekPage'));
+const MailPage = lazyRoute(() => import('../features/mail/MailPage'));
 
 export interface SectionRoute extends AppRoute {
   id: SectionId;
-  /** ⌘1–⌘6, in sidebar order. */
+  /** ⌘1–⌘7, in sidebar order. */
   shortcut: string;
 }
 
@@ -57,6 +58,7 @@ export const sections: SectionRoute[] = [
     shortcut: 'mod+6',
     ...Projects,
   },
+  { id: 'mail', label: 'Mail', path: paths.mail, href: paths.mail, icon: Mail, shortcut: 'mod+7', ...MailPage },
 ];
 
 export const settingsRoute: AppRoute = {

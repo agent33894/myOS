@@ -7,6 +7,9 @@ import { resolveInWorkspace } from './workspace/paths';
 import { registerIpc } from './ipc/register';
 import { cliArgs, parseCliCommand, runCliCommand } from './cli';
 import { watchOmarchyAccent } from './utils/omarchy-theme';
+import { snapshot, runSync, startMail, stopMail } from './mail/engine';
+import { configureBackground, mailKeepsRunning, setTrayStatus } from './mail/background';
+import { needsYou } from '../shared/mail/select';
 
 // Get the directory containing the main process script
 // In production (packaged): app.getAppPath() returns the asar root
@@ -70,12 +73,12 @@ if (cliCommand) {
       return;
     }
 
-    if (mainWindow) {
-      if (mainWindow.isMinimized()) mainWindow.restore();
-      mainWindow.focus();
-    }
+    showWindow();
   });
 }
+
+// `myos --background` (start at login) starts in the tray without a window.
+const startInBackground = process.argv.includes('--background');
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling
 if (process.platform === 'win32') {
@@ -157,12 +160,32 @@ const openQuickCapture = (): void => {
   else send();
 };
 
+const showWindow = (hash?: string): void => {
+  if (mainWindow === null) {
+    createWindow(hash);
+    return;
+  }
+  if (mainWindow.isMinimized()) mainWindow.restore();
+  mainWindow.show();
+  mainWindow.focus();
+};
+
+// A mail notification opens that message, starting the window if mail was running in the tray.
+const openMailItem = (id?: string): void => {
+  const hash = `#/mail${id ? `?id=${encodeURIComponent(id)}` : ''}`;
+  if (mainWindow === null) return showWindow(hash);
+  showWindow();
+  mainWindow.webContents.send('mail:open', { id });
+};
+
+let quitting = false;
+
 function isPathWithinDirectory(parentDir: string, targetPath: string): boolean {
   const rel = relative(parentDir, targetPath);
   return !rel.startsWith('..') && !isAbsolute(rel);
 }
 
-const createWindow = () => {
+const createWindow = (hash?: string) => {
   // Determine preload path based on environment
   const preloadPath = app.isPackaged
     ? join(app.getAppPath(), 'dist-electron', 'preload.js')
@@ -213,7 +236,7 @@ const createWindow = () => {
 
   // Load the app
   appLoadUrl = getDashboardUrl();
-  void mainWindow.loadURL(appLoadUrl);
+  void mainWindow.loadURL(hash ? `${appLoadUrl}${hash}` : appLoadUrl);
   if (process.env.VITE_DEV_SERVER_URL) {
     mainWindow.webContents.openDevTools();
   }
@@ -340,7 +363,7 @@ app.on('ready', () => {
   loadWorkspace();
 
   registerAssetProtocol();
-  createWindow();
+  if (!startInBackground) createWindow();
   const launchLinkHash = extractArtifactDeepLinkFromArgs(process.argv);
   if (launchLinkHash) {
     openArtifactDeepLink(launchLinkHash);
@@ -352,6 +375,31 @@ app.on('ready', () => {
 
   if (process.argv.includes('--capture')) openQuickCapture();
   watchOmarchyAccent((accent) => mainWindow?.webContents.send('system:accent-changed', { accent }));
+
+  const trayActions = {
+    open: () => showWindow(),
+    check: () => void runSync(),
+    quit: () => {
+      quitting = true;
+      app.quit();
+    },
+  };
+  startMail({
+    changed: () => {
+      mainWindow?.webContents.send('mail:changed');
+      const { items, status } = snapshot();
+      const waiting = needsYou(items).length;
+      const checked = status.lastRun ? ` · checked ${new Date(status.lastRun).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}` : '';
+      setTrayStatus(status.running ? 'Checking mail…' : `${waiting ? `${waiting} need${waiting === 1 ? 's' : ''} you` : 'Nothing needs you'}${checked}`);
+    },
+    open: openMailItem,
+    configured: (config) => configureBackground(config, snapshot().accounts.length > 0, trayActions),
+  });
+});
+
+app.on('before-quit', () => {
+  quitting = true;
+  stopMail();
 });
 
 app.on('open-url', (event, url) => {
@@ -387,7 +435,8 @@ app.on('web-contents-created', (_event, contents) => {
 
 // Quit when all windows are closed
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
+  // Mail keeps checking from the tray until the user quits from there.
+  if (process.platform !== 'darwin' && (quitting || !mailKeepsRunning())) {
     app.quit();
   }
 });

@@ -86,6 +86,7 @@ The `myos` command works whether or not the window is open:
 myos capture "Call the landlord #home"   # or: echo "…" | myos capture
 myos today                               # In Play and Next, plain text
 myos search omarchy tiling               # title, tag and text; tab-separated
+myos mail                                # what needs you in email, from the last check
 myos --capture                           # open Quick Capture in the running app
 ```
 

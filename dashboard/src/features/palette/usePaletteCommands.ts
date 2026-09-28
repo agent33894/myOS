@@ -15,6 +15,7 @@ import { useKnowledgeCommands } from '../knowledge/commands';
 import { usePlanningCommands } from '../planning/commands';
 import { useRitualCommands } from '../rituals/commands';
 import { useCreate } from '../shell/useCreate';
+import { useMailCommands } from '../mail/commands';
 
 export interface Command {
   id: string;
@@ -36,6 +37,7 @@ const SECTION_KEYWORDS: Partial<Record<string, string>> = {
   tasks: 'todo anytime upcoming someday',
   notes: 'pages documents',
   journal: 'diary daily write reflect',
+  mail: 'email inbox triage gmail icloud',
 };
 
 const NEXT_THEME: Record<ThemeMode, ThemeMode> = { system: 'light', light: 'dark', dark: 'system' };
@@ -55,7 +57,8 @@ export function usePaletteCommands(): Command[] {
   const rituals = useRitualCommands();
   const knowledge = useKnowledgeCommands();
   const files = useFileCommands();
-  const extra = useMemo(() => [...planning, ...rituals, ...knowledge, ...files], [planning, rituals, knowledge, files]);
+  const mail = useMailCommands();
+  const extra = useMemo(() => [...planning, ...rituals, ...knowledge, ...files, ...mail], [planning, rituals, knowledge, files, mail]);
 
   return useMemo(() => {
     const goTo: Command[] = [

@@ -1,3 +1,14 @@
+import type {
+  AssistantTestResult,
+  MailAccount,
+  MailAccountDraft,
+  MailAction,
+  MailBody,
+  MailConfig,
+  MailDraft,
+  MailRunStatus,
+  MailSnapshot,
+} from '../mail/types';
 import type { Artifact, ArtifactDraft, ArtifactPatch, ArtifactSummary, ArtifactType, Domain } from '../types';
 
 export type IpcErrorCode = 'NOT_FOUND' | 'CONFLICT' | 'INVALID' | 'OUTSIDE_WORKSPACE' | 'INTERNAL';
@@ -110,6 +121,24 @@ export interface IpcInvokeMap {
   'system:accent': { args: []; value: string | null };
   'notifications:show': { args: [options: { title: string; body: string }]; value: boolean };
   'window:close': { args: []; value: void };
+  /** Mail triage. Passwords go in once, with `mail:account:add`, and never come back out. */
+  'mail:snapshot': { args: []; value: MailSnapshot };
+  'mail:body': { args: [id: string]; value: MailBody };
+  /** Signs in first; fails with INVALID when the server refuses the address or app password. */
+  'mail:account:add': { args: [draft: MailAccountDraft]; value: MailAccount };
+  'mail:account:update': { args: [id: string, patch: { enabled?: boolean; name?: string; aliases?: string[] }]; value: MailAccount };
+  'mail:account:remove': { args: [id: string]; value: void };
+  'mail:config:set': { args: [patch: Partial<MailConfig>]; value: MailConfig };
+  'mail:sync': { args: []; value: MailRunStatus };
+  'mail:act': { args: [ids: string[], action: MailAction]; value: void };
+  'mail:undo': { args: [activityId: string]; value: void };
+  /** A draft for review, blank or written by the user's assistant command. Never sends. */
+  'mail:draft:compose': { args: [itemId: string, options: { assistant: boolean; instruction?: string }]; value: MailDraft };
+  'mail:draft:save': { args: [draft: MailDraft]; value: MailDraft };
+  'mail:draft:discard': { args: [id: string]; value: void };
+  /** The only way mail leaves myOS: the user approved this draft. */
+  'mail:draft:send': { args: [id: string]; value: MailDraft };
+  'mail:assistant:test': { args: [command: string]; value: AssistantTestResult };
 }
 
 export type IpcInvokeChannel = keyof IpcInvokeMap;
@@ -150,12 +179,29 @@ export const IPC_INVOKE_CHANNELS = Object.keys({
   'system:accent': 1,
   'notifications:show': 1,
   'window:close': 1,
+  'mail:snapshot': 1,
+  'mail:body': 1,
+  'mail:account:add': 1,
+  'mail:account:update': 1,
+  'mail:account:remove': 1,
+  'mail:config:set': 1,
+  'mail:sync': 1,
+  'mail:act': 1,
+  'mail:undo': 1,
+  'mail:draft:compose': 1,
+  'mail:draft:save': 1,
+  'mail:draft:discard': 1,
+  'mail:draft:send': 1,
+  'mail:assistant:test': 1,
 } satisfies Record<IpcInvokeChannel, 1>) as IpcInvokeChannel[];
 
 export interface IpcEventMap {
   'artifacts:changed': { path: string; kind: 'created' | 'updated' | 'deleted'; rev?: string };
   'capture:open': void;
   'system:accent-changed': { accent: string | null };
+  'mail:changed': void;
+  /** A mail notification was clicked: show that message, or the Mail place. */
+  'mail:open': { id?: string };
 }
 
 export type IpcEvent = keyof IpcEventMap;
@@ -164,6 +210,8 @@ export const IPC_EVENTS = Object.keys({
   'artifacts:changed': 1,
   'capture:open': 1,
   'system:accent-changed': 1,
+  'mail:changed': 1,
+  'mail:open': 1,
 } satisfies Record<IpcEvent, 1>) as IpcEvent[];
 
 /** What the preload exposes as `window.electronAPI`. */

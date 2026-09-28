@@ -25,6 +25,22 @@ import { notify, openExternal, openInEditor, reveal } from '../shell/shell';
 import { readOmarchyAccent } from '../utils/omarchy-theme';
 import { watchWorkspace } from '../watch/watcher';
 import { createStarterWorkspace, currentWorkspace, selectWorkspace } from '../workspace/root';
+import {
+  act,
+  addAccount,
+  composeDraft,
+  discardDraft,
+  readBody,
+  removeAccount,
+  runSync,
+  saveDraft,
+  setConfig,
+  snapshot,
+  testAssistant,
+  undoActivity,
+  updateAccount,
+} from '../mail/engine';
+import { sendApprovedDraft } from '../mail/send';
 import { handle } from './handle';
 
 export function registerIpc(getWindow: () => BrowserWindow | null): void {
@@ -85,4 +101,20 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
   handle('system:accent', [], readOmarchyAccent);
   handle('notifications:show', ['object'], (options) => notify(options, getWindow()));
   handle('window:close', [], () => getWindow()?.close());
+
+  handle('mail:snapshot', [], snapshot);
+  handle('mail:body', ['string'], readBody);
+  handle('mail:account:add', ['object'], addAccount);
+  handle('mail:account:update', ['string', 'object'], updateAccount);
+  handle('mail:account:remove', ['string'], removeAccount);
+  handle('mail:config:set', ['object'], setConfig);
+  handle('mail:sync', [], runSync);
+  handle('mail:act', ['array', 'object'], act);
+  handle('mail:undo', ['string'], undoActivity);
+  handle('mail:draft:compose', ['string', 'object'], composeDraft);
+  handle('mail:draft:save', ['object'], saveDraft);
+  handle('mail:draft:discard', ['string'], discardDraft);
+  // The one path that sends mail; the renderer calls it only from the user's confirmation.
+  handle('mail:draft:send', ['string'], sendApprovedDraft);
+  handle('mail:assistant:test', ['string'], testAssistant);
 }
