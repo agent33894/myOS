@@ -369,7 +369,7 @@ export function MailSettings() {
           />
         </SettingsRow>
         <SettingsRow label="Sign-off for replies">
-          <SavedText label="Sign-off" rows={2} value={config.signature} placeholder={'Thanks,\nJamie'} onSave={(signature) => set({ signature })} />
+          <SavedText label="Sign-off" rows={2} value={config.signature} placeholder={'Thanks,\nAlex'} onSave={(signature) => set({ signature })} />
         </SettingsRow>
       </SettingsGroup>
 

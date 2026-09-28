@@ -5,7 +5,7 @@ import { DEFAULT_MAIL_CONFIG, normalizeMailConfig } from './config';
 import { findDeadline } from './deadline';
 import type { MailRule } from './types';
 
-const ME = 'me@me.com';
+const ME = 'me@example.com';
 const facts = (overrides: Partial<MailFacts> = {}): MailFacts => ({
   from: { name: 'Sarah Chen', address: 'sarah@example.com' },
   to: [{ address: ME }],
@@ -53,7 +53,7 @@ describe('heuristic triage', () => {
   });
 
   it('only counts the sender’s own words, not quoted history', () => {
-    expect(ownText('Thanks!\n\nOn Tue, Sep 22, 2026 at 9:00 AM Me <me@me.com> wrote:\n> Can you send it?')).toBe('Thanks!');
+    expect(ownText('Thanks!\n\nOn Tue, Sep 22, 2026 at 9:00 AM Me <me@example.com> wrote:\n> Can you send it?')).toBe('Thanks!');
     expect(heuristicVerdict(facts({ text: 'Sounds good.\n> Are you free?' }), context()).lane).toBe('fyi');
   });
 
@@ -128,7 +128,7 @@ it('normalizes stored config, keeping valid values only', () => {
 
 it('leaves greetings and sign-offs out of the preview', async () => {
   const { snippetOf } = await import('./classify');
-  expect(snippetOf('Hi Jamie,\n\nCould you sign it by Tuesday?\n\nThanks,\nDan')).toBe('Could you sign it by Tuesday?');
+  expect(snippetOf('Hi Alex,\n\nCould you sign it by Tuesday?\n\nThanks,\nDan')).toBe('Could you sign it by Tuesday?');
   expect(snippetOf('Are you free Saturday?\n\nSarah')).toBe('Are you free Saturday?');
 });
 

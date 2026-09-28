@@ -101,7 +101,7 @@ export function AddAccountDialog({ trigger }: { trigger: (open: () => void) => R
             />
           </Field>
           <Field label="Your name" hint="Shown on replies you send.">
-            <Input value={name} onChange={(event) => setName(event.target.value)} placeholder="Jamie Appleseed" />
+            <Input value={name} onChange={(event) => setName(event.target.value)} placeholder="Alex Rivera" />
           </Field>
           <Field label="App password" hint={HELP[provider]} error={error ?? undefined}>
             <Input type="password" icon={KeyRound} required autoComplete="off" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="xxxx-xxxx-xxxx-xxxx" />
