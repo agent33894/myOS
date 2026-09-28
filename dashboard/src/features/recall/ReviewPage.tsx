@@ -12,7 +12,7 @@ import { answerReview } from '../../data/planning';
 import { useDataStatus, useReviewQueue } from '../../data/selectors';
 import { useDataStore } from '../../data/store';
 import { Editor } from '../../editor';
-import { Button, EmptyState, Icon, Kbd, LoadingState, PageHeader, PageLayout, Textarea, cn } from '../../ui';
+import { Button, EmptyState, Icon, LoadingState, PageHeader, PageLayout, Textarea, cn } from '../../ui';
 import { kindLabel } from '../../lib/itemKinds';
 import { useProjectRefs } from '../tasks/projectRefs';
 
@@ -109,10 +109,7 @@ function Card({ note, onAnswer }: { note: ArtifactSummary; onAnswer: (answer: Re
                     aria-keyshortcuts={key}
                     className="h-auto flex-col gap-0.5 py-3"
                   >
-                    <span className="flex items-center gap-2">
-                      {label}
-                      <Kbd shortcut={key} className={cn('bg-transparent', answer === 'good' && 'text-accent-on')} />
-                    </span>
+                    <span>{label}</span>
                     <span className={cn('text-xs font-normal', answer === 'good' ? 'text-accent-on' : 'text-text-tertiary')}>{days(next)}</span>
                   </Button>
                 );
@@ -136,7 +133,6 @@ function Card({ note, onAnswer }: { note: ArtifactSummary; onAnswer: (answer: Re
             <Button variant="primary" leadingIcon={Eye} onClick={() => setRevealed(true)}>
               Show note
             </Button>
-            <Kbd shortcut="mod+enter" />
             <Button variant="ghost" size="sm" className="ml-auto" leadingIcon={ArrowUpRight} onClick={() => navigate(toItemUrl(note))}>
               Open note
             </Button>
@@ -212,7 +208,7 @@ export default function ReviewPage() {
       <PageHeader
         className="px-2"
         title="Review"
-        subtitle={session && total > 0 && current ? `${reviewed.length + 1} of ${total}` : 'Recall a few notes in your own words.'}
+        subtitle={session && total > 0 && current ? `${reviewed.length + 1} of ${total}` : undefined}
       />
       {current ? (
         <div

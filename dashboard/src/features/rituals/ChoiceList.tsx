@@ -1,6 +1,6 @@
 import type { KeyboardEvent, ReactNode } from 'react';
 import { ChevronDown } from 'lucide-react';
-import { Button, Icon, Kbd, Menu, MenuContent, MenuItem, MenuTrigger, SegmentedControl } from '../../ui';
+import { Button, Icon, Menu, MenuContent, MenuItem, MenuTrigger, SegmentedControl } from '../../ui';
 
 export interface Choice<T extends string> {
   value: T;
@@ -43,15 +43,8 @@ export function ChoiceList<T extends string>({ label, rows, choices, value, fall
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex items-center gap-3 px-1">
-        <span className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-text-tertiary">
-          {choices.map((choice) => (
-            <span key={choice.value} className="flex items-center gap-1">
-              <Kbd shortcut={choice.key} /> {choice.label}
-            </span>
-          ))}
-        </span>
-        {rows.length > 1 ? (
+      {rows.length > 1 ? (
+        <div className="flex items-center px-1">
           <Menu>
             <MenuTrigger asChild>
               <Button variant="ghost" size="sm" className="ml-auto">
@@ -67,8 +60,8 @@ export function ChoiceList<T extends string>({ label, rows, choices, value, fall
               ))}
             </MenuContent>
           </Menu>
-        ) : null}
-      </div>
+        </div>
+      ) : null}
       <div role="list" aria-label={label} className="flex flex-col gap-1" onKeyDown={onKeyDown}>
         {rows.map((row) => (
           <div

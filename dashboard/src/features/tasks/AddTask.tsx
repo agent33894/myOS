@@ -24,7 +24,7 @@ interface AddTaskProps {
  * An inline "Add a task…" line that understands the capture syntax, with
  * `@project` and `#tag` completion. ⏎ adds and stays ready for the next.
  */
-export function AddTask({ due, project, placeholder = 'Add a task… (tomorrow, every tue, ~30m, #tag, @project)' }: AddTaskProps) {
+export function AddTask({ due, project, placeholder = 'Add a task' }: AddTaskProps) {
   const [text, setText] = useState('');
   const projects = useProjectRefs();
   const resolved = useMemo(() => (text.trim() ? resolveCapture(text, projects.open) : null), [text, projects]);

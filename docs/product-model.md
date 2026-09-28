@@ -18,7 +18,7 @@ Users never choose a folder or type directory. Paths are derived. The `domain` f
 ## Navigation
 
 ```
-Search ⌘K                     + New ⌘N
+Search                        + New
 Inbox        (count)   captures waiting to be sorted
 Today        (count)   carried over · due or planned today · flagged · in progress
 Tasks                  Anytime · Upcoming · Someday, by project or area

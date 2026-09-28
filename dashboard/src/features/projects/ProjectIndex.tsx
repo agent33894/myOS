@@ -54,7 +54,6 @@ export function ProjectIndex() {
         <EmptyState
           icon={FolderKanban}
           title="No projects yet."
-          description="A project gathers the tasks and notes for one goal."
           action={
             <Button variant="primary" leadingIcon={Plus} onClick={newProject}>
               New project

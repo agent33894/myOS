@@ -5,7 +5,7 @@ import type { LucideIcon } from 'lucide-react';
 import { Check, ChevronRight } from 'lucide-react';
 import { cn } from './cn';
 import { Icon } from './Icon';
-import { formatShortcut } from './Kbd';
+import { ariaShortcut } from './Kbd';
 import { floatingSurface, menuItem } from './styles';
 
 /*
@@ -71,13 +71,8 @@ export const ContextMenuContent = forwardRef<HTMLDivElement, ContextMenuContentP
 
 interface ItemDecoration {
   icon?: LucideIcon;
-  /** Shortcut hint in `mod+k` form. The menu does not bind it. */
+  /** Shortcut in `mod+k` form, declared for assistive tech. The menu does not bind it. */
   shortcut?: string;
-}
-
-function Trailing({ shortcut }: { shortcut?: string }) {
-  if (!shortcut) return null;
-  return <span className="ml-auto pl-4 font-mono text-xs text-text-tertiary">{formatShortcut(shortcut)}</span>;
 }
 
 interface MenuItemProps extends ItemDecoration {
@@ -92,10 +87,13 @@ interface MenuItemProps extends ItemDecoration {
 export function MenuItem({ icon, shortcut, danger = false, className, children, ...props }: MenuItemProps) {
   const { Item } = useContext(PrimitivesContext);
   return (
-    <Item className={cn(menuItem, danger && 'text-danger data-[highlighted]:bg-danger-soft', className)} {...props}>
+    <Item
+      aria-keyshortcuts={ariaShortcut(shortcut)}
+      className={cn(menuItem, danger && 'text-danger data-[highlighted]:bg-danger-soft', className)}
+      {...props}
+    >
       {icon ? <Icon icon={icon} className={danger ? undefined : 'text-text-secondary'} /> : null}
       <span className="min-w-0 flex-1 truncate">{children}</span>
-      <Trailing shortcut={shortcut} />
     </Item>
   );
 }
@@ -112,12 +110,11 @@ interface MenuCheckboxItemProps {
 export function MenuCheckboxItem({ shortcut, children, ...props }: MenuCheckboxItemProps) {
   const { CheckboxItem, ItemIndicator } = useContext(PrimitivesContext);
   return (
-    <CheckboxItem className={cn(menuItem, 'pl-8')} {...props}>
+    <CheckboxItem aria-keyshortcuts={ariaShortcut(shortcut)} className={cn(menuItem, 'pl-8')} {...props}>
       <ItemIndicator className="absolute left-2 inline-flex text-accent-text">
         <Icon icon={Check} />
       </ItemIndicator>
       <span className="min-w-0 flex-1 truncate">{children}</span>
-      <Trailing shortcut={shortcut} />
     </CheckboxItem>
   );
 }

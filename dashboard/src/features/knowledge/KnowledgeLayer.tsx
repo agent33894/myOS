@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { Minimize2 } from 'lucide-react';
 import { hasPrimaryModifier } from '../../lib/platform';
 import { useUIStore } from '../../store/ui';
-import { Button, Kbd } from '../../ui';
+import { Button } from '../../ui';
 import { SaveAsTemplate } from './SaveAsTemplate';
 import { TemplatePicker } from './TemplatePicker';
 import './focus.css';
@@ -70,7 +70,6 @@ export function FocusExit() {
       className="focus-exit no-drag ml-auto"
     >
       Exit focus
-      <Kbd shortcut="escape" className="bg-transparent" />
     </Button>
   );
 }

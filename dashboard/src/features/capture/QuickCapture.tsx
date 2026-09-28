@@ -3,7 +3,7 @@ import { ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { capture } from '../../data/gateway';
 import { useUIStore } from '../../store/ui';
-import { Button, Dialog, DialogContent, DialogTitle, Icon, Kbd, Textarea } from '../../ui';
+import { Button, Dialog, DialogContent, DialogTitle, Icon, Textarea } from '../../ui';
 import { toastWithUndo } from '../tasks/actions';
 import { useProjectRefs } from '../tasks/projectRefs';
 import { CaptureTokens } from './CaptureTokens';
@@ -85,12 +85,8 @@ export default function QuickCapture() {
             <Icon icon={ArrowRight} size="sm" className="text-text-tertiary" />
             <span className="truncate">{resolved?.destination ?? 'Inbox'}</span>
           </p>
-          <span className="hidden items-center gap-1 text-xs text-text-tertiary sm:flex">
-            <Kbd shortcut="shift+enter" /> new line
-          </span>
           <Button variant="primary" size="sm" onClick={save} disabled={!resolved}>
             Capture
-            <Kbd shortcut="enter" className="h-4 bg-accent-on/15 text-accent-on" />
           </Button>
         </div>
       </DialogContent>

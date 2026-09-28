@@ -4,7 +4,7 @@ import { ArrowRight, CalendarDays, CheckCircle2, Coffee, FileText, FolderInput, 
 import type { ArtifactPatch, ArtifactSummary } from '@shared/types';
 import { patch } from '../../data/gateway';
 import { useInbox } from '../../data/selectors';
-import { Button, DatePicker, EmptyState, Icon, Kbd, Property, Textarea, cn, type ButtonProps } from '../../ui';
+import { Button, DatePicker, EmptyState, Icon, ariaShortcut, Property, Textarea, cn, type ButtonProps } from '../../ui';
 import { attempt, deleteItem, toastWithUndo } from '../tasks/actions';
 import { createdAt, dayLabel, fromDate, inSentence, relativeTime, toDate } from '../tasks/dates';
 import { ProjectPicker } from '../tasks/ProjectPicker';
@@ -18,10 +18,9 @@ interface ActionProps extends Pick<ButtonProps, 'variant' | 'onClick'> {
 
 function SortAction({ icon, label, shortcut, variant = 'secondary', ...props }: ActionProps) {
   return (
-    <Button variant={variant} className="h-auto flex-1 flex-col gap-1 py-3" {...props}>
+    <Button variant={variant} aria-keyshortcuts={ariaShortcut(shortcut)} className="h-auto flex-1 flex-col gap-1 py-3" {...props}>
       <Icon icon={icon} size="lg" />
       <span>{label}</span>
-      <Kbd shortcut={shortcut} className={cn(variant === 'primary' && 'bg-accent-on/15 text-accent-on')} />
     </Button>
   );
 }
@@ -129,7 +128,6 @@ export function SortInbox({ onExit }: { onExit: () => void }) {
             <EmptyState
               icon={PartyPopper}
               title="Inbox zero. Nice."
-              description="Everything has a place. Enjoy the clear head."
               action={<Button onClick={onExit}>Back to inbox</Button>}
             />
           ) : (
@@ -173,7 +171,6 @@ export function SortInbox({ onExit }: { onExit: () => void }) {
         </div>
         <Button variant="ghost" size="sm" onClick={onExit}>
           Done
-          <Kbd shortcut="escape" />
         </Button>
       </div>
 
@@ -206,7 +203,6 @@ export function SortInbox({ onExit }: { onExit: () => void }) {
                 {due ? dayLabel(due) : null}
               </Property>
             </DatePicker>
-            <Kbd shortcut="d" />
             <span className="ml-auto">Captured {inSentence(relativeTime(createdAt(item)))}</span>
           </div>
         </article>
@@ -220,10 +216,9 @@ export function SortInbox({ onExit }: { onExit: () => void }) {
           open={picking === 'project'}
           onOpenChange={(open) => setPicking(open ? 'project' : null)}
         >
-          <Button variant="secondary" className="h-auto flex-1 flex-col gap-1 py-3">
+          <Button variant="secondary" aria-keyshortcuts="P" className="h-auto flex-1 flex-col gap-1 py-3">
             <Icon icon={FolderInput} size="lg" />
             <span>Project</span>
-            <Kbd shortcut="p" />
           </Button>
         </ProjectPicker>
         <SortAction icon={Trash2} label="Delete" shortcut="backspace" variant="danger" onClick={remove} />

@@ -19,7 +19,7 @@ The source of truth is `dashboard/src/styles/tokens.css` (CSS custom properties,
 | --- | --- | --- |
 | Interface and content | **Inter Variable** (bundled, `@fontsource-variable/inter`) | Features `cv11`, `ss01`, `ss03`; tracking tightens at display sizes |
 | Reading (optional) | **Literata** (bundled) | Only for the document body when Appearance → Reading font is set to *Serif* |
-| Code | **Geist Mono** (bundled) | Code blocks, inline code, and keyboard hints only |
+| Code | **Geist Mono** (bundled) | Code blocks, inline code, and the Keyboard shortcuts dialog only |
 
 The scale uses tokens `--text-*` mapped to Tailwind `text-*`:
 
@@ -98,12 +98,14 @@ Overlays scale from 0.98 and fade in from their origin. Nothing loops forever. A
 
 Every control comes from `dashboard/src/ui/`. Lint forbids raw `<button>`, `<input>`, `<textarea>`, and `<select>` outside that folder.
 
-- **Primitives:** `Button` (primary · secondary · ghost · danger, in sizes sm · md, plus an `icon` form), `IconButton` (requires a label and shows a tooltip), `Input`, `Textarea`, `Field` (label, hint, and error, wired up automatically), `Select`, `Menu` (dropdown and context), `Popover`, `Tooltip`, `Dialog` (owns focus, Escape, and layering), `Kbd`, `Checkbox` (the task circle), `Switch`, `SegmentedControl`, `DatePicker`.
+- **Primitives:** `Button` (primary · secondary · ghost · danger, in sizes sm · md, plus an `icon` form), `IconButton` (requires a label and shows a tooltip), `Input`, `Textarea`, `Field` (label, hint, and error, wired up automatically), `Select`, `Menu` (dropdown and context), `Popover`, `Tooltip`, `Dialog` (owns focus, Escape, and layering), `Kbd` (Keyboard shortcuts dialog only), `Checkbox` (the task circle), `Switch`, `SegmentedControl`, `DatePicker`.
 - **Patterns:** `PageLayout` (the shared scrolling canvas and centered column, so every page's title and rows line up), `PageHeader`, `EmptyState` (glyph, one warm sentence, one action), `ErrorState`, `LoadingState`, `ListRow`, `SectionHeader`, `Pill` (tags and properties), `PropertyRow`.
 
 ## Voice
 
-Write in plain, warm sentence case. Use **Note, Task, Project, Inbox, Today**, never "artifact", "vault", "filing", or "domain". Empty states invite action: "Your inbox is clear. Press ⌘N to capture a thought." Confirmations are short: "Done · Undo".
+Write in plain, warm sentence case. Use **Note, Task, Project, Inbox, Today**, never "artifact", "vault", "filing", or "domain". Say a thing once. Empty states are one short sentence, with an action only when the page offers something the sidebar does not: "Your inbox is clear." Confirmations are short: "Done · Undo".
+
+Keyboard shortcuts are never printed in the interface: not in buttons, tooltips, menus, empty states, or footers. Controls declare them with `aria-keyshortcuts` (the `shortcut` prop on `IconButton`, `Tooltip`, and `MenuItem` does this), and the full list lives in the Keyboard shortcuts dialog (`?`).
 
 ## Accessibility
 

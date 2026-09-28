@@ -9,7 +9,7 @@ import { ensureStarterTemplates } from '../../data/pages';
 import { startReviewing, stopReviewing } from '../../data/planning';
 import { useTemplates } from '../../data/selectors';
 import { useSettingsStore } from '../../store/settings';
-import { Button, Icon, IconButton, Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger, Property, Switch, formatShortcut } from '../../ui';
+import { Button, Icon, IconButton, Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger, Property, Switch } from '../../ui';
 import { SettingsGroup, SettingsRow } from '../settings/SettingsGroup';
 import { attempt, deleteItem, toastWithUndo } from '../tasks/actions';
 import { FOCUS_SHORTCUT, toggleFocusMode } from './KnowledgeLayer';
@@ -143,7 +143,7 @@ function FocusSettings() {
   const dim = useSettingsStore((state) => state.focusDimParagraphs);
   const setSetting = useSettingsStore((state) => state.setSetting);
   return (
-    <SettingsGroup title="Focus mode" description={`Focus hides everything but the page you are writing. Press ${formatShortcut(FOCUS_SHORTCUT)} to enter and Esc to leave.`}>
+    <SettingsGroup title="Focus mode" description="Focus hides everything but the page you are writing.">
       <SettingsRow
         label="Dim other paragraphs"
         description="Keep the paragraph you are writing in at full strength and soften the rest."

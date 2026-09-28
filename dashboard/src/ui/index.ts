@@ -19,7 +19,7 @@ export { Field, useFieldControl } from './Field';
 export { Icon, type IconSize } from './Icon';
 export { IconButton } from './IconButton';
 export { Input, type InputProps } from './Input';
-export { Kbd, formatShortcut } from './Kbd';
+export { Kbd, ariaShortcut, formatShortcut } from './Kbd';
 export {
   ContextMenu,
   ContextMenuContent,

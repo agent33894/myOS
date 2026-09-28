@@ -6,7 +6,7 @@ import { LANES } from '@shared/mail/config';
 import type { MailItem } from '@shared/mail/types';
 import { toMailUrl } from '../../app/navigation';
 import { useMail } from '../../data/mail';
-import { Button, EmptyState, Icon, Kbd, Pill, cn, type ButtonProps } from '../../ui';
+import { Button, EmptyState, Icon, ariaShortcut, Pill, cn, type ButtonProps } from '../../ui';
 import { done, makeTask, moveToLane, mute, snooze, snoozeTimes } from './actions';
 import { counterpart, displayName, dueLabel, views, when } from './format';
 
@@ -18,10 +18,9 @@ interface ActionProps extends Pick<ButtonProps, 'variant' | 'onClick'> {
 
 function Action({ icon, label, shortcut, variant = 'secondary', ...props }: ActionProps) {
   return (
-    <Button variant={variant} className="h-auto flex-1 flex-col gap-1 py-3" {...props}>
+    <Button variant={variant} aria-keyshortcuts={ariaShortcut(shortcut)} className="h-auto flex-1 flex-col gap-1 py-3" {...props}>
       <Icon icon={icon} size="lg" />
       <span>{label}</span>
-      <Kbd shortcut={shortcut} className={cn(variant === 'primary' && 'bg-accent-on/15 text-accent-on')} />
     </Button>
   );
 }
@@ -138,7 +137,6 @@ export function GoThrough({ onExit }: { onExit: () => void }) {
         </div>
         <Button variant="ghost" size="sm" onClick={onExit}>
           Done
-          <Kbd shortcut="escape" />
         </Button>
       </div>
 

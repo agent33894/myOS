@@ -8,7 +8,7 @@ import { useArtifacts } from '../../data/selectors';
 import { useDataStore } from '../../data/store';
 import { useSettingsStore } from '../../store/settings';
 import { useUIStore } from '../../store/ui';
-import { Dialog, DialogContent, DialogTitle, Icon, Input, Kbd, cn } from '../../ui';
+import { Dialog, DialogContent, DialogTitle, Icon, Input, ariaShortcut, cn } from '../../ui';
 import { kindLabel } from '../../lib/itemKinds';
 import { buildIndex, labelScore, searchDocs, type Snippet } from './search';
 import { usePaletteCommands, type Command } from './usePaletteCommands';
@@ -189,6 +189,7 @@ function PaletteBody({ onClose }: { onClose: () => void }) {
                   id={`palette-${row.id}`}
                   role="option"
                   aria-selected={isActive}
+                  aria-keyshortcuts={ariaShortcut(row.shortcut)}
                   data-active={isActive}
                   onMouseMove={() => !isActive && setActive(rows.indexOf(row))}
                   onClick={() => run(row)}
@@ -211,7 +212,6 @@ function PaletteBody({ onClose }: { onClose: () => void }) {
                     ) : null}
                   </span>
                   {row.meta ? <span className="shrink-0 truncate pt-px text-sm text-text-tertiary">{row.meta}</span> : null}
-                  {row.shortcut ? <Kbd shortcut={row.shortcut} className="shrink-0" /> : null}
                 </div>
               );
             })}
@@ -222,21 +222,6 @@ function PaletteBody({ onClose }: { onClose: () => void }) {
             Nothing matches “{query.trim()}”. Try fewer words.
           </p>
         ) : null}
-      </div>
-      <div className="flex items-center gap-4 border-t border-border px-5 py-2 text-xs text-text-tertiary">
-        <span className="flex items-center gap-1">
-          <Kbd shortcut="up" />
-          <Kbd shortcut="down" />
-          to move
-        </span>
-        <span className="flex items-center gap-1">
-          <Kbd shortcut="enter" />
-          to open
-        </span>
-        <span className="flex items-center gap-1">
-          <Kbd shortcut="escape" />
-          to close
-        </span>
       </div>
     </>
   );

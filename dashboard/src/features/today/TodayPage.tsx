@@ -8,7 +8,7 @@ import { plannedMinutes } from '@shared/today';
 import type { ArtifactSummary } from '@shared/types';
 import { useDataStatus, useToday } from '../../data/selectors';
 import { CloseDayButton } from '../rituals/CloseDayButton';
-import { Button, EmptyState, LoadingState, PageHeader, PageLayout, SectionHeader, formatShortcut } from '../../ui';
+import { Button, EmptyState, LoadingState, PageHeader, PageLayout, SectionHeader } from '../../ui';
 import { useCapacityLine } from '../planning/capacity';
 import { PlanMyDay } from '../planning/PlanMyDay';
 import { AddTask } from '../tasks/AddTask';
@@ -108,7 +108,6 @@ export default function TodayPage() {
               <EmptyState
                 icon={Sun}
                 title="All clear for today."
-                description={`Enjoy the quiet, plan a few things, or press ${formatShortcut('mod+n')} to capture something.`}
                 className="py-10"
               />
             ) : (

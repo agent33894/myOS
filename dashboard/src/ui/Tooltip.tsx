@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
-import { Kbd } from './Kbd';
+import { ariaShortcut } from './Kbd';
 
 /** Mount once near the app root so tooltips share one short warm-up delay. */
 export function TooltipProvider({ children }: { children: ReactNode }) {
@@ -13,7 +13,7 @@ export function TooltipProvider({ children }: { children: ReactNode }) {
 
 interface TooltipProps {
   content: ReactNode;
-  /** Optional shortcut in `mod+k` form, shown after the content. */
+  /** Optional shortcut in `mod+k` form, declared on the trigger for assistive tech. */
   shortcut?: string;
   side?: 'top' | 'right' | 'bottom' | 'left';
   /** A single focusable element (the trigger). */
@@ -24,16 +24,17 @@ interface TooltipProps {
 export function Tooltip({ content, shortcut, side = 'bottom', children }: TooltipProps) {
   return (
     <TooltipPrimitive.Root>
-      <TooltipPrimitive.Trigger asChild>{children}</TooltipPrimitive.Trigger>
+      <TooltipPrimitive.Trigger asChild aria-keyshortcuts={ariaShortcut(shortcut)}>
+        {children}
+      </TooltipPrimitive.Trigger>
       <TooltipPrimitive.Portal>
         <TooltipPrimitive.Content
           side={side}
           sideOffset={6}
           collisionPadding={8}
-          className="z-popover flex max-w-xs items-center gap-2 rounded-sm bg-text px-2 py-1 text-xs font-medium text-canvas shadow-overlay animate-fade-in"
+          className="z-popover max-w-xs rounded-sm bg-text px-2 py-1 text-xs font-medium text-canvas shadow-overlay animate-fade-in"
         >
           {content}
-          {shortcut ? <Kbd shortcut={shortcut} className="h-4 bg-canvas/15 text-canvas" /> : null}
         </TooltipPrimitive.Content>
       </TooltipPrimitive.Portal>
     </TooltipPrimitive.Root>

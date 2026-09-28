@@ -84,7 +84,6 @@ export default function TasksPage() {
     <PageLayout className="gap-8">
       <PageHeader
         title="Tasks"
-        subtitle="Tasks without a date, later tasks, and Someday."
         actions={
           empty ? null : (
             <SegmentedControl size="sm" aria-label="Group by" options={GROUPINGS} value={grouping} onValueChange={choose} />
@@ -102,7 +101,6 @@ export default function TasksPage() {
               <EmptyState
                 icon={ListTodo}
                 title="Nothing waiting."
-                description="Tasks without a date live here, with anything you park for someday."
                 className="py-10"
               />
             ) : (
@@ -115,7 +113,7 @@ export default function TasksPage() {
                 )}
               </>
             )}
-            <AddTask placeholder="Add a task… (no date needed)" />
+            <AddTask />
           </section>
 
           {upcoming.length > 0 ? (

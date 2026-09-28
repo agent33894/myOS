@@ -48,10 +48,12 @@ export function TodayEntry({ date, label }: { date: string; label: string }) {
 
   return (
     <section aria-label="Today’s page" className="flex flex-col gap-4 rounded-xl bg-raised px-8 pb-8 pt-6 shadow-raised">
-      <header className="flex items-baseline gap-3">
-        <h2 className="text-lg font-semibold text-text">Today</h2>
-        <span className="text-base text-text-tertiary">{label}</span>
-        <span className="ml-auto">
+      <header className="flex items-end gap-3">
+        <div className="flex min-w-0 flex-1 flex-col">
+          <span className="text-sm font-medium text-accent-text">Today</span>
+          <h2 className="text-lg font-semibold text-text">{label}</h2>
+        </div>
+        <span className="shrink-0 pb-1">
           <SaveState saving={doc.saving} dirty={doc.dirty} saved={doc.lastSaved !== null} />
         </span>
       </header>

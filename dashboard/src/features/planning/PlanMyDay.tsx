@@ -1,6 +1,6 @@
 import { useMemo, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { format } from 'date-fns';
-import { ArrowRight, CalendarDays, Check, Plus, Timer, X } from 'lucide-react';
+import { ArrowRight, CalendarDays, Check, Flag, Plus, Sunrise, Timer, X } from 'lucide-react';
 import { isCheckEntry } from '@shared/checklist';
 import { dayOf, formatLocalDate } from '@shared/date';
 import { isOpenTask, plannedMinutes } from '@shared/today';
@@ -9,7 +9,7 @@ import { plan, unplan } from '../../data/planning';
 import type { ProjectWithStats } from '../../data/projects';
 import { useArtifacts, useTasks, useToday } from '../../data/selectors';
 import { useSettingsStore } from '../../store/settings';
-import { Button, Icon, IconButton, Kbd, SectionHeader, cn } from '../../ui';
+import { Button, Icon, IconButton, PageHeader, PageLayout, SectionHeader, cn } from '../../ui';
 import { makeTaskFromNext, useNextSteps } from '../projects/nextStep';
 import { attempt } from '../tasks/actions';
 import { dayLabel, formatEstimate, formatHours } from '../tasks/dates';
@@ -107,10 +107,20 @@ function TaskDetails({ task, inPlan = false }: { task: ArtifactSummary; inPlan?:
   );
 }
 
-const rowClass =
-  'group/task relative flex min-h-12 cursor-default items-center gap-3 rounded-md px-3 py-2 outline-none transition-colors duration-fast ease-out hover:bg-text/5 focus-visible:bg-text/5 focus-visible:ring-2 focus-visible:ring-focus';
+function Title({ text, flagged = false }: { text: string; flagged?: boolean }) {
+  return (
+    <p className="flex min-w-0 items-center gap-1.5">
+      <span className="truncate text-base text-text">{text}</span>
+      {flagged ? <Icon icon={Flag} size="sm" aria-label="Flagged" className="shrink-0 text-warning" /> : null}
+    </p>
+  );
+}
 
-/** A candidate on the left: click, ⏎, or Space adds it to the end of today's plan. */
+// The same shape as a task row on Today, so the two screens read as one.
+const rowClass =
+  'group/task relative flex min-h-10 cursor-default items-start gap-2 rounded-md py-2 pl-2 pr-1 outline-none transition-colors duration-fast ease-out hover:bg-text/5 focus-visible:bg-text/5 focus-visible:ring-2 focus-visible:ring-focus';
+
+/** A suggestion: click, Enter, or Space adds it to the end of today's plan. */
 function CandidateRow({ candidate }: { candidate: Candidate }) {
   const [adding, setAdding] = useState(false);
   const title = candidate.kind === 'task' ? candidate.task.title : candidate.project.next!;
@@ -133,25 +143,41 @@ function CandidateRow({ candidate }: { candidate: Candidate }) {
     }
   };
   return (
-    <div data-task-row role="button" tabIndex={0} aria-label={`Add “${title}” to today`} onClick={add} onKeyDown={onKeyDown} className={cn(rowClass, adding && 'opacity-50')}>
+    <div
+      data-task-row
+      role="button"
+      tabIndex={0}
+      aria-label={`Add “${title}” to today`}
+      onClick={add}
+      onKeyDown={onKeyDown}
+      className={cn(rowClass, adding && 'opacity-50')}
+    >
+      <span
+        aria-hidden="true"
+        className="mt-px grid size-4.5 shrink-0 place-items-center rounded-full border border-dashed border-border-strong text-text-tertiary transition-colors duration-fast group-hover/task:border-solid group-hover/task:border-accent group-hover/task:bg-accent group-hover/task:text-accent-on group-focus-visible/task:border-solid group-focus-visible/task:border-accent group-focus-visible/task:bg-accent group-focus-visible/task:text-accent-on"
+      >
+        <Icon icon={Plus} size="sm" />
+      </span>
       <div className="min-w-0 flex-1">
-        <p className="truncate text-base text-text">{title}</p>
         {candidate.kind === 'task' ? (
-          <TaskDetails task={candidate.task} />
+          <>
+            <Title text={title} flagged={candidate.task.flagged} />
+            <TaskDetails task={candidate.task} />
+          </>
         ) : (
-          <Details>
-            {[
-              <span key="project" className="inline-flex min-w-0 items-center gap-1.5">
-                <ProjectDot color={projectColor(candidate.project)} />
-                <span className="truncate">Next step for {candidate.project.title}</span>
-              </span>,
-            ]}
-          </Details>
+          <>
+            <Title text={title} />
+            <Details>
+              {[
+                <span key="project" className="inline-flex min-w-0 items-center gap-1.5">
+                  <ProjectDot color={projectColor(candidate.project)} />
+                  <span className="truncate">Next step for {candidate.project.title}</span>
+                </span>,
+              ]}
+            </Details>
+          </>
         )}
       </div>
-      <span className="grid size-7 shrink-0 place-items-center rounded-md text-text-tertiary transition-colors duration-fast group-hover/task:bg-accent-soft group-hover/task:text-accent-text group-focus-visible/task:bg-accent-soft group-focus-visible/task:text-accent-text">
-        <Icon icon={Plus} />
-      </span>
     </div>
   );
 }
@@ -175,10 +201,20 @@ function PlanRow({ task, index, onMove }: { task: ArtifactSummary; index: number
     }
   };
   return (
-    <div data-task-row tabIndex={0} aria-label={task.title} onKeyDown={onKeyDown} {...draggableItem(task)} className={cn(rowClass, 'cursor-grab bg-raised')}>
-      <span className="grid size-6 shrink-0 place-items-center rounded-full bg-accent-soft text-xs font-medium tabular-nums text-accent-text">{index + 1}</span>
+    <div
+      data-task-row
+      tabIndex={0}
+      aria-label={task.title}
+      aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown Backspace"
+      onKeyDown={onKeyDown}
+      {...draggableItem(task)}
+      className={cn(rowClass, 'cursor-grab animate-scale-in')}
+    >
+      <span className="mt-px grid size-4.5 shrink-0 place-items-center rounded-full bg-accent-soft text-xs font-semibold tabular-nums text-accent-text">
+        {index + 1}
+      </span>
       <div className="min-w-0 flex-1">
-        <p className="truncate text-base text-text">{task.title}</p>
+        <Title text={task.title} flagged={task.flagged} />
         <TaskDetails task={task} inPlan />
       </div>
       <IconButton
@@ -188,27 +224,28 @@ function PlanRow({ task, index, onMove }: { task: ArtifactSummary; index: number
         size="sm"
         tabIndex={-1}
         onClick={remove}
-        className="opacity-0 group-hover/task:opacity-100 group-focus-visible/task:opacity-100"
+        className="-my-0.5 opacity-0 group-hover/task:opacity-100 group-focus-visible/task:opacity-100"
       />
     </div>
   );
 }
 
-/** The running total against the hours you said you have. Information only. */
+/** The running total against the hours you said you have. Information only; it never blocks. */
 function Capacity({ minutes, count }: { minutes: number; count: number }) {
   const show = useSettingsStore((state) => state.showCapacity);
   const hours = useSettingsStore((state) => state.availableHours);
   const available = hours * 60;
+  const over = minutes > available;
   const tasks = count === 1 ? '1 task' : `${count} tasks`;
   if (!show) return <p className="text-sm text-text-secondary">{tasks}</p>;
   return (
     <div className="flex flex-col gap-2">
-      <p className="flex items-baseline justify-between gap-3 text-sm text-text-secondary">
-        <span>
-          {tasks}
-          {minutes > 0 ? ` · about ${formatHours(minutes)}` : ''}
+      <p className="flex items-baseline gap-2">
+        <span className={cn('text-lg font-semibold tabular-nums', over ? 'text-warning' : 'text-text')}>
+          {minutes > 0 ? formatHours(minutes) : '0 h'}
         </span>
-        <span className="tabular-nums text-text-tertiary">{formatHours(available)} available</span>
+        <span className="text-sm tabular-nums text-text-tertiary">of {formatHours(available)}</span>
+        <span className="ml-auto text-sm text-text-secondary">{over ? `${formatHours(minutes - available)} over` : tasks}</span>
       </p>
       <div
         role="meter"
@@ -220,7 +257,7 @@ function Capacity({ minutes, count }: { minutes: number; count: number }) {
         className="h-1.5 overflow-hidden rounded-full bg-text/10"
       >
         <div
-          className="h-full rounded-full bg-accent transition-all duration-slow ease-out"
+          className={cn('h-full rounded-full transition-all duration-slow ease-out', over ? 'bg-warning' : 'bg-accent')}
           style={{ width: `${Math.min(100, (minutes / Math.max(available, 1)) * 100)}%` }}
         />
       </div>
@@ -234,19 +271,19 @@ function DaySet({ planned, onDone }: { planned: ArtifactSummary[]; onDone: () =>
     .filter(Boolean)
     .join(', ');
   return (
-    <div className="mx-auto flex max-w-md flex-col items-center gap-3 py-16 text-center animate-scale-in">
+    <div className="mx-auto flex w-full max-w-md flex-col items-center gap-3 py-16 text-center animate-scale-in">
       <span className="mb-1 grid size-14 place-items-center rounded-full bg-accent-soft text-accent-text">
         <Icon icon={Check} size="lg" />
       </span>
       <h1 className="text-xl font-semibold text-text">Your day is set</h1>
-      <p className="text-base text-text-secondary">
-        {planned.length > 0 ? `${summary}. Today lists them in the order you chose.` : 'A day with nothing planned is a fine day too.'}
-      </p>
+      <p className="text-base text-text-secondary">{planned.length > 0 ? `${summary}.` : 'Nothing planned.'}</p>
       {planned.length > 0 ? (
-        <ol className="mt-4 flex w-full flex-col gap-1 rounded-lg bg-raised p-2 text-left shadow-raised">
+        <ol className="mt-4 flex w-full flex-col gap-1 rounded-xl bg-raised p-2 text-left shadow-raised">
           {planned.map((task, index) => (
             <li key={task.filePath} className="flex min-h-9 items-center gap-3 px-2 text-base text-text">
-              <span className="w-4 shrink-0 text-right text-sm tabular-nums text-text-tertiary">{index + 1}</span>
+              <span className="grid size-4.5 shrink-0 place-items-center rounded-full bg-accent-soft text-xs font-semibold tabular-nums text-accent-text">
+                {index + 1}
+              </span>
               <span className="min-w-0 flex-1 truncate">{task.title}</span>
               {task.estimatedMinutes ? <span className="shrink-0 text-sm tabular-nums text-text-tertiary">{formatEstimate(task.estimatedMinutes)}</span> : null}
             </li>
@@ -262,7 +299,7 @@ function DaySet({ planned, onDone }: { planned: ArtifactSummary[]; onDone: () =>
 }
 
 /**
- * Plan my day: candidates on the left (carried over, due soon, flagged,
+ * Plan my day: suggestions on the left (carried over, due soon, flagged,
  * Anytime, and project next steps), today's plan on the right with a running
  * estimate. Picking sets `planned` to today; the order here is Today's order.
  */
@@ -272,80 +309,78 @@ export function PlanMyDay({ onClose }: { onClose: () => void }) {
   const paths = useMemo(() => planned.map((task) => task.filePath), [planned]);
   const reorder = useReorder(paths);
 
+  if (set) {
+    return (
+      <PageLayout>
+        <DaySet planned={planned} onDone={onClose} />
+      </PageLayout>
+    );
+  }
+
   return (
-    <div className="scrollbar-stable h-full overflow-y-auto bg-canvas">
-      <div className="mx-auto flex max-w-5xl flex-col gap-8 px-6 pb-24 pt-12">
-        {set ? (
-          <DaySet planned={planned} onDone={onClose} />
-        ) : (
+    <PageLayout wide className="gap-8">
+      <PageHeader
+        title="Plan my day"
+        subtitle={format(new Date(), 'EEEE, MMMM d')}
+        actions={
           <>
-            <header className="flex flex-wrap items-start gap-4 px-3">
-              <div className="flex min-w-0 flex-1 flex-col gap-1">
-                <h1 className="text-xl font-semibold text-text">Plan my day</h1>
-                <p className="text-base text-text-secondary">
-                  {format(new Date(), 'EEEE, MMMM d')} · Pick what you’d like to do today. You can change it any time.
-                </p>
-              </div>
-              <div className="flex shrink-0 items-center gap-2">
-                <Button variant="ghost" onClick={onClose}>
-                  Cancel
-                </Button>
-                <Button variant="primary" leadingIcon={Check} onClick={() => setSet(true)}>
-                  Set my day
-                </Button>
-              </div>
-            </header>
-
-            <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
-              <section aria-label="Candidates" className="flex flex-col gap-4">
-                {groups.length === 0 ? (
-                  <p className="rounded-lg bg-text/5 px-4 py-6 text-center text-base text-text-secondary">
-                    Everything open is already in your plan.
-                  </p>
-                ) : (
-                  groups.map((group) => (
-                    <div key={group.title} className="flex flex-col">
-                      <SectionHeader title={group.title} count={group.items.length} as="h3" />
-                      {group.items.map((candidate) => (
-                        <CandidateRow key={candidate.key} candidate={candidate} />
-                      ))}
-                    </div>
-                  ))
-                )}
-              </section>
-
-              <section aria-label="Today’s plan" className="order-first flex flex-col gap-4 rounded-xl bg-sunken p-4 lg:sticky lg:top-6 lg:order-none">
-                <div className="flex flex-col gap-3 px-1">
-                  <h2 className="text-md font-semibold text-text">Today’s plan</h2>
-                  <Capacity minutes={plannedMinutes(planned)} count={planned.length} />
-                </div>
-                {planned.length === 0 ? (
-                  <p className="rounded-lg px-4 py-10 text-center text-base text-text-tertiary">
-                    Nothing planned yet. Pick a few things from the left.
-                  </p>
-                ) : (
-                  <div role="list" className="flex flex-col gap-1">
-                    {planned.map((task, index) => {
-                      const marker = reorder.markerFor(task.filePath);
-                      return (
-                        <div role="listitem" key={task.filePath} className="relative" {...reorder.dropProps(task.filePath)}>
-                          {marker ? <DropMarker after={marker.after} /> : null}
-                          <PlanRow task={task} index={index} onMove={(step) => reorder.move(task.filePath, step)} />
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-                {planned.length > 1 ? (
-                  <p className="flex items-center gap-1 px-1 text-xs text-text-tertiary">
-                    Drag to reorder, or focus a row and press <Kbd shortcut="alt+up" /> <Kbd shortcut="alt+down" />
-                  </p>
-                ) : null}
-              </section>
-            </div>
+            <Button variant="ghost" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button variant="primary" leadingIcon={Check} onClick={() => setSet(true)}>
+              Set my day
+            </Button>
           </>
-        )}
+        }
+        className="px-2"
+      />
+
+      <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-2">
+        <section aria-label="Suggestions" className="flex flex-col gap-6">
+          {groups.length === 0 ? (
+            <p className="px-2 py-3 text-base text-text-tertiary">Everything open is already in your plan.</p>
+          ) : (
+            groups.map((group) => (
+              <div key={group.title} className="flex flex-col">
+                <SectionHeader title={group.title} count={group.items.length} as="h3" className="px-2" />
+                {group.items.map((candidate) => (
+                  <CandidateRow key={candidate.key} candidate={candidate} />
+                ))}
+              </div>
+            ))
+          )}
+        </section>
+
+        <section
+          aria-label="Today’s plan"
+          className="order-first flex flex-col gap-4 rounded-xl bg-raised p-4 shadow-raised lg:sticky lg:top-6 lg:order-none"
+        >
+          <div className="flex flex-col gap-3 px-2 pt-1">
+            <h2 className="text-md font-semibold text-text">Today’s plan</h2>
+            <Capacity minutes={plannedMinutes(planned)} count={planned.length} />
+          </div>
+          {planned.length === 0 ? (
+            <div className="flex flex-col items-center gap-3 rounded-lg bg-sunken px-4 py-10 text-center">
+              <span className="grid size-10 place-items-center rounded-full bg-accent-soft text-accent-text">
+                <Icon icon={Sunrise} />
+              </span>
+              <p className="text-base text-text-secondary">Nothing planned yet.</p>
+            </div>
+          ) : (
+            <div role="list" className="flex flex-col">
+              {planned.map((task, index) => {
+                const marker = reorder.markerFor(task.filePath);
+                return (
+                  <div role="listitem" key={task.filePath} className="relative" {...reorder.dropProps(task.filePath)}>
+                    {marker ? <DropMarker after={marker.after} /> : null}
+                    <PlanRow task={task} index={index} onMove={(step) => reorder.move(task.filePath, step)} />
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
       </div>
-    </div>
+    </PageLayout>
   );
 }

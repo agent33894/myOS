@@ -23,3 +23,15 @@ export function firstLines(markdown: string | undefined, count = 3): string[] {
     .filter((line) => line && !line.startsWith('#') && !line.startsWith('---'))
     .slice(0, count);
 }
+
+/** The month (YYYY-MM) `by` months from `month`. */
+export function shiftMonth(month: string, by: number): string {
+  const [year, index] = month.split('-').map(Number);
+  const date = new Date(year, index - 1 + by, 1);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+}
+
+/** Roughly how many words someone wrote. */
+export function wordCount(text: string | undefined): number {
+  return (text ?? '').split(/\s+/).filter(Boolean).length;
+}

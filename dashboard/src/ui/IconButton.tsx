@@ -8,7 +8,7 @@ interface IconButtonProps extends Omit<ButtonProps, 'icon' | 'leadingIcon' | 'ch
   icon: LucideIcon;
   /** Accessible name, also shown as the tooltip. */
   label: string;
-  /** Shortcut shown in the tooltip, in `mod+k` form. */
+  /** Shortcut in `mod+k` form, declared for assistive tech. */
   shortcut?: string;
 }
 

@@ -73,7 +73,7 @@ export function AdvancedSettings() {
       <SettingsGroup title="Help">
         <SettingsRow
           label="Keyboard shortcuts"
-          description="Every shortcut in one place. Press ? anytime to see them."
+          description="Every shortcut in one place."
           control={
             <Button leadingIcon={Keyboard} onClick={openShortcuts}>
               Show shortcuts

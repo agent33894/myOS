@@ -42,13 +42,43 @@ export function formatShortcut(shortcut: string): string {
   return keys.join(isMac ? '' : '+');
 }
 
+const ARIA_KEYS: Record<string, string> = {
+  mod: isMac ? 'Meta' : 'Control',
+  ctrl: 'Control',
+  alt: 'Alt',
+  shift: 'Shift',
+  enter: 'Enter',
+  backspace: 'Backspace',
+  delete: 'Delete',
+  escape: 'Escape',
+  tab: 'Tab',
+  up: 'ArrowUp',
+  down: 'ArrowDown',
+  left: 'ArrowLeft',
+  right: 'ArrowRight',
+};
+
+/**
+ * A shortcut in `aria-keyshortcuts` form (`Control+Shift+K`). Controls declare
+ * their shortcuts this way instead of printing them; the full list lives in
+ * the Keyboard shortcuts dialog.
+ */
+export function ariaShortcut(shortcut: string | undefined): string | undefined {
+  if (!shortcut) return undefined;
+  return shortcut
+    .toLowerCase()
+    .split('+')
+    .map((key) => ARIA_KEYS[key] ?? (key === '?' ? 'Shift+?' : key.toUpperCase()))
+    .join('+');
+}
+
 interface KbdProps {
   /** Shortcut in `mod+shift+k` form; `mod` is ⌘ on macOS and Ctrl elsewhere. */
   shortcut: string;
   className?: string;
 }
 
-/** A keyboard shortcut hint. */
+/** A keyboard shortcut, for the Keyboard shortcuts dialog. */
 export function Kbd({ shortcut, className }: KbdProps) {
   return (
     <kbd

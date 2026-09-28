@@ -16,7 +16,6 @@ import {
   MenuContent,
   MenuLabel,
   MenuTrigger,
-  formatShortcut,
 } from '../../ui';
 import { Page } from '../page/Page';
 import { useNarrowWindow } from '../page/useNarrowWindow';
@@ -141,7 +140,7 @@ export default function NotesPage() {
               action={filtering ? <Button size="sm" onClick={() => setFilter({})}>Clear filters</Button> : undefined}
             />
           ) : (
-            <EmptyState icon={FileText} title="No notes yet." description="Your writing will gather here." />
+            <EmptyState icon={FileText} title="No notes yet." />
           )
         ) : (
           results.map((note, index) => (
@@ -185,11 +184,6 @@ export default function NotesPage() {
               <EmptyState
                 icon={FileText}
                 title={notes.length > 0 ? 'Pick a note' : 'Write your first note.'}
-                description={
-                  notes.length > 0
-                    ? `Or press ${formatShortcut('mod+shift+n')} to start a new one.`
-                    : `Ideas, meeting notes, a plan for the weekend. Press ${formatShortcut('mod+shift+n')} anytime.`
-                }
                 action={
                   <Button variant="primary" leadingIcon={Plus} onClick={newNote}>
                     New note

@@ -6,11 +6,11 @@ import {
   ContextMenuTrigger,
   Icon,
   IconButton,
-  Kbd,
   Menu,
   MenuContent,
   MenuItem,
   MenuTrigger,
+  ariaShortcut,
 } from '../../../ui';
 import { useUIStore } from '../../../store/ui';
 import { NewFromTemplateMenuItem } from '../../knowledge/slots';
@@ -36,7 +36,7 @@ function NewMenuItems() {
   );
 }
 
-/** Search (⌘K) and + New (⌘N), with note, task, and project on the chevron or a right-click. */
+/** Search and + New, with note, task, and project on the chevron or a right-click. */
 export function SidebarActions({ rail }: { rail: boolean }) {
   const openPalette = useUIStore((state) => state.openCommandPalette);
   const openCapture = useUIStore((state) => state.openQuickCapture);
@@ -68,19 +68,18 @@ export function SidebarActions({ rail }: { rail: boolean }) {
     <div className="flex flex-col gap-2">
       <Button
         onClick={openPalette}
+        aria-keyshortcuts={ariaShortcut(SHORTCUTS.palette)}
         className="w-full justify-start gap-2 px-2 font-normal text-text-tertiary hover:text-text-secondary"
       >
         <Icon icon={Search} />
         <span className="flex-1 text-left">Search</span>
-        <Kbd shortcut={SHORTCUTS.palette} className="bg-transparent" />
       </Button>
       <ContextMenu>
         <ContextMenuTrigger asChild>
           <div className="flex rounded-md shadow-raised">
-            <Button variant="primary" onClick={openCapture} className="flex-1 justify-start gap-2 rounded-r-none px-2">
+            <Button variant="primary" onClick={openCapture} aria-keyshortcuts={ariaShortcut(SHORTCUTS.capture)} className="flex-1 justify-start gap-2 rounded-r-none px-2">
               <Icon icon={Plus} />
               <span className="flex-1 text-left">New</span>
-              <Kbd shortcut={SHORTCUTS.capture} className="bg-transparent text-accent-on" />
             </Button>
             <Menu>
               <MenuTrigger asChild>

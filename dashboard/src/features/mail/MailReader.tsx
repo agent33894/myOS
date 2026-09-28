@@ -20,7 +20,7 @@ import type { MailBody, MailItem, MailLane } from '@shared/mail/types';
 import { toItemUrl, toMailUrl, toSettingsUrl } from '../../app/navigation';
 import { readMailBody, useMail } from '../../data/mail';
 import { useArtifact, useProjects } from '../../data/selectors';
-import { Button, Icon, IconButton, Kbd, LoadingState, Menu, MenuContent, MenuTrigger, Pill, cn } from '../../ui';
+import { Button, Icon, IconButton, LoadingState, Menu, MenuContent, MenuTrigger, Pill, cn } from '../../ui';
 import { dayLabel } from '../tasks/dates';
 import { done, makeTask, moveToLane, openLink } from './actions';
 import { DraftEditor, StartReply } from './Composer';
@@ -126,11 +126,10 @@ function Suggested({ item }: { item: MailItem }) {
   const project = suggestion.project ? projects.find((candidate) => candidate.id === suggestion.project) : undefined;
   const detail = [item.verdict.due ? dueLabel(item.verdict.due).toLowerCase() : null, project ? `in ${project.title}` : null].filter(Boolean).join(' · ');
   return (
-    <Button variant="secondary" leadingIcon={CheckCircle2} onClick={() => makeTask(item)} className="h-auto min-h-8 justify-start self-start whitespace-normal py-1.5 text-left">
+    <Button variant="secondary" leadingIcon={CheckCircle2} aria-keyshortcuts="T" onClick={() => makeTask(item)} className="h-auto min-h-8 justify-start self-start whitespace-normal py-1.5 text-left">
       <span>
         Make task “{suggestion.title}”{detail ? <span className="text-text-tertiary"> · {detail}</span> : null}
       </span>
-      <Kbd shortcut="t" />
     </Button>
   );
 }
@@ -238,12 +237,12 @@ export function MailReader({ item, replyOpen }: { item: MailItem; replyOpen: boo
 
       <div className="flex flex-wrap items-center gap-2 px-2">
         <Suggested item={item} />
-        <Button leadingIcon={Archive} onClick={finish}>
-          Done <Kbd shortcut="e" />
+        <Button leadingIcon={Archive} aria-keyshortcuts="E" onClick={finish}>
+          Done
         </Button>
         {draft || replyOpen ? null : (
-          <Button leadingIcon={Reply} onClick={() => navigate(toMailUrl({ id: item.id, reply: true }), { replace: true })}>
-            {waiting ? 'Follow up' : 'Reply'} <Kbd shortcut="r" />
+          <Button leadingIcon={Reply} aria-keyshortcuts="R" onClick={() => navigate(toMailUrl({ id: item.id, reply: true }), { replace: true })}>
+            {waiting ? 'Follow up' : 'Reply'}
           </Button>
         )}
       </div>

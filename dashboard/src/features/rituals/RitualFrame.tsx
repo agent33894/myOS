@@ -1,6 +1,6 @@
 import { useEffect, useRef, type KeyboardEvent, type ReactNode } from 'react';
 import type { LucideIcon } from 'lucide-react';
-import { Button, DialogContent, DialogDescription, DialogTitle, Icon, Kbd, cn } from '../../ui';
+import { Button, DialogContent, DialogDescription, DialogTitle, Icon, cn } from '../../ui';
 
 interface RitualFrameProps {
   /** "Close the day", "Weekly review". */
@@ -114,11 +114,7 @@ export function RitualFrame({
       </div>
 
       <div className="flex shrink-0 items-center gap-2 bg-sunken px-8 py-4">
-        {secondary ?? (
-          <span className="hidden items-center gap-1.5 text-xs text-text-tertiary sm:flex">
-            <Kbd shortcut="enter" /> to continue · <Kbd shortcut="escape" /> to stop here
-          </span>
-        )}
+        {secondary}
         <div className="ml-auto flex items-center gap-2">
           {onSkip ? (
             <Button variant="ghost" onClick={onSkip} disabled={busy}>
