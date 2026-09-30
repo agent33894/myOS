@@ -49,7 +49,7 @@ export function ProjectCard({ project }: { project: ProjectWithStats }) {
         />
       </div>
       <div className="mt-2 flex items-center justify-between gap-2 text-xs text-text-tertiary">
-        <span>{progress ? `${progress.done} of ${progress.total} done` : 'No tasks yet'}</span>
+        <span>{!progress ? 'No tasks yet' : progress.done === progress.total ? 'All done' : `${progress.done} of ${progress.total} done`}</span>
         {next}
       </div>
     </div>

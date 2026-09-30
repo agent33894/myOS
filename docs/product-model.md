@@ -40,7 +40,7 @@ Every sidebar count equals exactly the number of rows its page shows. Tasks has 
 - **Plan today.** Today is one list: **Carried over** (neutral, never red, with a **Re-plan** batch action), **Today** (due or planned today, flagged, or in progress, in your order), project **Next steps**, then a quiet **Upcoming** (next 7 days) and **Done today**. Dated `- [ ]` lines in notes appear beside tasks. Deferred and Someday tasks stay hidden until their time. Completing a task plays a short spring animation and shows "Done · Undo"; a repeating task records the date and moves to its next occurrence.
 - **Rituals, only when you want them.** *Plan my day* picks today's tasks against your available hours. *Close the day* starts with what got done, gives each unfinished planned task a new day, and can add one line to the journal. The *Weekly review* clears the Inbox, carried-over tasks, projects without a next step, and quiet projects, then glances at Someday. *What moved* is a list of the week's work, never a score. None of them starts on its own.
 - **Write.** Choose *New note* (⌘⇧N or the palette) to open a blank page with the cursor in the title. `/` opens the insert menu with basic blocks first; charts, KPIs, roadmaps, and diagrams sit under *More blocks*.
-- **Manage a project.** The project page shows a title, a short description (free text, no template), **Tasks** with inline add, and **Notes** with inline add. Properties (status, color, dates) sit in a small property row.
+- **Manage a project.** The project page shows a title, a short description (free text, no template), **Tasks** with inline add, and **Notes** with inline add. Properties (status, color, dates) sit in a small property row. When every task is done, the page offers **Mark project done** (or *Not yet*); it never closes a project on its own.
 - **Find.** ⌘K searches titles and full text together, with recent items first, and also lists commands (New note, New task, New project, Toggle theme, Settings, …).
 
 ## Every page has properties, inline
@@ -60,7 +60,7 @@ Mail is the seventh place (⌘7). It watches the user's own mailboxes (iCloud an
 
 ## Things that are advanced, not gone
 
-Git ignore rules live under **Settings → Advanced**; "Open in editor" and "Show in folder" live in a page's ⋯ menu; commit links in a note preview their changes and open the diff. The interface never mentions frontmatter or YAML.
+Git ignore rules live under **Settings → Advanced**; "Open in editor" and "Show in folder" live in a page's ⋯ menu, which ends with the page's length, reading time, and when it was created and last edited; commit links in a note preview their changes and open the diff. The interface never mentions frontmatter or YAML.
 
 ## Data safety
 

@@ -41,7 +41,18 @@ export const SidebarLink = forwardRef<HTMLAnchorElement, SidebarLinkProps>(funct
       {...props}
     >
       <span className={cn('flex size-4 shrink-0 items-center justify-center', active && 'text-accent-text')}>{leading}</span>
-      {rail ? null : <span className="min-w-0 flex-1 truncate">{label}</span>}
+      {rail ? null : (
+        <span
+          className="min-w-0 flex-1 truncate"
+          // A cut-off name (a long project) reads in full on hover.
+          onMouseEnter={(event) => {
+            const span = event.currentTarget;
+            span.title = span.scrollWidth > span.clientWidth ? label : '';
+          }}
+        >
+          {label}
+        </span>
+      )}
       {rail ? null : trailing}
       {rail && badge ? (
         <span aria-hidden="true" className="absolute right-1.5 top-1.5 size-1.5 rounded-full bg-accent" />

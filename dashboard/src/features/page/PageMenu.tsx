@@ -5,6 +5,7 @@ import { IconButton, Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger } f
 import { FileMenuItems } from '../files/slots';
 import { KnowledgeMenuItems } from '../knowledge/slots';
 import { attempt, deleteItem } from '../tasks/actions';
+import { PageInfo } from './PageInfo';
 
 interface PageMenuProps {
   item: ArtifactSummary;
@@ -41,6 +42,8 @@ export function PageMenu({ item, flush, onDeleted, onMoved }: PageMenuProps) {
         <MenuItem icon={Trash2} danger onSelect={() => void remove()}>
           Delete
         </MenuItem>
+        <MenuSeparator />
+        <PageInfo item={item} />
       </MenuContent>
     </Menu>
   );

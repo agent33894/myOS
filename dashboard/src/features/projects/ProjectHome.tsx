@@ -43,6 +43,7 @@ import { TaskRow } from '../tasks/TaskRow';
 import { AreaProperty } from '../files/slots';
 import { useRenameWithTitle } from '../files/useRenameWithTitle';
 import { NextStepProperty } from './NextStepProperty';
+import { ProjectWrapUp } from './ProjectWrapUp';
 import { PROJECT_STATUSES, statusLabel } from './projectStatus';
 import { useProjectRename } from './projectRename';
 import { useProjectStatus } from './projectMutations';
@@ -178,8 +179,11 @@ export function ProjectHome({ project }: { project: ProjectWithStats }) {
         </div>
       ) : null}
 
-      <div className="mt-8 flex items-center gap-3">
-        <ProjectDot color={projectColor(project)} className="size-4" />
+      <div className="mt-8 flex items-start gap-3">
+        {/* Sits on the title's first line (text-2xl is 40px tall), so a long name wraps under itself. */}
+        <span className="flex h-10 shrink-0 items-center">
+          <ProjectDot color={projectColor(project)} className="size-4" />
+        </span>
         <ProjectTitle project={project} autoFocus={isNew} />
       </div>
       <div className="mt-3">
@@ -199,6 +203,8 @@ export function ProjectHome({ project }: { project: ProjectWithStats }) {
           <LoadingState rows={2} />
         )}
       </div>
+
+      <ProjectWrapUp project={project} />
 
       <section aria-label="Tasks" className="-mx-2 mt-8">
         <SectionHeader

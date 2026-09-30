@@ -31,7 +31,7 @@ export function shiftMonth(month: string, by: number): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
 }
 
-/** Roughly how many words someone wrote. */
+/** Roughly how many words someone wrote; Markdown marks on their own (`##`, `-`, `---`) don't count. */
 export function wordCount(text: string | undefined): number {
-  return (text ?? '').split(/\s+/).filter(Boolean).length;
+  return (text ?? '').split(/\s+/).filter((token) => /[\p{L}\p{N}]/u.test(token)).length;
 }

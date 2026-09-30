@@ -16,22 +16,27 @@ const plain = (line: string) =>
     .replace(/[*_`~]|!?\[([^\]]*)\]\([^)]*\)/g, '$1')
     .trim();
 
-/** The first line of real text (not a repeat of the title), or the words around the first match of `query`. */
+const isHeading = (line: string) => /^\s{0,3}#{1,6}\s/.test(line);
+
+/**
+ * The first line of real text (not a repeat of the title, and not a section
+ * heading unless there is nothing else), or the words around the first match of `query`.
+ */
 export function snippet(body: string | undefined, query = '', title = ''): string {
   if (!body) return '';
   const wanted = query.trim().toLowerCase();
   const lines = body
     .split('\n')
-    .map(plain)
-    .filter((line) => line && line !== title && !line.startsWith('```') && !/^[-=_*]{3,}$/.test(line));
+    .map((raw) => ({ text: plain(raw), heading: isHeading(raw) }))
+    .filter(({ text }) => text && text !== title && !text.startsWith('```') && !/^[-=_*]{3,}$/.test(text));
   if (wanted) {
-    const hit = lines.find((line) => line.toLowerCase().includes(wanted));
+    const hit = lines.find(({ text }) => text.toLowerCase().includes(wanted))?.text;
     if (hit) {
       const at = hit.toLowerCase().indexOf(wanted);
       return at > 40 ? `…${hit.slice(at - 30)}` : hit;
     }
   }
-  return lines[0] ?? '';
+  return (lines.find(({ heading }) => !heading) ?? lines[0])?.text ?? '';
 }
 
 /** Title and full-text search together; title matches rank first. */

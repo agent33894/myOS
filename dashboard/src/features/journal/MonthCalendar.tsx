@@ -113,9 +113,12 @@ export function MonthCalendar({ month, onMonthChange, today, pages, onToday }: M
         })}
       </div>
 
-      <p className="border-t border-border px-1 pt-3 text-sm text-text-secondary">
-        {written === 0 ? 'No pages this month' : written === 1 ? '1 page this month' : `${written} pages this month`}
-      </p>
+      {/* An empty month says so once, in the list beside the calendar. */}
+      {written > 0 ? (
+        <p className="border-t border-border px-1 pt-3 text-sm text-text-secondary">
+          {written === 1 ? '1 page this month' : `${written} pages this month`}
+        </p>
+      ) : null}
     </section>
   );
 }
